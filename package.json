@@ -1,0 +1,14 @@
+{
+  "name": "project-ecommerce",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "author": "Muhammed Shahzad C",
+  "license": "ISC",
+  "description": "Ecommerce Project",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
