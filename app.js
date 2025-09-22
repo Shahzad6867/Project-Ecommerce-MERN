@@ -1,6 +1,7 @@
 const express = require("express")
 const session = require("express-session")
 const { connectDatabase } = require("./config/dbConnect")
+const adminRoute = require("./routes/admin.route")
 const path = require("path")
 require("dotenv").config()
 const app = express()
@@ -28,15 +29,14 @@ app.use((req,res,next) => {
 app.use(express.urlencoded({extended : true}))
 app.use(express.json())
 app.use(express.static("public"))
-
-
-connectDatabase()
-const PORT = process.env.PORT || 1349
+app.use("/admin",adminRoute)
 
 app.use((req,res,next) => {
     res.send("<h1>404 Page is being Built</h1>")
 })
 
+connectDatabase()
+const PORT = process.env.PORT || 1349
 app.listen(PORT,(error) => {
     try {
         console.log(`Server connected @ ${PORT}`)
