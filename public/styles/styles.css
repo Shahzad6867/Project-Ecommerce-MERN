@@ -1,0 +1,156 @@
+.auth-container {
+    background: linear-gradient(135deg, #2eec71 0%, #8db39b 100%);
+    min-height: 100vh;
+}
+.card {
+    backdrop-filter: blur(10px);
+    background: rgb(255, 255, 255);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+.input-field:focus {
+    box-shadow: 0 0 0 3px rgba(251, 188, 4, 0.5);
+
+
+}
+.alert-enter {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+.alert-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 300ms ease-out;
+}
+.alert-exit {
+    opacity: 1;
+    transform: translateY(0);
+}
+.alert-exit-active {
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 300ms ease-in;
+}
+
+.alert-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.5);
+    width: 100%;
+    transform-origin: left;
+    animation: progressBar 5s linear forwards;
+}
+.loginButton{
+   background-color: #fbbc04;
+}
+.loginButton:hover{
+    background-color: #ffce3a;
+}
+
+@media (width > 520px) {
+    #name-section{
+        justify-content: space-between;
+    }
+    #reg-first-name{
+        width: 98%;
+    }
+    #reg-last-name{
+        width: 97%;
+    }
+    #first-name-section{
+        width: 50%;
+    }
+    #last-name-section{
+        width: 50%;
+    }
+    #reg-password{
+        width: 98%;
+    }
+    #reg-confirm-password{
+        width: 98%;
+    }
+    #password-div{
+        width: 50%;
+    }
+    #confirmPassword-div{
+        width: 50%;
+    }
+}
+@media (width < 520px) {
+    #reg-first-name{
+        width: 100%;
+    }
+    #reg-last-name{
+        width: 100%;
+    }
+    #password-div{
+        width: 100%;
+    }
+    #confirmPassword-div{
+        width: 100%;
+    }
+    #reg-password{
+        width: 100%;
+    }
+    #reg-confirm-password{
+        width: 100%;
+    }
+    #first-name-section{
+        width: 100%;
+    }
+    #last-name-section{
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    #name-section{
+        justify-content: unset;
+    }
+} 
+
+@media (width < 770px) {
+    #mobileNoDiv{
+        width : 100%;
+        margin-bottom : 1rem;
+    }
+    #emailDiv{
+        width : 100%
+    }
+}
+@media(width > 770px){
+    #mobileNoDiv{
+        width: 40%;
+    }
+    #emailDiv{
+        width: 60%;
+    }
+}
+
+
+@font-face {
+    font-family: "Batangas"; /* Choose a name for your font */
+    src: url("../fonts/Batangas\ Bold\ 700.otf") format("opentype"); /* Adjust the path to your font file */
+}
+h1{
+    font-family: Batangas;
+    color: #474744;
+}
+.separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 10px 0; /* Adjust spacing as needed */
+  }
+  
+  .separator::before,
+  .separator::after {
+    content: '';
+    flex-grow: 1;
+    border-bottom: 1px solid #ccc; /* Customize line style */
+    margin: 0 10px; /* Adjust spacing around "OR" */
+  }
+  
+  .separator span {
+    padding: 0 8px; /* Spacing around "OR" text */
+    background-color: #fff; /* Match your background color */
+  }
