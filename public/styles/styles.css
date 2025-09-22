@@ -93,6 +93,9 @@
     #reg-password{
         width: 100%;
     }
+    #regPasswordDiv{
+        margin-bottom: 0.5rem;
+    }
     #reg-confirm-password{
         width: 100%;
     }
@@ -111,10 +114,11 @@
 @media (width < 770px) {
     #mobileNoDiv{
         width : 100%;
-        margin-bottom : 1rem;
+        margin-bottom : 0.5rem;
     }
     #emailDiv{
-        width : 100%
+        width : 100%;
+        margin-bottom : 0.5rem;
     }
 }
 @media(width > 770px){
