@@ -8,7 +8,12 @@ const getUserRegister = async (req,res) => {
     res.render("user-view/user.register.ejs")
 }
 
+const userRegister = async (req,res) => {
+    res.redirect("/login")
+}
+
 module.exports = {
     getUserLogin,
+    userRegister,
     getUserRegister
 }

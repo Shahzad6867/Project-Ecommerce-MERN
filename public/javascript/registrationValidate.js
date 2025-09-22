@@ -2,19 +2,27 @@ const passwordReg = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$&]).{8,20}$/;
 const emailReg = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 const nameReg = /^[A-Za-z\s]+$/;
 
-var rName = document.getElementById("reg-name");
+var rFirstName = document.getElementById("reg-first-name");
+var rLastName = document.getElementById("reg-last-name");
 var rPassword = document.getElementById("reg-password");
 var rCpassword = document.getElementById("reg-confirm-password");
 var rEmail = document.getElementById("reg-email");
 var rTerms = document.getElementById("terms");
 
-rName.addEventListener("input", () => {
-  if (rName.value.length < 5 || !nameReg.test(rName.value)) {
-    rName.style.border = "2px solid red";
+rFirstName.addEventListener("input", () => {
+  if (rFirstName.value.length < 5 || !nameReg.test(rFirstName.value)) {
+    rFirstName.style.border = "2px solid red";
     document.getElementById("reg-name-p").style.color = "red";
   } else {
-    rName.style.border = "2px solid green";
+    rFirstName.style.border = "2px solid green";
     document.getElementById("reg-name-p").style.color = "";
+  }
+});
+rLastName.addEventListener("input", () => {
+  if (!nameReg.test(rLastName.value)) {
+    rLastName.style.border = "2px solid red";
+  } else {
+    rLastName.style.border = "2px solid green";
   }
 });
 
@@ -58,7 +66,8 @@ rTerms.addEventListener("change", () => {
 
 function validate() {
   if (
-    rName.style.border !== "2px solid green" ||
+    rFirstName.style.border !== "2px solid green" ||
+    rLastName.style.border !== "2px solid green" ||
     rEmail.style.border !== "2px solid green" ||
     rPassword.style.border !== "2px solid green" ||
     rCpassword.style.border !== "2px solid green"
