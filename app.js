@@ -32,6 +32,11 @@ app.use(express.static("public"))
 
 connectDatabase()
 const PORT = process.env.PORT || 1349
+
+app.use((req,res,next) => {
+    res.send("<h1>404 Page is being Built</h1>")
+})
+
 app.listen(PORT,(error) => {
     try {
         console.log(`Server connected @ ${PORT}`)
