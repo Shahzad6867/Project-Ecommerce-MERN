@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #2eec71 0%, #8db39b 100%);
+            min-height: 100vh;
+        }
+        .otp-input {
+            width: 50px;
+            height: 60px;
+            text-align: center;
+            font-size: 24px;
+            border: 2px solid rgb(162, 162, 162);
+            background: rgba(255, 255, 255);
+            color: rgb(0, 0, 0);
+            border-radius: 10px;
+            margin: 0 8px;
+            transition: all 0.3s;
+        }
+        .otp-input:focus {
+            outline: none;
+            border-color: rgba(251, 188, 4, 0.5);
+            background: rgba(255, 255, 255);
+            transform: scale(1.05);
+        }
+        .otp-input::placeholder {
+            color: rgb(0, 0, 0);
+        }
+
+        .otp-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+#timer {
+  margin-right: 10px;
+}
+
+#resend-btn {
+  padding: 5px 10px;
+  background-color: #337ab7;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+#resend-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+#verifyOtpButton{
+   background-color: #fbbc04;
+}
+#verifyOtpButton:hover{
+    background-color: #ffce3a;
+}
+
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+    <div class="bg-white  rounded-2xl shadow-xl p-8 max-w-md w-full" data-aos="zoom-in">
+        <div class="text-center mb-8">
+            
+            <h1 class="text-3xl font-bold text-black mb-2">OTP Verification</h1>
+            <p class="text-black text-opacity-80">We've sent a verification code to your email</p>
+        </div>
+
+        <form method="post" action="/otp-verification"  class="space-y-6">
+            <div class="flex justify-center">
+                <input type="text" name="otp" maxlength="1" class="otp-input" pattern="\d*" inputmode="numeric" >
+                <input type="text" name="otp" maxlength="1" class="otp-input" pattern="\d*" inputmode="numeric" >
+                <input type="text" name="otp" maxlength="1" class="otp-input" pattern="\d*" inputmode="numeric" >
+                <input type="text" name="otp" maxlength="1" class="otp-input" pattern="\d*" inputmode="numeric" >
+                <input type="text" name="otp" maxlength="1" class="otp-input" pattern="\d*" inputmode="numeric" >
+                <input type="text" name="otp" maxlength="1" class="otp-input" pattern="\d*" inputmode="numeric" >
+            </div>
+
+            <button type="submit" id="verifyOtpButton" class="w-full py-3 px-4  bg-opacity-20 hover:bg-opacity-30 text-black font-semibold rounded-lg transition duration-300 flex items-center justify-center space-x-2">
+                <span>Verify OTP</span>
+                <i data-feather="arrow-right" class="w-5 h-5"></i>
+            </button>
+        </form>
+
+        <!-- <div class="otp-container">
+            <div id="timer">00:00</div>
+            <button id="resend-btn" disabled>Resend</button>
+          </div> -->
+        <div class="mt-3 text-center">
+            
+           <span class="text-green-500">Timer <span id="timer" class="text-green-500">02:00</span></span>
+        </div>
+
+        <div class="mt-2 text-center">
+            <p class="text-black text-opacity-70">Didn't receive code? <a href="#" class="text-green-500 font-medium hover:underline">Resend</a></p>
+        </div>
+    </div>
+
+    <script>
+        feather.replace();
+        
+        // Auto-focus and move between OTP inputs
+        const otpInputs = document.querySelectorAll('.otp-input');
+        
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value.length === 1) {
+                    if (index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    }
+                }
+            });
+            
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && e.target.value === '') {
+                    if (index > 0) {
+                        otpInputs[index - 1].focus();
+                    }
+                }
+            });
+        });
+
+
+
+    </script>
+    <script>
+
+$(document).ready(function() {
+  var timerDuration = 20; // Timer duration in seconds
+  var timerInterval;
+
+  // Start the timer
+  function startTimer() {
+    var timer = timerDuration;
+    timerInterval = setInterval(function() {
+      var minutes = Math.floor(timer / 60);
+      var seconds = timer % 60;
+      var timeString = ('0' + minutes).slice(-2) + ':' + ('0' + seconds).slice(-2);
+      $('#timer').text(timeString);
+      timer--;
+
+      if (timer < 0) {
+        clearInterval(timerInterval);
+        $('#resend-btn').prop('disabled', false);
+      }
+    }, 1000);
+  }
+
+  // Resend button click event
+  $('#resend-btn').click(function() {
+    $(this).prop('disabled', true);
+    startTimer();
+    // Send OTP request here
+  });
+
+  // Initial start of the timer
+  startTimer();
+});
+
+    </script>
+</body>
+</html>

@@ -62,17 +62,17 @@
               <div class="separator">
                 <span>or</span>
               </div>
-            <form action="/admin/login" method="POST" onsubmit="return validate()" novalidate>
+            <form action="/login" method="POST" onsubmit="return validate()" novalidate>
                 <div class="mb-4">
                     <input type="hidden" id="serverMessage"  value="<%= typeof message !== 'undefined' ? message : '' %>">
-                    <label for="admin-username" class="block font-bold text-gray-700 mb-2">Email or Mobile No</label>
-                    <input type="email" id="admin-username" name="email" placeholder="Enter Email or Mobile No"
+                    <label for="user-email" class="block font-bold text-gray-700 mb-2">Email or Mobile No</label>
+                    <input type="email" id="user-email" name="email" placeholder="Enter Email"
                         class="input-field w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-all">
                 </div>
                 <div class="mb-3 relative">
-                    <label for="admin-password" class="block  text-gray-700 font-bold mb-2">Password</label>
+                    <label for="user-password" class="block  text-gray-700 font-bold mb-2">Password</label>
                     <div class="relative">
-                        <input type="password" id="admin-password" name="password" placeholder="Enter Password"
+                        <input type="password" id="user-password" name="password" placeholder="Enter Password"
                             class="input-field w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-all">
                        
                     </div>
@@ -84,13 +84,11 @@
                     Log In
                 </button>
             </form>
-            
+            <div class="relative mb-1">
+             <p class="text-md  text-center  mt-4">Dont have an account ?<a href="/register"><span  class="text-md  text-green-500 hover:underline mt-4 mx-1">Create Account</span></a></p>
+          </div>
         </div>
     </div>
-
-
-
-
-    
+    <script src="/javascript/loginValidate.js"></script>    
 </body>
 </html>

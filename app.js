@@ -12,7 +12,7 @@ app.set("views",path.join(__dirname,"/views"))
 
 //Middlewares
 app.use(session({
-    secret : "novamartSecretKey",
+    secret : process.env.SESSION_KEY,
     resave : false,
     saveUninitialized : false,
     cookie : {

@@ -23,7 +23,8 @@ const userSchema = new Schema({
     ,
     profileImage : {
         type : String,
-        required : false
+        required : false,
+        default : null
     }
     ,
     isBlocked : {
