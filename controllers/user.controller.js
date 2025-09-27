@@ -85,7 +85,7 @@ const getUserOtp = async (req, res) => {
   let message = req.session.message || null;
   delete req.session.message;
 
-  res.render("user-view/userotp-verification.ejs", { message: message, allocatedTime : req.session.otpTimer });
+  res.render("user-view/user.otp-verification.ejs", { message: message, allocatedTime : req.session.otpTimer });
 };
 
 const userOtp = async (req, res) => {
@@ -94,7 +94,7 @@ const userOtp = async (req, res) => {
     inputOtp = parseInt(inputOtp);
     console.log(inputOtp);
     if(!req.session.user.email){
-      return res.render("user-view/userotp-verification.ejs", {
+      return res.render("user-view/user.otp-verification.ejs", {
         message: "OTP Expired, Click Resend OTP",
       });
     }
@@ -102,7 +102,7 @@ const userOtp = async (req, res) => {
     console.log(userOtp);
     
     if (!userOtp || userOtp.createdAt < Date.now()) {
-      return res.render("user-view/userotp-verification.ejs", {
+      return res.render("user-view/user.otp-verification.ejs", {
         message: "OTP Expired, Click Resend OTP",
       });
     }
@@ -124,7 +124,7 @@ const userOtp = async (req, res) => {
       req.session.message = "User Created Successfully, Please Log In";
       return res.redirect("/login");
     } else {
-      return res.render("user-view/userotp-verification.ejs", {
+      return res.render("user-view/user.otp-verification.ejs", {
         message: "Incorrect OTP", allocatedTime : userOtp.createdAt 
       });
     }
@@ -132,6 +132,13 @@ const userOtp = async (req, res) => {
     console.log(error);
   }
 };
+
+const getForgotPassword = async (req,res) => {
+  let message = req.session.message || null;
+  delete req.session.message;
+
+  res.render("user-view/user.reset-password.ejs", { message: message, allocatedTime : req.session.otpTimer });
+}
 
 module.exports = {
   getUserLogin,
