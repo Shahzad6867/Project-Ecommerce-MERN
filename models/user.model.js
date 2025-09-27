@@ -20,7 +20,7 @@ const userSchema = new Schema({
     phone : {
         type : String,
         required : false,
-        unique : false
+        default : null
     }
     ,
     profileImage : {

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgot Password | Password Panic Buster</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/izitoast/dist/css/iziToast.min.css"/>
+    <link rel="stylesheet" href="/styles/style2.css">
+    <script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
+   
+</head>
+<body class="flex items-center justify-center p-4">
+    <div class="card shadow-2xl p-8 max-w-md w-full transform transition-all duration-500 hover:scale-[1.01]">
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-feather="key" class="w-10 h-10 text-yellow-500"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Password Assistance</h1>
+            <p class="text-gray-600">Enter the email address associated with your Novamart account.
+
+            </p>
+        </div>
+
+        <form method="post" action="email-auth" class="space-y-6" onsubmit="return validate()" novalidate>
+            <input type="hidden" id="serverMessage"  value="<%= typeof message !== 'undefined' ? message : '' %>">
+            <div class="relative">
+                <input id="email" type="email" name="email" placeholder="Enter your email" class="input-field " >
+            </div>
+
+            <button type="submit" class="w-full py-3 px-4 btn-primary text-gray-700 font-semibold rounded-lg transition duration-300 flex items-center justify-center space-x-2">
+                <span>Proceed</span>
+            </button>
+        </form>
+
+        <div class="mt-6 text-center">
+            <a href="/login" class="text-gray-700 text-md font-medium hover:text-green-500 transition duration-300 flex items-center justify-center space-x-1">
+                <i data-feather="arrow-left" class="w-4 h-4"></i>
+                <span>Back to Login</span>
+            </a>
+        </div>
+    </div>
+
+    <script src="/javascript/emailAuth.js">
+       
+    </script>
+</body>
+</html>

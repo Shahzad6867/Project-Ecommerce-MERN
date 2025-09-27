@@ -1,0 +1,41 @@
+body {
+    background: linear-gradient(135deg, #2eec71 0%, #8db39b 100%);
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+}
+.input-field {
+    width: 100%;
+    height: 42px;
+    font-size: 16px;
+    border: 1px solid rgba(162, 162, 162, 0.59);
+    padding: 0.5rem 1rem 0.5rem 1rem;
+    background: rgba(255, 255, 255);
+    color: rgb(0, 0, 0);
+    border-radius: 6px;
+    transition: all 0.3s;
+}
+.input-field:focus {
+    outline: none;
+    border-color: rgba(251, 188, 4, 0.5);
+    background: rgba(255, 255, 255);
+    transform: scale(1.02);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+.input-field::placeholder {
+    color: rgb(0, 0, 0);
+    opacity: 0.5;
+}
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    overflow: hidden;
+}
+.btn-primary {
+    background: linear-gradient(135deg, #fbb804 0%, #ffd700 100%);
+    box-shadow: 0 4px 6px rgba(251, 184, 4, 0.3);
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px rgba(251, 184, 4, 0.4);
+}

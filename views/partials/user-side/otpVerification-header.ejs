@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet"  href="https://cdn.jsdelivr.net/npm/izitoast/dist/css/iziToast.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
+    <style>      
+    body {
+    background: linear-gradient(135deg, #2eec71 0%, #8db39b 100%);
+    min-height: 100vh;
+    }
+    .otp-input {
+    width: 50px;
+    height: 60px;
+    text-align: center;
+    font-size: 24px;
+    border: 2px solid rgb(162, 162, 162);
+    background: rgba(255, 255, 255);
+    color: rgb(0, 0, 0);
+    border-radius: 10px;
+    margin: 0 8px;
+    transition: all 0.3s;
+    }
+    .otp-input:focus {
+    outline: none;
+    border-color: rgba(251, 188, 4, 0.5);
+    background: rgba(255, 255, 255);
+    transform: scale(1.05);
+    }
+    .otp-input::placeholder {
+    color: rgb(0, 0, 0);
+    }
+
+    .otp-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    margin-bottom: 20px;
+    }
+
+    </style>
+</head>

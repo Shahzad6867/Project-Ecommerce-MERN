@@ -67,25 +67,25 @@
                     <input type="hidden" id="serverMessage"  value="<%= typeof message !== 'undefined' ? message : '' %>">
                     <label for="user-email" class="block font-bold text-gray-700 mb-2">Email or Mobile No</label>
                     <input type="email" id="user-email" name="email" placeholder="Enter Email"
-                        class="input-field w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-all">
+                        class="input-field ">
                 </div>
                 <div class="mb-3 relative">
                     <label for="user-password" class="block  text-gray-700 font-bold mb-2">Password</label>
                     <div class="relative">
                         <input type="password" id="user-password" name="password" placeholder="Enter Password"
-                            class="input-field w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-all">
+                            class="input-field ">
                        
                     </div>
                 </div>
                 <div class="relative mb-4">
-                    <a href=""><p  class="text-sm font-semibold text-end text-green-500 hover:underline mt-1">Forgot password ?</p></a>
+                    <a href="/email-auth"><p  class="text-sm font-semibold text-end text-green-500 hover:underline mt-1">Forgot password ?</p></a>
                 </div>
                 <button type="submit" class="loginButton w-full font-bold text-gray-700 py-2 px-4 rounded-lg  transition duration-300">
                     Log In
                 </button>
             </form>
             <div class="relative mb-1">
-             <p class="text-md  text-center  mt-4">Dont have an account ?<a href="/register"><span  class="text-md  text-green-500 hover:underline mt-4 mx-1">Create Account</span></a></p>
+             <p class="text-md  text-center  mt-4">Dont have an account ?<a href="/register"><span  class="text-md font-semibold text-green-500 hover:underline mt-4 mx-1">Create Account</span></a></p>
           </div>
         </div>
     </div>

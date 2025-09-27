@@ -7,7 +7,7 @@
             <p class="text-black text-opacity-80">We've sent a verification code to your email</p>
         </div>
 
-        <form method="post" action="/otp-verification"  class="space-y-6">
+        <form method="post" action="/otp-verification-for-new-pass"  class="space-y-6">
             <input type="hidden" id="serverMessage"  value="<%= typeof message !== 'undefined' ? message : '' %>">
             <input type="hidden" id="otpTimer"  value="<%= typeof allocatedTime !== 'undefined' ? allocatedTime : '' %>">
             <div class="flex justify-center">
@@ -31,7 +31,7 @@
         </div>
 
         <div class="mt-2 text-center">
-            <form action="/resend-otp" method="post">
+            <form action="/resend-otp-for-new-pass" method="post">
                 <button type="submit" id="resend-otp-btn" class="w-full py-3 px-4   text-black font-semibold rounded-lg transition duration-300 flex items-center justify-center space-x-2" disabled>
                     <span>Resend OTP</span>
                 </button>
