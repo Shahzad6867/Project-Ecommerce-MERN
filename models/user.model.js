@@ -4,21 +4,23 @@ const {Schema} = mongoose
 const userSchema = new Schema({
     firstName : {
         type : String,
-        unique : true
+        required : true,
+        unique : false
     },
     lastName : {
         type : String,
-        unique : true
+        required : true,
+        unique : false
     },
     email : {
         type : String,
         required : true,
         unique : true
     },
-    mobileNo : {
+    phone : {
         type : String,
         required : false,
-        unique : true
+        unique : false
     }
     ,
     profileImage : {
@@ -39,6 +41,7 @@ const userSchema = new Schema({
     password : {
         type : String,
         required : false,
+        unique : false
     },
     terms : {
         type : String,

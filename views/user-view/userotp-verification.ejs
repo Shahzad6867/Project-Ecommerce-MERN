@@ -7,6 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet"  href="https://cdn.jsdelivr.net/npm/izitoast/dist/css/iziToast.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
     <style>
         body {
             background: linear-gradient(135deg, #2eec71 0%, #8db39b 100%);
@@ -47,25 +49,6 @@
   margin-right: 10px;
 }
 
-#resend-btn {
-  padding: 5px 10px;
-  background-color: #337ab7;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-}
-
-#resend-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-#verifyOtpButton{
-   background-color: #fbbc04;
-}
-#verifyOtpButton:hover{
-    background-color: #ffce3a;
-}
 
     </style>
 </head>
@@ -78,6 +61,8 @@
         </div>
 
         <form method="post" action="/otp-verification"  class="space-y-6">
+            <input type="hidden" id="serverMessage"  value="<%= typeof message !== 'undefined' ? message : '' %>">
+            <input type="hidden" id="otpTimer"  value="<%= typeof allocatedTime !== 'undefined' ? allocatedTime : '' %>">
             <div class="flex justify-center">
                 <input type="text" name="otp" maxlength="1" class="otp-input" pattern="\d*" inputmode="numeric" >
                 <input type="text" name="otp" maxlength="1" class="otp-input" pattern="\d*" inputmode="numeric" >
@@ -87,23 +72,23 @@
                 <input type="text" name="otp" maxlength="1" class="otp-input" pattern="\d*" inputmode="numeric" >
             </div>
 
-            <button type="submit" id="verifyOtpButton" class="w-full py-3 px-4  bg-opacity-20 hover:bg-opacity-30 text-black font-semibold rounded-lg transition duration-300 flex items-center justify-center space-x-2">
+            <button type="submit" id="verifyOtpButton" class="w-full py-3 px-4 bg-yellow-400  hover:bg-yellow-300 text-black font-semibold rounded-lg transition duration-300 flex items-center justify-center space-x-2">
                 <span>Verify OTP</span>
                 <i data-feather="arrow-right" class="w-5 h-5"></i>
             </button>
         </form>
 
-        <!-- <div class="otp-container">
-            <div id="timer">00:00</div>
-            <button id="resend-btn" disabled>Resend</button>
-          </div> -->
+      
         <div class="mt-3 text-center">
-            
-           <span class="text-green-500">Timer <span id="timer" class="text-green-500">02:00</span></span>
+            <span id="otp-text" class="text-black text-opacity-70" >OTP Expires in </span><span id="timer" class="text-green-500" style="margin-right: 0px;"></span><span id="seconds-text" class="text-black text-opacity-70"> seconds</span>
         </div>
 
         <div class="mt-2 text-center">
-            <p class="text-black text-opacity-70">Didn't receive code? <a href="#" class="text-green-500 font-medium hover:underline">Resend</a></p>
+            <form action="/resend-otp" method="post">
+                <button type="submit" id="resend-otp-btn" class="w-full py-3 px-4   text-black font-semibold rounded-lg transition duration-300 flex items-center justify-center space-x-2" disabled>
+                    <span>Resend OTP</span>
+                </button>
+            </form>
         </div>
     </div>
 
@@ -130,44 +115,70 @@
                 }
             });
         });
+        document.addEventListener("DOMContentLoaded",function () {
+            let otpCreatedTimeString = document.getElementById("otpTimer")?.value 
+            let otpCreatedTime = new Date(otpCreatedTimeString)
+            let now = new Date()
+            let setTimeoutCount = otpCreatedTime.getTime() - now.getTime()
+            let countdown = Math.floor((otpCreatedTime.getTime() - now.getTime()) / 1000) 
+            let resendOtpBtn = document.getElementById("resend-otp-btn")
+            resendOtpBtn.classList.add("text-black")
+            resendOtpBtn.classList.add("text-opacity-50")
+            resendOtpBtn.classList.add("bg-yellow-200")
+            
+            
+            
+            
+              let timer = setInterval(()=>{
+                
+                    document.getElementById("timer").innerHTML = countdown--
+                    if(countdown <= 0 ){
+                        clearInterval(timer)
+                        document.getElementById("timer").innerHTML = "Expired"
+                        document.getElementById("timer").style.color = "red"
+                        document.getElementById("otp-text").innerHTML = "OTP has "
+                         document.getElementById("seconds-text").innerHTML = " - Click Below"
+                    }
+                },1000)
+
+                setTimeout(()=>{
+                resendOtpBtn.disabled = false
+                resendOtpBtn.classList.add("text-black")
+                resendOtpBtn.classList.add("text-opacity-100")
+                resendOtpBtn.classList.remove("bg-yellow-200")
+                resendOtpBtn.classList.add("bg-yellow-400")
+                resendOtpBtn.classList.add("hover:bg-yellow-300")
+                },setTimeoutCount)  
 
 
+
+
+
+                var serverMessage = document.getElementById("serverMessage")?.value
+
+                if(serverMessage === "Incorrect OTP"){
+        
+                iziToast.error({
+                title : "Error",
+                message: serverMessage,
+                position: 'topRight'
+                })
+                    
+                }
+                if(serverMessage === "OTP Expired, Click Resend OTP"){
+                
+                iziToast.error({
+                title : "Error",
+                message: serverMessage,
+                position: 'topRight'
+                })
+                    
+                }
+                    
+            })
+   
 
     </script>
-    <script>
-
-$(document).ready(function() {
-  var timerDuration = 20; // Timer duration in seconds
-  var timerInterval;
-
-  // Start the timer
-  function startTimer() {
-    var timer = timerDuration;
-    timerInterval = setInterval(function() {
-      var minutes = Math.floor(timer / 60);
-      var seconds = timer % 60;
-      var timeString = ('0' + minutes).slice(-2) + ':' + ('0' + seconds).slice(-2);
-      $('#timer').text(timeString);
-      timer--;
-
-      if (timer < 0) {
-        clearInterval(timerInterval);
-        $('#resend-btn').prop('disabled', false);
-      }
-    }, 1000);
-  }
-
-  // Resend button click event
-  $('#resend-btn').click(function() {
-    $(this).prop('disabled', true);
-    startTimer();
-    // Send OTP request here
-  });
-
-  // Initial start of the timer
-  startTimer();
-});
-
-    </script>
+    
 </body>
 </html>

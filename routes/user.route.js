@@ -9,5 +9,6 @@ router.post("/register",userController.userRegister)
 router.get("/otp-verification",userController.getUserOtp)
 router.post("/otp-verification",userController.userOtp)
 router.get("/home",(req,res) => {res.send("<h1>Homepage</h1>")})
+// router.post("/resend-otp",(req,res) => {res.redirect("/otp-verification")})
 
 module.exports = router
