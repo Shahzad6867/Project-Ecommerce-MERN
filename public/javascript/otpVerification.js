@@ -43,7 +43,13 @@ feather.replace();
                         document.getElementById("timer").style.color = "red"
                         document.getElementById("otp-text").innerHTML = "OTP has "
                          document.getElementById("seconds-text").innerHTML = " - Click Below"
-                    }
+                         iziToast.info({
+                            title : "Info",
+                            message: "OTP has Expired - Click on Resend OTP",
+                            position: 'topCenter'
+                            })
+
+                         }
                 },1000)
 
                 setTimeout(()=>{
