@@ -36,7 +36,7 @@ async function sendVerificationEmail(email, otp) {
                                   ${otp}
                               </div>
                               <p style="margin:20px 0; font-size:14px; color:#474744;">
-                                  This OTP will expire in <strong>2 minutes</strong>. Do not share it with anyone.
+                                  This OTP will expire in <strong>3 minutes</strong>. Do not share it with anyone.
                               </p>
                               <hr style="border:none; border-top:1px solid #e0e0e0; margin:30px 0;" />
                               <p style="font-size:12px; color:#888888;">

@@ -15,21 +15,25 @@
             <form action="/admin/login" method="POST" onsubmit="return validate()" novalidate>
                 <div class="mb-4">
                     <input type="hidden" id="serverMessage"  value="<%= typeof message !== 'undefined' ? message : '' %>">
-                    <label for="admin-username" class="block font-bold text-gray-700 mb-2">Email or Mobile No</label>
-                    <input type="email" id="admin-username" name="email" placeholder="Enter Email or Mobile No"
-                        class="input-field w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-all">
+                    <label for="admin-email" class="block font-bold text-gray-700 mb-2 flex" >Email<svg style="margin: 3px;" xmlns="http://www.w3.org/2000/svg" width="8.5" height="8.5" viewBox="0 0 24 24"><path fill="red" d="M21 13h-6.6l4.7 4.7l-1.4 1.4l-4.7-4.7V21h-2v-6.7L6.3 19l-1.4-1.4L9.4 13H3v-2h6.6L4.9 6.3l1.4-1.4L11 9.6V3h2v6.4l4.6-4.6L19 6.3L14.3 11H21z"/></svg></label>
+                    <input type="email" id="admin-email" name="email" placeholder="Enter Email"
+                        class="input-field ">
                 </div>
-                <div class="mb-3 relative">
-                    <label for="admin-password" class="block  text-gray-700 font-bold mb-2">Password</label>
+                <div class="mb-6 relative">
+                    <label for="admin-password" class="block  text-gray-700 font-bold mb-2 flex">Password<svg style="margin: 3px;" xmlns="http://www.w3.org/2000/svg" width="8.5" height="8.5" viewBox="0 0 24 24"><path fill="red" d="M21 13h-6.6l4.7 4.7l-1.4 1.4l-4.7-4.7V21h-2v-6.7L6.3 19l-1.4-1.4L9.4 13H3v-2h6.6L4.9 6.3l1.4-1.4L11 9.6V3h2v6.4l4.6-4.6L19 6.3L14.3 11H21z"/></svg></label>
                     <div class="relative">
                         <input type="password" id="admin-password" name="password" placeholder="Enter Password"
-                            class="input-field w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition-all">
-                       
+                            class="input-field ">
+                            <button id="toggleEye" onclick="toggleVisibility()" type="button" class="absolute inset-y-0 end-0 flex items-center z-20 px-3 cursor-pointer ">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M13.875 18.825A10 10 0 0 1 12 19c-4.478 0-8.268-2.943-9.543-7A10 10 0 0 1 4.02 8.971m5.858.908a3 3 0 1 1 4.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88L6.59 6.59m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.95 9.95 0 0 1 12 5c4.478 0 8.268 2.943 9.543 7a10.03 10.03 0 0 1-4.132 5.411m0 0L21 21"/></svg>
+                                
+                              </button>
                     </div>
                 </div>
-                <div class="relative mb-4">
+
+                <!-- <div class="relative mb-4">
                     <a href=""><p  class="text-sm font-semibold text-end text-green-500 hover:underline mt-1">Forgot password ?</p></a>
-                </div>
+                </div> -->
                 <button type="submit" class="loginButton w-full font-bold text-gray-700 py-2 px-4 rounded-lg  transition duration-300">
                     Login as Admin
                 </button>
@@ -37,10 +41,6 @@
             
         </div>
     </div>
-
-
-
-
-    
+    <script src="/javascript/admin-javascript/adminLoginValidate.js"></script>
 </body>
 </html>

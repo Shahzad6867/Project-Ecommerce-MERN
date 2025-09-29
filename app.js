@@ -33,7 +33,7 @@ app.use(express.static("public"))
 app.use("/admin",adminRoute)
 app.use("/",userRoute)
 app.use((req,res,next) => {
-    res.send("<h1>404 Page is being Built</h1>")
+    res.render("404page.ejs")
 })
 
 connectDatabase()
