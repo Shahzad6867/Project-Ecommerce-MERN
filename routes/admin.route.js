@@ -9,4 +9,7 @@ router.post("/users",adminController.searchUser)
 router.get("/block-user",adminController.blockUser)
 router.get("/unblock-user",adminController.unblockUser)
 router.get("/delete-user",adminController.deleteUser)
+router.post("/items-per-page",adminController.selectedOptionToViewTheList)
+router.get("/categories",adminController.getCategories)
+router.get("/products",adminController.getProducts)
 module.exports = router

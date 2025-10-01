@@ -1,5 +1,6 @@
-const Admin = require("../models/admin.model");
-const User = require("../models/user.model");
+const Admin = require("../models/admin.model.js");
+const User = require("../models/user.model.js");
+const Category = require("../models/category.model.js");
 
 const bcryptjs = require("bcryptjs");
 
@@ -29,7 +30,7 @@ const adminLogin = async (req,res) => {
 }
 
 const getUsers = async (req,res) => {
-    const perPage = 5 
+    const perPage = req.session.itemsPerPage || 5 
     const page = req.query.page || 1
      const users = await User.find({}).sort({createdAt : -1}).skip(perPage * page - perPage).limit(perPage)
      const count = await User.countDocuments({})
@@ -93,6 +94,37 @@ const searchUser = async (req, res) => {
       res.redirect("/admin/users");
     }
   };
+
+  const selectedOptionToViewTheList = async (req,res) => {
+    try {
+        const {itemsPerPage} = req.body
+        req.session.itemsPerPage = itemsPerPage
+        res.redirect("/admin/users")
+    } catch (error) {
+        console.log(error)
+    }
+  }
+
+  const getCategories = async (req,res) => {
+    const perPage = req.session.itemsPerPage || 5 
+    const page = req.query.page || 1
+     const users = await User.find({}).sort({createdAt : -1}).skip(perPage * page - perPage).limit(perPage)
+     const count = await User.countDocuments({})
+    const pages = Math.ceil(count / perPage)
+    const message = req.session.message || null
+    delete req.session.message
+    res.render("admin-view/admin.categories.ejs",{message,users,page,pages,count})
+  }
+  const getProducts = async (req,res) => {
+    const perPage = req.session.itemsPerPage || 5 
+    const page = req.query.page || 1
+     const users = await User.find({}).sort({createdAt : -1}).skip(perPage * page - perPage).limit(perPage)
+     const count = await User.countDocuments({})
+    const pages = Math.ceil(count / perPage)
+    const message = req.session.message || null
+    delete req.session.message
+    res.render("admin-view/admin.products.ejs",{message,users,page,pages,count})
+  }
 module.exports = {
     getAdminLogin,
     adminLogin,
@@ -100,5 +132,8 @@ module.exports = {
     blockUser,
     unblockUser,
     deleteUser,
-    searchUser
+    searchUser,
+    selectedOptionToViewTheList,
+    getProducts,
+    getCategories
 }
