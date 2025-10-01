@@ -11,12 +11,10 @@
   <div class="sidebar">
     <div class="menu-section">
       <p>Dashboard</p>
-      <a href="/admin/users">
-        <button class="active">
-          <i data-feather="users"></i>
-          <span>Customers</span>
-        </button>
-      </a>
+      <button class="active">
+        <i data-feather="users"></i>
+        <span>Customers</span>
+      </button>
       <button>
         <i data-feather="tag"></i>
         <span>Coupon Code</span>
@@ -65,13 +63,12 @@
   <!-- Main Content -->
   <div class="main-content">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold text-gray-800">Customers</h1>
+      <h1 class="text-2xl font-bold text-gray-800">Results</h1>
       <div class="relative">
-        <form action="/admin/users" method="post">
-            <input type="text" placeholder="Whom are you looking for ?" name="search" 
-               class="search-bar border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
-        <i  class="fas fa-search absolute right-3 top-3 text-gray-500"></i>
-        </form>
+        <a href="/admin/users">
+          <button  class="btn-primary w-full font-bold text-gray-700 py-2 px-4 rounded-lg  transition duration-300">
+          Clear Results
+        </button>  </a> 
       </div>
     </div>
 
@@ -147,41 +144,21 @@
     <!-- Pagination -->
     <div class="flex items-center justify-between mt-4">
       <div class="text-sm text-gray-500">
-        Showing <span class="font-medium">1</span> to <span class="font-medium"><%= users.length %></span> of <span class="font-medium"><%= users.length %></span> results
+        Showing <span class="font-medium"><%= users.length %></span> to <span class="font-medium"><%= users.length %></span> of <span class="font-medium"><%= users.length %></span> results
       </div>
       <div class="flex space-x-2">
-        <a href="/admin/users?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %>">
-          <% if (Number(page) === 1) { %>
-            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
-              Previous
-            </button>
-          <% } else {%>
-            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" >
-              Previous
-            </button>
-            <% } %>
-        
-       </a>
-        <% let i = Number(page) > 4 ? Number(page) - 3 : 1 %>
-        <% for(;i <= pages; i++ ) { %>
-        <a href="/admin/users?page=<%= i %>">
-          <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
-            <%= i %>
-          </button>
-        </a>
-        <% } %>
-        <a href="/admin/users?page=<%= Number(page) < pages ? Number(page) + 1 : pages %>">
-          <% if (Number(page) === pages) { %>
-            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
-              Next
-            </button>
-          <% } else {%>
-            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" >
-              Next
-            </button>
-            <% } %>
-        
-       </a>
+        <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+          Previous
+        </button>
+        <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+          1
+        </button>
+        <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+          2
+        </button>
+        <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+          Next
+        </button>
       </div>
     </div>
   </div>
