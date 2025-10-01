@@ -36,7 +36,7 @@ const getUsers = async (req,res) => {
     const pages = Math.ceil(count / perPage)
     const message = req.session.message || null
     delete req.session.message
-    res.render("admin-view/admin.user-managment.ejs",{message,users,page,pages})
+    res.render("admin-view/admin.user-managment.ejs",{message,users,page,pages,count})
 }
 
 const blockUser = async (req,res) => {
