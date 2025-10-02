@@ -1,6 +1,7 @@
 const express = require("express")
 const router = express.Router()
 const adminController = require("../controllers/admin.controller")
+const upload = require("../config/multerConfig.js")
 
 router.get("/login",adminController.getAdminLogin)
 router.post("/login",adminController.adminLogin)
@@ -11,5 +12,9 @@ router.get("/unblock-user",adminController.unblockUser)
 router.get("/delete-user",adminController.deleteUser)
 router.post("/items-per-page",adminController.selectedOptionToViewTheList)
 router.get("/categories",adminController.getCategories)
+router.post("/add-category",upload.single("categoryImage"),adminController.addCategory)
+router.post("/edit-category",upload.single("categoryImage"),adminController.editCategory)
+router.get("/delete-category",adminController.deleteCategory)
+router.get("/restore-category",adminController.restoreCategory)
 router.get("/products",adminController.getProducts)
 module.exports = router

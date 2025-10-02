@@ -92,10 +92,11 @@ body {
   gap: 10px;
   color: white;
 }
-.search-bar{
-    width: 24rem;
+.search-bar {
+    width: 38rem;
     height: 2.5rem;
     padding-left: 1rem;
+    margin-left: 14rem;
 }
 
 .btn-primary {
@@ -107,7 +108,15 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 10px 15px rgba(251, 184, 4, 0.4);
 }
-
+.addBtn-primary {
+    background: linear-gradient(135deg, #2eec71 0%, #1ab65b 100%);
+    box-shadow: 0 4px 6px #6ffb044d;
+    transition: all 0.3 ease;
+}
+.addBtn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px #6ffb044d;
+}
 .tick-primary {
     background: linear-gradient(135deg, #fbb804 0%, #ffd700 100%);
     box-shadow: 0 4px 6px rgba(251, 184, 4, 0.3);

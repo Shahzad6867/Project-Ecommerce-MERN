@@ -1,4 +1,5 @@
 <%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - User Management"}) %>
+<body>
   <!-- Navbar -->
   <nav class="navbar">
     <div class="logo text-gray-600">NovaMart</div>
@@ -33,10 +34,12 @@
     
     <div class="menu-section">
       <p>Admin</p>
-      <button>
-        <i class="fa-solid fa-right-from-bracket text-lg"></i>
-        <span>Logout</span>
-      </button>
+      <a href="#">
+        <button>
+            <i class="fa-solid fa-right-from-bracket text-lg"></i>
+            <span>Logout</span>
+          </button>
+      </a>
     </div>
   </div>
 
@@ -45,14 +48,64 @@
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold text-gray-800">Customers</h1>
       <div class="relative">
-        <form action="/admin/users" method="post">
-            <input type="text" placeholder="Whom are you looking for ?" name="search" 
+        <form action="/admin/categories" method="post">
+            <input type="text" placeholder="What are you looking for ?" name="search" 
                class="search-bar border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
         <i  class="fas fa-search absolute right-3 top-3 text-gray-500"></i>
         </form>
+
       </div>
-      
+          <button onclick="document.getElementById('addCategoryModal').classList.remove('hidden')" class="addBtn-primary  font-medium text-gray-700 py-2 px-3  rounded-md transition duration-300 ">
+            <i class="fa fa-plus text-gray-700"></i>
+            Add Category
+          </button>
     </div>
+    <!-- Add Category Modal -->
+    <div id="addCategoryModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Add New Category</h2>
+                <button onclick="document.getElementById('addCategoryModal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700">
+                    <i data-feather="x"></i>
+                </button>
+            </div>
+            
+            <form class="space-y-4" action="/admin/add-category" method="post" enctype="multipart/form-data">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Category Image</label>
+                    <div class="mt-1 flex items-center">
+                        <span class="inline-block h-12 w-12 border border-gray-300 rounded-full overflow-hidden bg-gray-100">
+                            <img id="categoryImagePreview" src="/images/cloud-image-upload.jpg" class="h-full w-full text-gray-300">
+                        </span>
+                        <input type="file" id="categoryImage" name="categoryImage" class="ml-4 hidden" accept="image/gif, image/jpeg, image/png">
+                        <label for="categoryImage" class="ml-4 addBtn-primary bg-white py-2 px-3 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 cursor-pointer">
+                            Upload
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
+                    <input type="text" name="categoryName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea name="description" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" rows="3"></textarea>
+                </div>
+                    
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="document.getElementById('addCategoryModal').classList.add('hidden')" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2  rounded-md  text-sm font-semibold text-gray-700 btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        Save Category
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+  
     <div class="flex justify-end mb-4">
       <div class="flex items-center gap-2">
         <form action="/admin/items-per-page" method="post">
@@ -78,60 +131,105 @@
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-green-50">
           <tr>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">Customer No</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">Name</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Phone</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">Orders</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">Total Spend</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">Status</th>
+            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">No</th>
+            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">Category</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">Description</th>
+            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Status</th>
+            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Created Date</th>
             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <% for( let i = 0; i < users.length; i++ ) { %>
+            
+          <% for(let i = 0; i < categories.length; i++ ) { %>
           <tr>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500"><%= i+1 %></td>
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
                 <div class="flex-shrink-0 h-10 w-10">
-                  <% if (users[i].profileImage === null) { %>
-                    <img class="h-10 w-10 rounded-full" src="/images/user.jpg" alt="">
+                  <% if (categories[i].categoryImage === null) { %>
+                    <img class="h-10 w-10 rounded-full" src="/images/global.jpg" alt="">
                   <% } else {%>
-                    <img class="h-10 w-10 rounded-full" src="<%= users[i].profileImage %>" alt="">
+                    <img class="h-10 w-10 rounded-full" src="<%= categories[i].categoryImage %>" alt="">
                   <% } %>
                 </div>
                 <div class="ml-4">
-                  <div class="text-sm font-medium text-gray-900"><%= users[i].firstName.toUpperCase()+" "+users[i].lastName.toUpperCase() %></div>
-                  <div class="text-sm text-gray-500"><%= users[i].email %></div>
+                  <div class="text-sm font-medium uppercase text-gray-900"><%= categories[i].categoryName%></div>
                 </div>
               </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
-              <% if (users[i].phone === "" || users[i].phone === null || users[i].phone === undefined) { %>
+            <td class="px-6 py-4 flex-wrap  text-sm text-center text-gray-500">
+              <% if (categories[i].description === "" || categories[i].description === null || categories[i].description === undefined) { %>
               NP
               <% }else{ %>
-              <%= users[i].phone %>
+              <%= categories[i].description %>
                 <% } %>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">NA</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">NA</td>
             <td class="px-6 py-2 whitespace-nowrap text-sm font-large text-gray-500">
-                <% if (!users[i].isBlocked) { %>
+                <% if (!categories[i].isDeleted) { %>
                   <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
                 <% } else { %>
-                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Blocked</span> 
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactive</span> 
                 <% } %>
             </td>
+            <td class="px-6 py-2 whitespace-nowrap text-sm font-large text-gray-500">
+                <%= categories[i].createdAt.toDateString() %>
+            </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <button title="Block" onclick="blockUser('<%= users[i]._id %> ')" 
-                    class="text-amber-400 hover:text-amber-600 mr-3 block-user-btn" >
-                    <i class="fas fa-ban"></i>
+
+                <button onclick="document.getElementById('editCategoryModal').classList.remove('hidden')" title="Edit" class="text-cyan-500 hover:text-cyan-700 mr-3 unblock-user-btn" >
+                    <i class="fas fa-edit"></i>
                 </button>
-                <button title="Unblock" onclick="unblockUser('<%= users[i]._id %>')" 
+                <!-- Edit Category Modal -->
+                <div id="editCategoryModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div class="bg-white rounded-lg p-6 w-full max-w-md">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-gray-800">Edit Category</h2>
+                            <button onclick="document.getElementById('editCategoryModal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700">
+                                <i data-feather="x"></i>
+                            </button>
+                        </div>
+                        
+                        <form class="space-y-4" action="/admin/edit-category?id=<%= categories[i]._id %>" method="post" enctype="multipart/form-data">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Category Image</label>
+                                <div class="mt-1 flex items-center">
+                                    <span class="inline-block h-12 w-12 border border-gray-300 rounded-full overflow-hidden bg-gray-100">
+                                        <img id="categoryImagePreview" src="<%= categories[i].categoryImage %>" class="h-full w-full text-gray-300">
+                                    </span>
+                                    <input type="file" id="categoryImage" name="categoryImage" class="ml-4 hidden" accept="image/gif, image/jpeg, image/png">
+                                    <label for="categoryImage" class="ml-4 addBtn-primary bg-white py-2 px-3 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 cursor-pointer">
+                                        Upload
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
+                                <input type="text" value="<%= categories[i].categoryName %>" name="categoryName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                <textarea name="description"  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" rows="3"><%= categories[i].description %></textarea>
+                            </div>
+                                
+                            <div class="flex justify-end space-x-3 pt-4">
+                                <button type="button" onclick="document.getElementById('editCategoryModal').classList.add('hidden')" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="px-4 py-2  rounded-md  text-sm font-semibold text-gray-700 btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                    Save Category
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <button title="Restore" onclick="restoreCategory('<%= categories[i]._id %>')" 
                      class="text-green-600 hover:text-green-900 mr-3 unblock-user-btn" >
                     <i class="fas fa-check-circle"></i>
                 </button>
-                <button title="Delete" onclick="areYouSure('<%= users[i]._id %>')" 
+                <button title="Delete" onclick="areYouSure('<%= categories[i]._id %>')" 
                     class="text-red-600 hover:text-red-900 delete-user-btn">
                 <i class="fas fa-trash"></i>
                </button>
@@ -143,14 +241,16 @@
       </table>
     </div>
 
+     
+
     <!-- Pagination -->
     <div class="flex items-center justify-between mt-4">
       <div class="text-sm text-gray-500">
-        Showing <span class="font-medium">1</span> to <span class="font-medium"><%= users.length %></span> of <span class="font-medium"><%= count %></span> results
+        Showing <span class="font-medium">1</span> to <span class="font-medium"><%= categories.length %></span> of <span class="font-medium"><%= count %></span> results
       </div>
       <div class="flex space-x-2">
         
-        <a href="/admin/users?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %>">
+        <a href="/admin/categories?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %>">
           <% if (Number(page) === 1) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Previous
@@ -164,13 +264,13 @@
        </a>
         <% let i = Number(page) > 4 ? Number(page) - 3 : 1 %>
         <% for(;i <= pages; i++ ) { %>
-        <a href="/admin/users?page=<%= i %>">
+        <a href="/admin/categories?page=<%= i %>">
           <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
             <%= i %>
           </button>
         </a>
         <% } %>
-        <a href="/admin/users?page=<%= Number(page) < pages ? Number(page) + 1 : pages %>">
+        <a href="/admin/categories?page=<%= Number(page) < pages ? Number(page) + 1 : pages %>">
           <% if (Number(page) === pages) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Next
@@ -210,18 +310,25 @@
             window.location.href = "/admin/block-user?id="+id
         }
     }
-    function unblockUser(id){
-        if(confirm("Are you sure ? Do you Want to Unblock the User ?")){
-            window.location.href = "/admin/unblock-user?id="+id
-        }
+    function restoreCategory(id){
+       window.location.href = "/admin/restore-category?id="+id
     }
     function areYouSure(id){
-        if(confirm("Are you sure ? Do you Want to delete the User ?")){
-            window.location.href = "/admin/delete-user?id="+id
+        if(confirm("Are you sure ? Do you Want to delete the Category ?")){
+            window.location.href = "/admin/delete-category?id="+id
         }
     }
     
-    
+    document.getElementById('categoryImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('categoryImagePreview').src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
  </script>
 </body>
 </html>

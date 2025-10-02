@@ -6,10 +6,19 @@ const categorySchema = new Schema({
         type : String,
         required : true
     },
+    categoryImage : {
+        type : String,
+        required : false,
+        default : null
+    },
     description : {
         type : String,
         required : false,
         default : null
+    },
+    isDeleted : {
+        type : Boolean,
+        default : false
     }
 },{timestamps : true})
 

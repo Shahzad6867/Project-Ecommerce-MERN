@@ -47,7 +47,7 @@ const PORT = process.env.PORT || 1349
 app.listen(PORT,(error) => {
     try {
         console.log(`Server connected @ ${PORT}`)
-    } catch (error) {
+    } catch {
         console.log(error)
     }
 })
