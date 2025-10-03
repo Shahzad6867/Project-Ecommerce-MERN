@@ -12,7 +12,7 @@
     <div class="menu-section">
       <p>Dashboard</p>
       <a href="/admin/users">
-        <button class="active">
+        <button class="active" disabled>
           <i data-feather="users"></i>
           <span>Customers</span>
         </button>
@@ -21,6 +21,12 @@
         <button>
           <i data-feather="grid"></i>
           <span>Categories</span>
+        </button>
+      </a>
+      <a href="/admin/brands">
+        <button>
+          <i data-feather="globe"></i>
+          <span>Brands</span>
         </button>
       </a>
       <a href="/admin/products">
@@ -33,10 +39,12 @@
     
     <div class="menu-section">
       <p>Admin</p>
-      <button>
-        <i class="fa-solid fa-right-from-bracket text-lg"></i>
-        <span>Logout</span>
-      </button>
+      <a href="/admin/logout">
+        <button>
+          <i class="fa-solid fa-right-from-bracket text-lg"></i>
+          <span>Logout</span>
+        </button>
+      </a>
     </div>
   </div>
 

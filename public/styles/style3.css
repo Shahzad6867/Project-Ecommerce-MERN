@@ -50,10 +50,16 @@ body {
   border-radius: 8px;
 }
 .main-content {
-  margin-left: 220px;
-  margin-top: 70px;
-  padding: 20px;
-}
+    margin-left: 220px;
+    margin-top: 70px;
+    padding: 20px;
+  }
+
+.main-content-for-addProduct {
+    margin-left: 8px;
+    margin-top: 70px;
+    padding: 20px;
+  }
 .status {
   font-weight: 600;
 }
@@ -133,4 +139,24 @@ body {
     margin-top: 2px;
     margin-right: 8px;
     margin-left: 8px;
+}
+.variant-item {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    position: relative;
+}
+.remove-variant {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #dc3545;
+    cursor: pointer;
+}
+#imagePreview img {
+    transition: transform 0.2s;
+}
+#imagePreview img:hover {
+    transform: scale(1.05);
 }

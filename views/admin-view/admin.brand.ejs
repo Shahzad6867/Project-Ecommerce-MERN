@@ -19,13 +19,13 @@
         </button>
       </a>
       <a href="/admin/categories">
-        <button class="active" disabled>
+        <button >
           <i data-feather="grid"></i>
           <span>Categories</span>
         </button>
       </a>
       <a href="/admin/brands">
-        <button>
+        <button class="active" disabled>
           <i data-feather="globe"></i>
           <span>Brands</span>
         </button>
@@ -40,58 +40,59 @@
     
     <div class="menu-section">
       <p>Admin</p>
-      <a href="/admin/logout">
-        <button>
-          <i class="fa-solid fa-right-from-bracket text-lg"></i>
-          <span>Logout</span>
-        </button>
-      </a>
+    
+        <a href="/admin/logout">
+          <button>
+            <i class="fa-solid fa-right-from-bracket text-lg"></i>
+            <span>Logout</span>
+          </button>
+        </a>
     </div>
   </div>
 
   <!-- Main Content -->
   <div class="main-content">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold text-gray-800">Customers</h1>
+      <h1 class="text-2xl font-bold text-gray-800">Brands</h1>
       <div class="relative">
-        <form action="/admin/categories" method="post">
+        <form action="/admin/brands" method="post">
             <input type="text" placeholder="What are you looking for ?" name="search" 
                class="search-bar border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
         <i  class="fas fa-search absolute right-3 top-3 text-gray-500"></i>
         </form>
 
       </div>
-          <button onclick="document.getElementById('addCategoryModal').classList.remove('hidden')" class="addBtn-primary  font-medium text-gray-700 py-2 px-3  rounded-md transition duration-300 ">
+          <button onclick="document.getElementById('addBrandModal').classList.remove('hidden')" class="addBtn-primary  font-medium text-gray-700 py-2 px-3  rounded-md transition duration-300 ">
             <i class="fa fa-plus text-gray-700"></i>
-            Add Category
+            Add Brand
           </button>
     </div>
-    <!-- Add Category Modal -->
-    <div id="addCategoryModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <!-- Add Brand Modal -->
+    <div id="addBrandModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 w-full max-w-md">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-gray-800">Add New Category</h2>
-                <button onclick="document.getElementById('addCategoryModal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700">
+                <h2 class="text-xl font-bold text-gray-800">Add New Brand</h2>
+                <button onclick="document.getElementById('addBrandModal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700">
                     <i data-feather="x"></i>
                 </button>
             </div>
             
-            <form class="space-y-4" action="/admin/add-category" method="post" enctype="multipart/form-data">
+            <form class="space-y-4" action="/admin/add-brand" method="post" enctype="multipart/form-data">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Category Image</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Brand Image</label>
                     <div class="mt-1 flex items-center">
                         <span class="inline-block h-12 w-12 border border-gray-300 rounded-full overflow-hidden bg-gray-100">
-                            <img id="categoryImagePreview" src="/images/cloud-image-upload.jpg" class="h-full w-full text-gray-300">
+                            <img id="brandImagePreview" src="/images/cloud-image-upload.jpg" class="h-full w-full text-gray-300">
                         </span>
-                        <input type="file" id="categoryImage" name="categoryImage" class="ml-4 hidden" accept="image/gif, image/jpeg, image/png">
-                        <label for="categoryImage" class="ml-4 addBtn-primary bg-white py-2 px-3 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 cursor-pointer">
+                        <input type="file" id="brandImage" name="brandImage" class="ml-4 hidden" accept="image/gif, image/jpeg, image/png">
+                        <label for="brandImage" class="ml-4 addBtn-primary bg-white py-2 px-3 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 cursor-pointer">
                             Upload
                         </label>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
-                    <input type="text" name="categoryName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Brand Name</label>
+                    <input type="text" name="brandName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                 </div>
                 
                 <div>
@@ -104,7 +105,7 @@
                         Cancel
                     </button>
                     <button type="submit" class="px-4 py-2  rounded-md  text-sm font-semibold text-gray-700 btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                        Save Category
+                        Save Brand
                     </button>
                 </div>
             </form>
@@ -138,7 +139,7 @@
         <thead class="bg-green-50">
           <tr>
             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">No</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">Category</th>
+            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">Brand</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">Description</th>
             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Status</th>
             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Created Date</th>
@@ -147,39 +148,39 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
             
-          <% for(let i = 0; i < categories.length; i++ ) { %>
+          <% for(let i = 0; i < brands.length; i++ ) { %>
           <tr>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500"><%= i+1 %></td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-6 py-4 whitespace-wrap">
               <div class="flex items-center">
                 <div class="flex-shrink-0 h-10 w-10">
-                  <% if (categories[i].categoryImage === null) { %>
+                  <% if (brands[i].brandImage === null) { %>
                     <img class="h-10 w-10 rounded-full" src="/images/global.jpg" alt="">
                   <% } else {%>
-                    <img class="h-10 w-10 rounded-full" src="<%= categories[i].categoryImage %>" alt="">
+                    <img class="h-10 w-10 rounded-full" src="<%= brands[i].brandImage %>" alt="">
                   <% } %>
                 </div>
                 <div class="ml-4">
-                  <div class="text-sm font-medium uppercase text-gray-900"><%= categories[i].categoryName%></div>
+                  <div class="text-sm font-medium uppercase text-gray-900"><%= brands[i].brandName%></div>
                 </div>
               </div>
             </td>
             <td class="px-6 py-4 flex-wrap  text-sm text-center text-gray-500">
-              <% if (categories[i].description === "" || categories[i].description === null || categories[i].description === undefined) { %>
+              <% if (brands[i].description === "" || brands[i].description === null || brands[i].description === undefined) { %>
               NP
               <% }else{ %>
-              <%= categories[i].description %>
+              <%= brands[i].description %>
                 <% } %>
             </td>
             <td class="px-6 py-2 whitespace-nowrap text-sm font-large text-gray-500">
-                <% if (!categories[i].isDeleted) { %>
+                <% if (!brands[i].isDeleted) { %>
                   <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
                 <% } else { %>
                   <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactive</span> 
                 <% } %>
             </td>
             <td class="px-6 py-2 whitespace-nowrap text-sm font-large text-gray-500">
-                <%= categories[i].createdAt.toDateString() %>
+                <%= brands[i].createdAt.toDateString() %>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 
@@ -190,33 +191,33 @@
                 <div id="editCategoryModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div class="bg-white rounded-lg p-6 w-full max-w-md">
                         <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-xl font-bold text-gray-800">Edit Category</h2>
+                            <h2 class="text-xl font-bold text-gray-800">Edit Brand</h2>
                             <button onclick="document.getElementById('editCategoryModal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700">
                                 <i data-feather="x"></i>
                             </button>
                         </div>
                         
-                        <form class="space-y-4" action="/admin/edit-category?id=<%= categories[i]._id %>" method="post" enctype="multipart/form-data">
+                        <form class="space-y-4" action="/admin/edit-brand?id=<%= brands[i]._id %>" method="post" enctype="multipart/form-data">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Category Image</label>
                                 <div class="mt-1 flex items-center">
                                     <span class="inline-block h-12 w-12 border border-gray-300 rounded-full overflow-hidden bg-gray-100">
-                                        <img id="categoryImagePreview" src="<%= categories[i].categoryImage %>" class="h-full w-full text-gray-300">
+                                        <img id="brandImagePreview" src="<%= brands[i].brandImage %>" class="h-full w-full text-gray-300">
                                     </span>
-                                    <input type="file" id="categoryImage" name="categoryImage" class="ml-4 hidden" accept="image/gif, image/jpeg, image/png">
-                                    <label for="categoryImage" class="ml-4 addBtn-primary bg-white py-2 px-3 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 cursor-pointer">
+                                    <input type="file" id="brandImage" name="brandImage" class="ml-4 hidden" accept="image/gif, image/jpeg, image/png">
+                                    <label for="brandImage" class="ml-4 addBtn-primary bg-white py-2 px-3 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 cursor-pointer">
                                         Upload
                                     </label>
                                 </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
-                                <input type="text" value="<%= categories[i].categoryName %>" name="categoryName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <input type="text" value="<%= brands[i].brandName %>" name="brandName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                             </div>
                             
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                <textarea name="description"  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" rows="3"><%= categories[i].description %></textarea>
+                                <textarea name="description"  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" rows="3"><%= brands[i].description %></textarea>
                             </div>
                                 
                             <div class="flex justify-end space-x-3 pt-4">
@@ -231,11 +232,11 @@
                     </div>
                 </div>
 
-                <button title="Restore" onclick="restoreCategory('<%= categories[i]._id %>')" 
+                <button title="Restore" onclick="restoreBrand('<%= brands[i]._id %>')" 
                      class="text-green-600 hover:text-green-900 mr-3 unblock-user-btn" >
                     <i class="fas fa-check-circle"></i>
                 </button>
-                <button title="Delete" onclick="areYouSure('<%= categories[i]._id %>')" 
+                <button title="Delete" onclick="areYouSure('<%= brands[i]._id %>')" 
                     class="text-red-600 hover:text-red-900 delete-user-btn">
                 <i class="fas fa-trash"></i>
                </button>
@@ -252,11 +253,11 @@
     <!-- Pagination -->
     <div class="flex items-center justify-between mt-4">
       <div class="text-sm text-gray-500">
-        Showing <span class="font-medium">1</span> to <span class="font-medium"><%= categories.length %></span> of <span class="font-medium"><%= count %></span> results
+        Showing <span class="font-medium">1</span> to <span class="font-medium"><%= brands.length %></span> of <span class="font-medium"><%= count %></span> results
       </div>
       <div class="flex space-x-2">
         
-        <a href="/admin/categories?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %>">
+        <a href="/admin/brands?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %>">
           <% if (Number(page) === 1) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Previous
@@ -270,13 +271,13 @@
        </a>
         <% let i = Number(page) > 4 ? Number(page) - 3 : 1 %>
         <% for(;i <= pages; i++ ) { %>
-        <a href="/admin/categories?page=<%= i %>">
+        <a href="/admin/brands?page=<%= i %>">
           <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
             <%= i %>
           </button>
         </a>
         <% } %>
-        <a href="/admin/categories?page=<%= Number(page) < pages ? Number(page) + 1 : pages %>">
+        <a href="/admin/brands?page=<%= Number(page) < pages ? Number(page) + 1 : pages %>">
           <% if (Number(page) === pages) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Next
@@ -311,26 +312,22 @@
     }
 
     });
-    function blockUser(id){
-        if(confirm("Are you sure ? Do you Want to block the User ?")){
-            window.location.href = "/admin/block-user?id="+id
-        }
-    }
-    function restoreCategory(id){
-       window.location.href = "/admin/restore-category?id="+id
+    
+    function restoreBrand(id){
+       window.location.href = "/admin/restore-brand?id="+id
     }
     function areYouSure(id){
-        if(confirm("Are you sure ? Do you Want to delete the Category ?")){
-            window.location.href = "/admin/delete-category?id="+id
+        if(confirm("Are you sure ? Do you Want to delete the Brand ?")){
+            window.location.href = "/admin/delete-brand?id="+id
         }
     }
     
-    document.getElementById('categoryImage').addEventListener('change', function(e) {
+    document.getElementById('brandImage').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
-                    document.getElementById('categoryImagePreview').src = event.target.result;
+                    document.getElementById('brandImagePreview').src = event.target.result;
                 };
                 reader.readAsDataURL(file);
             }
