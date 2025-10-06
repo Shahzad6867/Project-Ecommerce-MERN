@@ -24,7 +24,7 @@
             </p>
         </div>
 
-        <form method="post" action="email-auth" class="space-y-6" onsubmit="return validate()" novalidate>
+        <form method="post" action="/email-auth" class="space-y-6" onsubmit="return validate()" novalidate>
             <input type="hidden" id="serverMessage"  value="<%= typeof message !== 'undefined' ? message : '' %>">
             <div class="relative">
                 <input id="email" type="email" name="email" placeholder="Enter your email" class="input-field " >

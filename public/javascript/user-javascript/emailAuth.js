@@ -1,17 +1,18 @@
 feather.replace();
         
 
-document.querySelector('form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    iziToast.success({
-        title: 'Success',
-        message: 'OTP has been sent to your mail! Check your email',
-        position: 'topCenter',
-        timeout: 5000,
-        transitionIn: 'flipInX',
-        transitionOut: 'flipOutX'
-    });
-});
+// document.querySelector('form').addEventListener('submit', function(e) {
+//     e.preventDefault();
+//     iziToast.success({
+//         title: 'Success',
+//         message: 'OTP has been sent to your mail! Check your email',
+//         position: 'topCenter',
+//         timeout: 5000,
+//         transitionIn: 'flipInX',
+//         transitionOut: 'flipOutX'
+//     });
+   
+// });
 
 const email = document.getElementById("email")
 const emailReg = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;

@@ -42,6 +42,7 @@ async function sendVerificationEmail(email, otp) {
                               <p style="font-size:12px; color:#888888;">
                                   If you did not request this, please ignore this email or contact our support team.
                               </p>
+                              </p>
                               </td>
                           </tr>
                           </table>
