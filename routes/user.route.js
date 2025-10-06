@@ -9,6 +9,10 @@ const userOtpNewPassController = require("../controllers/user.controllers/otpFor
 const emailAuthController = require("../controllers/user.controllers/emailAuthForNewPass.controller.js")
 const otpNewPassController = require("../controllers/user.controllers/otpForNewPassword.controller.js")
 const resetPassController = require("../controllers/user.controllers/resetPassword.controller.js")
+const homeController = require("../controllers/user.controllers/home.controller.js")
+
+
+
 
 router.get("/auth/google",passport.authenticate("google",{scope : ["profile","email"]}))
 router.get("/auth/google/callback",passport.authenticate("google",{failureRedirect : "/register"}),(req,res) => {
@@ -20,7 +24,7 @@ router.get("/register",userAuth.isLogged,userRegisterController.getUserRegister)
 router.post("/register",userRegisterController.userRegister)
 router.get("/otp-verification",userAuth.otpSession,userOtpRegisterController.getUserOtp)
 router.post("/otp-verification",userOtpRegisterController.userOtp)
-router.get("/",userAuth.checkSession,(req,res) => {res.send("<h1>Homepage</h1>")})
+router.get("/",userAuth.checkSession,homeController.getHomepage)
 router.post("/resend-otp",userOtpRegisterController.resendOtp)
 router.post("/resend-otp-for-new-pass",userOtpNewPassController.resendOtpForNewPass)
 router.get("/email-auth",emailAuthController.getEmailAuth)

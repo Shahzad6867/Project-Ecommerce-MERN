@@ -1,7 +1,6 @@
 const User = require("../../models/user.model.js");
 const Otp = require("../../models/user-otp.model.js");
 const mailer = require("../../config/nodemailer.js")
-const bcryptjs = require("bcryptjs");
 require("dotenv").config();
 
 

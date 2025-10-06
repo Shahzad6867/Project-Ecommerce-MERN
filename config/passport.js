@@ -1,6 +1,7 @@
 const passport = require("passport")
 const GoogleStrategy = require("passport-google-oauth20").Strategy
 const User = require("../models/user.model")
+const { deleteOne } = require("../models/user-otp.model")
 require("dotenv").config()
 
 passport.use( new GoogleStrategy({
@@ -8,11 +9,11 @@ passport.use( new GoogleStrategy({
     clientSecret : process.env.GOOGLE_CLIENT_SECRET,
     callbackURL : "/auth/google/callback"
 },
- async function(accessToken,refreshToken,profile,callback){
+ async function(accessToken,refreshToken,profile,done){
     try {
         let user = await User.findOne({googleId : profile.id})
         if(user){
-            return callback(null,user)
+            return done(null,user)
         }else{
              user = new User({
                 firstName : profile.name.givenName,
@@ -24,24 +25,24 @@ passport.use( new GoogleStrategy({
             })
 
             await user.save()
-            return callback(null,user)
+            return done(null,user)
         }
     } catch (error) {
-        return callback(error,null)
+        return done(error,null)
     }
 }))
 
-passport.serializeUser((user,callback) => {
-    return callback(null,user.id)
+passport.serializeUser((user,done) => {
+    return done(null,user.id)
 })
 
-passport.deserializeUser((id,callback) => {
+passport.deserializeUser((id,done) => {
     User.findById(id)
     .then((user) => {
-        return callback(null,user)
+        return done(null,user)
     })
     .catch((err) => {
-        return callback(err,null)
+        return done(err,null)
     })
 })
 
