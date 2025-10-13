@@ -1,56 +1,9 @@
-<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - User Management"}) %>
-<body>
-  <!-- Navbar -->
-  <nav class="navbar">
-    <div class="logo text-gray-600">NovaMart</div>
-    <div class="user-icon">
-      <span class="iconify" data-icon="qlementine-icons:user-16" style="width: 32;height: 32;color: #474744;"></span>
-    </div>
-  </nav>
-
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="menu-section">
-      <p>Dashboard</p>
-      <a href="/admin/users">
-        <button >
-          <i data-feather="users"></i>
-          <span>Customers</span>
-        </button>
-      </a>
-      <a href="/admin/categories">
-        <button >
-          <i data-feather="grid"></i>
-          <span>Categories</span>
-        </button>
-      </a>
-      <a href="/admin/brands">
-        <button >
-          <i data-feather="globe"></i>
-          <span>Brands</span>
-        </button>
-      </a>
-      <a href="/admin/products">
-        <button class="active" disabled>
-          <i data-feather="list"></i>
-          <span>Products</span>
-        </button>
-      </a>
-    </div>
-    
-    <div class="menu-section">
-      <p>Admin</p>
-      
-        <a href="/admin/logout">
-          <button>
-            <i class="fa-solid fa-right-from-bracket text-lg"></i>
-            <span>Logout</span>
-          </button>
-        </a>
-      
-    </div>
-  </div>
-
+<!-- Header -->
+<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - Product Management"}) %>
+<!-- Navbar -->
+<%- include("../partials/admin-side/navbar.ejs") %>
+<!-- Sidebar -->
+<%- include("../partials/admin-side/sidebar.ejs",{customerBtn : "",categoriesBtn : "",brandsBtn : "",productsBtn : "active disabled",isDisabled : "disabled"}) %>
   <!-- Main Content -->
   <div class="main-content">
     <div class="flex justify-between items-center mb-6">
@@ -114,42 +67,45 @@
                 <tr>
                   <!-- Product index only for the first variant -->
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
-                    <% if (j === 0) { %><%= i+1 %><% } %>
+                    <%= i + 1 %>
                   </td>
           
                   <!-- Product info (image + name) only for first variant -->
                   <td class="px-6 py-4 whitespace-wrap text-center">
-                    <% if (j === 0) { %>
                     <div class="flex items-center justify-center">
-                      <div class="flex-shrink-0 h-10 w-10">
-                        <img class="h-10 w-10 border border-gray-300 rounded-full" src="<%= products[i].variants[j].productImages[0] %>" alt="">
+                      <div class="flex-shrink-0 h-14 w-14">
+                        <img class="h-14 w-14 border-2 border-green-700 rounded-full" src="<%= products[i].variants[j].productImages[0] %>" alt="">
                       </div>
                       <div class="ml-4 ">
-                        <div class="text-sm font-medium uppercase text-gray-900"><%= products[i].productName%></div>
+                        
+                        <% if (products[i].productName.length > 25) { %>
+                          <% let productName = products[i].productName.slice(0,19) %>
+                          <div class="text-sm font-medium uppercase text-gray-900">
+                         <%=  productName %><span class="text-lg font-semibold"> . . .</span>
+                          </div>
+                        <% } else { %>
+                          <div class="text-sm font-medium uppercase text-gray-900">
+                         <%= products[i].productName %>
+                          </div>
+                          <% } %>
+
+                        
                       </div>
                     </div>
-                    <% } %>
                   </td>
                   
           
                   <!-- Category & Brand only once -->
                   
                   <td class="px-6 py-4 whitespace-nowrap  text-sm text-center text-gray-500">
-                    <% if (j === 0) { %><%= products[i].categoryId.categoryName %><% } %>
+                    <%= products[i].categoryId.categoryName %>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap  text-sm text-center text-gray-500">
-                    <% if (j === 0) { %><%= products[i].brandId.brandName %><% } %>
+                    <%= products[i].brandId.brandName %>
                   </td>
           
                   <!-- Variant-specific details -->
                   <td class="px-6 py-2 whitespace-nowrap text-sm text-center font-large text-gray-500">
-                    <% if (j > 0) { %>
-                        <div class="flex items-center flex-wrap justify-center">
-                          <div class="flex-shrink-0 h-10 w-10">
-                            <img class="h-10 w-10 border border-gray-300 rounded-full" src="<%= products[i].variants[j].productImages[0] %>" alt="">
-                          </div>
-                        </div>
-                        <% } %>
                     <%= products[i].variants[j].price %> $
                   </td>
                   <td class="px-6 py-2 text-center whitespace-nowrap text-sm font-large text-gray-500">
@@ -158,13 +114,13 @@
           
                   <!-- Status (only once for product) -->
                   <td class="px-6 py-2 whitespace-nowrap text-center text-sm font-large text-gray-500">
-                    <% if (j === 0) { %>
+                    
                       <% if (!products[i].isDeleted) { %>
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
                       <% } else { %>
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactive</span> 
                       <% } %>
-                    <% } %>
+                  
                   </td>
           
                   <!-- Actions only once -->

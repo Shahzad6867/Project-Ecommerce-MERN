@@ -1,6 +1,7 @@
 const passport = require("passport")
 const GoogleStrategy = require("passport-google-oauth20").Strategy
 const User = require("../models/user.model")
+const cloudinary = require("./cloudinaryConfig.js")
 const { deleteOne } = require("../models/user-otp.model")
 require("dotenv").config()
 
@@ -15,11 +16,14 @@ passport.use( new GoogleStrategy({
         if(user){
             return done(null,user)
         }else{
+            const result = await cloudinary.uploader.upload(profile.photos[0].value,{
+                folder : "user-profile-images"
+            })
              user = new User({
                 firstName : profile.name.givenName,
                 lastName : profile.name.familyName,
                 email : profile.emails[0].value,
-                profileImage : profile.photos[0].value,
+                profileImage : result.secure_url ,
                 isVerified : true,
                 googleId : profile.id
             })

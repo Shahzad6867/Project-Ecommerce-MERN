@@ -1,15 +1,5 @@
-<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - User Management"}) %>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="logo text-gray-600">NovaMart</div>
-        <div class="user-icon">
-            <span class="iconify" data-icon="qlementine-icons:user-16" style="width: 32;height: 32;color: #474744;"></span>
-        </div>
-    </nav>
-
-    
-
+<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - Add Product"}) %>
+<%- include("../partials/admin-side/navbar.ejs") %>
     <!-- Main Content -->
     <div class="main-content-for-addProduct">
         <div class="flex justify-between items-center mb-6">
@@ -76,9 +66,41 @@
         </form>
     </div>
 
+    <div id="cropperModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-700">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Crop Image</h2>
+                <button id="close-x-btn" class="text-gray-500 hover:text-gray-700">
+                    <i data-feather="x"></i>
+                </button>
+            </div>
+            
+           
+                <div>
+                    
+                    <div class="mt-1 flex items-center justify-center">
+                        <span class="inline-block border border-gray-300 rounded-md overflow-hidden " style="width: 42rem;height: 28rem;">
+                            <img id="cropperImagePreview" class="text-gray-300">
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" id="cancel-btn" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" id="crop-btn" class="px-4 py-2  rounded-md  text-sm font-semibold text-gray-700 btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        Crop
+                    </button>
+                </div>
+            
+        </div>
+    </div>
+
+
     <script>
         feather.replace();
-        
+        let fileList = {}
         // Variant template
         const variantTemplate = (index) => `
             <div class="variant-item" data-index="${index}">
@@ -108,12 +130,15 @@
                             <option value="Pre-Order">Pre-Order</option>
                         </select>
                     </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Images (Min 3 required and Max 20 Images)</label>
-                        <input type="file" name="variants[${index}][productImages]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" multiple accept="image/*"  onchange="previewImages(this, ${index})">
-                        <div id="imagePreview-${index}" class="flex flex-wrap gap-2 mt-2"></div>
+                    <div class="lg:col-span-4">
+                       <div class="flex justify-start align-items-center">
+                         <label for="productImages${index}" class=" addBtn-primary bg-white py-3 px-3 rounded-md shadow-sm text-xl leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 cursor-pointer">Upload Images</label>
+                         <span class="ml-2 text-lg font-medium "><strong>(Minimum 3 and Maximum 20 Images)</strong></span>
+                        <input id="productImages${index}" type="file" name="variants[${index}][productImages]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 hidden" multiple accept="image/*"  onchange="previewImages(this, ${index})">
+                        </div>
+                        <div id="imagePreview-${index}" class="flex  flex-wrap gap-2 mt-2"></div>
                     </div>
-</div>
+                </div>
             </div>
         `;
 
@@ -130,6 +155,8 @@
             el.closest('.variant-item').remove();
         }
         // Image preview function
+       
+       
         function previewImages(input, index) {
             const previewContainer = document.getElementById(`imagePreview-${index}`);
             previewContainer.innerHTML = '';
@@ -143,12 +170,35 @@
                 input.value = '';
                 return;
             }
+            if (input.files.length > 20) {
+                iziToast.warning({
+                    title: 'Warning',
+                    message: 'You can upload a maximum of 20 images',
+                    position: 'topCenter'
+                });
+                input.value = '';
+                return;
+            }
+            
+            fileList[index] = new DataTransfer()
 
             for (let i = 0; i < input.files.length; i++) {
+                fileList[index].items.add(input.files[i])
+                console.log(fileList)
+            }
+
+            input.files = fileList[index].files
+
+            let count = 0
+            for (let i = 0; i < input.files.length; i++) {
                 const reader = new FileReader();
+                const file = input.files[i]
                 reader.onload = function(e) {
+                    
                     const imgBox = document.createElement('div');
-                    imgBox.className = 'w-24 h-24 border rounded-md overflow-hidden relative';
+                    imgBox.className = 'inline-block min-w-[25%] max-w-[30%]  border rounded-md overflow-auto relative';
+                    imgBox.id = `imgCount${count}`
+                    count++
                     imgBox.innerHTML = `
                         <img src="${e.target.result}" class="w-full h-full object-cover" alt="Preview">
                         <button type="button" onclick="removeImage(this, ${index})" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
@@ -156,10 +206,79 @@
                         </button>
                     `;
                     previewContainer.appendChild(imgBox);
+
+                    let cropperModal = document.getElementById("cropperModal")
+                    let cropperModalImg = document.getElementById("cropperImagePreview")
+                    let cropBtn = document.getElementById("crop-btn")
+                    let cancelBtn = document.getElementById("cancel-btn")
+                    let closeXBtn = document.getElementById("close-x-btn")
+                    imgBox.addEventListener("click",() => {
+                        cropperModal.classList.remove("hidden")
+                        cropperModalImg.src  = `${e.target.result}`
+
+                        let cropper = new Cropper(cropperModalImg,{
+                            aspectRatio : 1,
+                            viewMode : 1,
+                            guides : true,
+                            background : true,
+                            autoCropArea : 1,
+                            zoomable : true
+                        })
+                        cancelBtn.addEventListener("click", () => {
+                        cropper.destroy()
+                        cropperModal.classList.add("hidden")
+                         })
+                        closeXBtn.addEventListener("click",() => {
+                            cropper.destroy()
+                            cropperModal.classList.add("hidden")
+                        })
+                        cropBtn.addEventListener("click", async () => {
+
+                            let croppedCanvas = cropper.getCroppedCanvas()
+                            if(croppedCanvas){
+                               const fileName = file.name
+                               const blob = await new Promise(res => croppedCanvas.toBlob(res,"image/jpeg"))
+                               const croppedFile = new File([blob],fileName,{type : "image/jpeg"})
+                               
+                               const newList = new DataTransfer()
+                               for(let j = 0 ; j < fileList[index].files.length ; j++){
+                                const existingFile = fileList[index].files[j]
+
+                                if(existingFile.name === fileName){
+                                    newList.items.add(croppedFile)
+                                }else{
+                                    newList.items.add(existingFile)
+                                }
+
+                                
+                               }
+                               fileList[index] = newList
+                                input.files = newList.files
+                                imgBox.querySelector("img").src =  croppedCanvas.toDataURL("image/png")
+                            }
+
+                            cropper.destroy()
+                            cropperModal.classList.add("hidden")
+                        })
+                    })
+
+
+                   
+
+
                 };
                 reader.readAsDataURL(input.files[i]);
+                
             }
+
+            let cropInfo = document.createElement("span")
+            cropInfo.style.paddingTop = "6rem"
+            cropInfo.innerHTML = "Click on image <br> to crop"
+            previewContainer.appendChild(cropInfo)
+            
+            
         }
+        
 
         // Remove image function
         function removeImage(btn, index) {
@@ -168,10 +287,13 @@
             
             const input = document.querySelector(`input[name="variants[${index}][productImages]"]`);
             if (previewContainer.children.length < 3) {
-                input.setCustomValidity('At least 3 images ');
-            } else {
-                input.setCustomValidity('');
-            }
+                iziToast.warning({
+                    title: 'Warning',
+                    message: 'Please Keep at least 3 images',
+                    position: 'topCenter'
+                });
+                input.value = '';
+            } 
         }
 
         // Form submission
@@ -188,5 +310,6 @@
         // Add initial variant
         document.getElementById('addVariantBtn').click();
     </script>
+    
 </body>
 </html>

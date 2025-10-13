@@ -1,64 +1,13 @@
-<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - User Management"}) %>
-  <!-- Navbar -->
-  <nav class="navbar">
-    <div class="logo text-gray-600">NovaMart</div>
-    <div class="user-icon">
-      <span class="iconify" data-icon="qlementine-icons:user-16" style="width: 32;height: 32;color: #474744;"></span>
-    </div>
-  </nav>
-
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="menu-section">
-      <p>Dashboard</p>
-      <button class="active">
-        <i data-feather="users"></i>
-        <span>Customers</span>
-      </button>
-      <button>
-        <i data-feather="tag"></i>
-        <span>Coupon Code</span>
-      </button>
-      <button>
-        <i data-feather="grid"></i>
-        <span>Categories</span>
-      </button>
-      <button>
-        <i data-feather="credit-card"></i>
-        <span>Transaction</span>
-      </button>
-    </div>
-    <div class="menu-section">
-      <p>Product</p>
-      <button>
-        <i data-feather="plus-circle"></i>
-        <span>Add Products</span>
-      </button>
-      <button>
-        <i data-feather="image"></i>
-        <span>Product Media</span>
-      </button>
-      <button>
-        <i data-feather="list"></i>
-        <span>Product List</span>
-      </button>
-      <button>
-        <i data-feather="star"></i>
-        <span>Product Reviews</span>
-      </button>
-    </div>
-    <div class="menu-section">
-      <p>Admin</p>
-      <button>
-        <i data-feather="shield"></i>
-        <span>Admin Role</span>
-      </button>
-      <button>
-        <i data-feather="lock"></i>
-        <span>Control Authority</span>
-      </button>
-    </div>
-  </div>
+<!-- Header -->
+<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - User Results"}) %>
+<!-- Navbar -->
+<%- include("../partials/admin-side/navbar.ejs") %>
+<!-- Sidebar -->
+<%- include("../partials/admin-side/sidebar.ejs",{customerBtn : "active disabled",
+categoriesBtn : "",
+brandsBtn : "",
+productsBtn : "",
+isDisabled : "disabled"}) %>
 
   <!-- Main Content -->
   <div class="main-content">

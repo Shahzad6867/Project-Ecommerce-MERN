@@ -1,53 +1,9 @@
+<!-- Header -->
 <%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - User Management"}) %>
-  <!-- Navbar -->
-  <nav class="navbar">
-    <div class="logo text-gray-600">NovaMart</div>
-    <div class="user-icon">
-      <span class="iconify" data-icon="qlementine-icons:user-16" style="width: 32;height: 32;color: #474744;"></span>
-    </div>
-  </nav>
-
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="menu-section">
-      <p>Dashboard</p>
-      <a href="/admin/users">
-        <button class="active" disabled>
-          <i data-feather="users"></i>
-          <span>Customers</span>
-        </button>
-      </a>
-      <a href="/admin/categories">
-        <button>
-          <i data-feather="grid"></i>
-          <span>Categories</span>
-        </button>
-      </a>
-      <a href="/admin/brands">
-        <button>
-          <i data-feather="globe"></i>
-          <span>Brands</span>
-        </button>
-      </a>
-      <a href="/admin/products">
-        <button>
-          <i data-feather="list"></i>
-          <span>Products</span>
-        </button>
-      </a>
-    </div>
-    
-    <div class="menu-section">
-      <p>Admin</p>
-      <a href="/admin/logout">
-        <button>
-          <i class="fa-solid fa-right-from-bracket text-lg"></i>
-          <span>Logout</span>
-        </button>
-      </a>
-    </div>
-  </div>
-
+<!-- Navbar -->
+<%- include("../partials/admin-side/navbar.ejs") %>
+<!-- Sidebar -->
+<%- include("../partials/admin-side/sidebar.ejs",{customerBtn : "active disabled",categoriesBtn : "",brandsBtn : "",productsBtn : ""}) %>
   <!-- Main Content -->
   <div class="main-content">
     <div class="flex justify-between items-center mb-6">
@@ -65,6 +21,7 @@
       <div class="flex items-center gap-2">
         <form action="/admin/items-per-page" method="post">
         <span class="text-md text-gray-600">Items per page:</span>
+        <input type="" onsubmit="setRefer(this)" id="referrer" name="referrer" hidden>
         <select name="itemsPerPage" class="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-green-500">
           <option value="5">5</option>
           <option value="10">10</option>
@@ -197,6 +154,11 @@
  
    <script>
        feather.replace();
+      
+       function setRefer(input){
+        input.value = document.referrer
+       }
+
     document.addEventListener('DOMContentLoaded', () => {
         let userLog = document.getElementById("userLogged")?.value
     console.log(userLog)
@@ -210,6 +172,8 @@
         titleColor: '#ffffff',
         
      })
+
+    
     }
 
     });
