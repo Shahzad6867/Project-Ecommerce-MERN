@@ -3,12 +3,13 @@ const User = require("../../models/user.model.js");
 const getUsers = async (req,res) => {
     const perPage = req.session.itemsPerPage || 5 
     const page = req.query.page || 1
+    const usersFullList =  await User.find({})
      const users = await User.find({}).sort({createdAt : -1}).skip(perPage * page - perPage).limit(perPage)
      const count = await User.countDocuments({})
     const pages = Math.ceil(count / perPage)
     const message = req.session.message || null
     delete req.session.message
-    res.render("admin-view/admin.user-managment.ejs",{message,users,page,pages,count})
+    res.render("admin-view/admin.user-managment.ejs",{message,users,page,pages,count,usersFullList})
 }
 
 const blockUser = async (req,res) => {

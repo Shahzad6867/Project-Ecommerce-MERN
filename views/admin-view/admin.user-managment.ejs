@@ -10,9 +10,11 @@
       <h1 class="text-2xl font-bold text-gray-800">Customers</h1>
       <div class="relative">
         <form action="/admin/users" method="post">
-            <input type="text" placeholder="Whom are you looking for ?" name="search" 
-               class="search-bar border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
-        <i  class="fas fa-search absolute right-3 top-3 text-gray-500"></i>
+            <input type="search" placeholder="Whom are you looking for ?" name="search" 
+               class="search-bar border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" data-search>
+             <div id="searchResult-box" data-user-card-container>  
+             </div>
+        <i id="search-icon" class="fas fa-search absolute right-3 top-3 text-gray-500"></i>
         </form>
       </div>
       
@@ -39,6 +41,15 @@
        </form>
       </div>
     </div>
+    <template data-user-template>
+      <div id="list-item" onclick="setInputForSearch()" >
+       <div class="flex-shrink-0 h-10 w-10">
+        <img class="h-10 w-10 rounded-full" src="/images/user.jpg" alt="" data-avatar>
+       </div>
+       <span class="ml-2 font-semibold" data-header ></span>
+       <span class="ml-2" data-body ></span>
+      </div>
+    </template>   
     <div class="bg-white rounded-lg shadow overflow-hidden">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-green-50">
@@ -154,7 +165,52 @@
  
    <script>
        feather.replace();
+
+       const userCardTemplate = document.querySelector("[data-user-template]")
+       const userCardContainer = document.querySelector("[data-user-card-container]")
+       const searchInput = document.querySelector("[data-search]")
+
+
+      const usersString = '<%- JSON.stringify(usersFullList) %>';
+      const userData = JSON.parse(usersString)
       
+     
+      userCardContainer.innerHTML = ""
+       searchInput.addEventListener("input",(e) => {
+        const value = e.target.value.toLowerCase()
+        userCardContainer.style.display = "block"
+          userCardContainer.innerHTML = ""
+        
+        if(!value){
+        document.getElementById("search-icon").classList.remove("hidden")
+        userCardContainer.style.display = "none"
+        return;
+       }else{
+        document.getElementById("search-icon").classList.add("hidden")
+       }
+       userData.forEach(user => {
+        if(user.firstName.toLowerCase().includes(value) || 
+        user.lastName.toLowerCase().includes(value) || 
+        user.email.toLowerCase().includes(value) ){
+          const listItem = userCardTemplate.content.cloneNode(true).children[0]
+          if(user.profileImage !== null){
+            listItem.querySelector("[data-avatar]").src = user.profileImage
+          }
+          listItem.querySelector("[data-header]").textContent = user.firstName + " " + user.lastName
+          listItem.querySelector("[data-body]").textContent = user.email
+          userCardContainer.appendChild(listItem)
+          
+          listItem.addEventListener("click",() => {
+            searchInput.value = user.email
+            searchInput.focus()
+            userCardContainer.style.display = "none"
+          })
+        }
+        
+       });
+       })
+
+
        function setRefer(input){
         input.value = document.referrer
        }
@@ -193,6 +249,7 @@
         }
     }
     
+   
     
  </script>
 </body>

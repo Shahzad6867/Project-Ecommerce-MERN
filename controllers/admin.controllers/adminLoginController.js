@@ -29,30 +29,6 @@ const adminLogin = async (req,res) => {
 }
 
 
-const searchUser = async (req, res) => {
-    try {
-      const { search } = req.body;
-      console.log(search)
-      const query = {
-        $or: [
-          { firstName: { $regex: search, $options: "i" } },
-          { lastName: { $regex: search, $options: "i" } },
-          { email: { $regex: search, $options: "i" } },
-        ],
-      };
-      const users = await User.find(query);
-      if (!users) {
-        req.session.message = "Enter an Eixsting User's Name or Email";
-        return res.redirect("/admin/users");
-      }
-      res.render("admin-view/admin.searched-user-managment.ejs", { users });
-    } catch (error) {
-      console.error(error);
-      req.session.message = "Something Went Wrong";
-      res.redirect("/admin/users");
-    }
-  };
-
 
 
 
@@ -60,5 +36,4 @@ const searchUser = async (req, res) => {
 module.exports = {
     getAdminLogin,
     adminLogin,
-    searchUser
 }
