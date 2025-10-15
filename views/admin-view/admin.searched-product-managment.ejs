@@ -1,59 +1,25 @@
 <!-- Header -->
-<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - Product Management"}) %>
+<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - User Results"}) %>
 <!-- Navbar -->
 <%- include("../partials/admin-side/navbar.ejs") %>
 <!-- Sidebar -->
-<%- include("../partials/admin-side/sidebar.ejs",{customerBtn : "",categoriesBtn : "",brandsBtn : "",productsBtn : "active disabled"}) %>
+<%- include("../partials/admin-side/sidebar.ejs",{customerBtn : "",
+categoriesBtn : "",
+brandsBtn : "",
+productsBtn : "active disabled"}) %>
+
   <!-- Main Content -->
   <div class="main-content">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold text-gray-800">Products</h1>
+      <h1 class="text-2xl font-bold text-gray-800">Results</h1>
       <div class="relative">
-        <form autocomplete="off" action="/admin/products" method="post">
-            <input type="search" placeholder="Whom are you looking for ?" name="search" 
-               class="productSearchBar border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" data-search>
-             <div id="productSearchResultBox" data-product-container>  
-             </div>
-        <i id="search-icon" class="fas fa-search absolute right-3 top-3 text-gray-500"></i>
-        </form>
-      </div>
-      <template data-product-template>
-        <div id="product-list-item"  >
-         <span class="ml-2 " data-header ></span>
-        </div>
-      </template>  
-
-
-         <a href="/admin/add-product">
-            <button class="addBtn-primary  font-medium text-gray-700 py-2 px-3  rounded-md transition duration-300 ">
-                <i class="fa fa-plus text-gray-700"></i>
-                Add Product
-              </button>
-         </a>
-    </div>
-    
-  
-    <div class="flex justify-end mb-4">
-      <div class="flex items-center gap-2">
-        <form autocomplete="off" action="/admin/items-per-page" method="post">
-        <span class="text-md text-gray-600">Items per page:</span>
-        <select name="itemsPerPage" class="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-green-500">
-          <option value="5">5</option>
-          <option value="10">10</option>
-          <option value="25">25</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-        </select>
-        <button type="submit" class="tick-primary font-medium text-gray-700   rounded-md transition duration-300 ">
-          <div class="flex justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" id="tick">
-              <polyline fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" points="2.75 8.75 6.25 12.25 13.25 4.75" />
-            </svg>
-          </div>
-        </button>
-       </form>
+        <a href="/admin/products">
+          <button  class="btn-primary w-full font-bold text-gray-700 py-2 px-4 rounded-lg  transition duration-300">
+          Clear Results
+        </button>  </a> 
       </div>
     </div>
+
     <div class="bg-white rounded-lg shadow overflow-hidden">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-green-50">
@@ -157,46 +123,10 @@
     </div>
 
      
-
     <!-- Pagination -->
     <div class="flex items-center justify-between mt-4">
       <div class="text-sm text-gray-500">
-        Showing <span class="font-medium">1</span> to <span class="font-medium"><%= products.length %></span> of <span class="font-medium"><%= count %></span> results
-      </div>
-      <div class="flex space-x-2">
-        
-        <a href="/admin/products?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %>">
-          <% if (Number(page) === 1) { %>
-            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
-              Previous
-            </button>
-          <% } else {%>
-            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" >
-              Previous
-            </button>
-            <% } %>
-        
-       </a>
-        <% let i = Number(page) > 4 ? Number(page) - 3 : 1 %>
-        <% for(;i <= pages; i++ ) { %>
-        <a href="/admin/products?page=<%= i %>">
-          <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
-            <%= i %>
-          </button>
-        </a>
-        <% } %>
-        <a href="/admin/products?page=<%= Number(page) < pages ? Number(page) + 1 : pages %>">
-          <% if (Number(page) === pages) { %>
-            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
-              Next
-            </button>
-          <% } else {%>
-            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" >
-              Next
-            </button>
-            <% } %>
-        
-       </a>
+        Showing <span class="font-medium"><%= products.length %></span><span class="font-medium"></span> results
       </div>
     </div>
   </div>
@@ -204,53 +134,6 @@
  
    <script>
        feather.replace();
-
-
-       const productCardTemplate = document.querySelector("[data-product-template]")
-       const productCardContainer = document.querySelector("[data-product-container]")
-       const searchInput = document.querySelector("[data-search]")
-
-
-      const productsString = '<%- JSON.stringify(productsFullList) %>' ;
-      const productData = JSON.parse(productsString)
-      
-     
-      productCardContainer.innerHTML = ""
-       searchInput.addEventListener("input",(e) => {
-        const value = e.target.value.toLowerCase()
-        productCardContainer.style.display = "block"
-          productCardContainer.innerHTML = ""
-        
-        if(!value){
-        document.getElementById("search-icon").classList.remove("hidden")
-        productCardContainer.style.display = "none"
-        return;
-       }else{
-        document.getElementById("search-icon").classList.add("hidden")
-       }
-       productData.forEach(product => {
-        if(product.productName.toLowerCase().includes(value)){
-          const listItem = productCardTemplate.content.cloneNode(true).children[0]
-          listItem.querySelector("[data-header]").textContent = product.productName
-          productCardContainer.appendChild(listItem)
-          
-          listItem.addEventListener("click",() => {
-            searchInput.value = product.productName
-            searchInput.focus()
-            productCardContainer.style.display = "none"
-          })
-        }
-        
-       });
-       })
-
-
-
-
-
-
-
-
     document.addEventListener('DOMContentLoaded', () => {
         let userLog = document.getElementById("userLogged")?.value
     console.log(userLog)
@@ -267,26 +150,23 @@
     }
 
     });
-   
-    function restoreProduct(id){
-       window.location.href = "/admin/restore-product?id="+id
+    function blockUser(id){
+        if(confirm("Are you sure ? Do you Want to block the User ?")){
+            window.location.href = "/admin/block-user?id="+id
+        }
+    }
+    function unblockUser(id){
+        if(confirm("Are you sure ? Do you Want to Unblock the User ?")){
+            window.location.href = "/admin/unblock-user?id="+id
+        }
     }
     function areYouSure(id){
-        if(confirm("Are you sure ? Do you Want to delete the Product ?")){
-            window.location.href = "/admin/delete-product?id="+id
+        if(confirm("Are you sure ? Do you Want to delete the User ?")){
+            window.location.href = "/admin/delete-user?id="+id
         }
     }
     
-    document.getElementById('productImage').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    document.getElementById('productImagePreview').src = event.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+    
  </script>
 </body>
 </html>

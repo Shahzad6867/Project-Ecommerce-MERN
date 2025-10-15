@@ -12,7 +12,7 @@
             </div>
         </div>
 
-        <form id="productForm" action="/admin/edit-product?id=<%= product[0]._id %>" method="post" enctype="multipart/form-data"  class="bg-white rounded-lg shadow p-6">
+        <form autocomplete="off" id="productForm" action="/admin/edit-product?id=<%= product[0]._id %>" method="post" enctype="multipart/form-data"  class="bg-white rounded-lg shadow p-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>

@@ -3,18 +3,20 @@ const cloudinary = require("../../config/cloudinaryConfig.js")
 const fs = require("fs");
 const Product = require("../../models/product.model.js");
 const Brand = require("../../models/brand.model.js");
+const Category = require("../../models/category.model.js");
 
 
 
 const getProducts = async (req,res) => {
     const perPage = req.session.itemsPerPage || 5 
     const page = req.query.page || 1
+    const productsFullList = await Product.aggregate().project({productName : 1,_id : 0})
      const products = await Product.find({}).populate("categoryId").populate("brandId").sort({createdAt : -1}).skip(perPage * page - perPage).limit(perPage)
      const count = await Product.countDocuments({})
     const pages = Math.ceil(count / perPage)
     const message = req.session.message || null
     delete req.session.message
-    res.render("admin-view/admin.products.ejs",{message,products,page,pages,count})
+    res.render("admin-view/admin.products.ejs",{message,products,page,pages,count,productsFullList})
   }
 
   const getAddProduct = async (req,res) => {
@@ -147,11 +149,13 @@ const getProducts = async (req,res) => {
       const finalVariants = await Promise.all(variantEntries);
   
       
-      product.productName = productName;
-      product.description = description;
-      product.brandId = brandId;
-      product.categoryId = categoryId;
-      product.variants = finalVariants;
+      await Product.findByIdAndUpdate({_id : id},{$set : {
+      productName,
+      description,
+      brandId,
+      categoryId,
+      variants : finalVariants
+      }})
   
       await product.save();
   
