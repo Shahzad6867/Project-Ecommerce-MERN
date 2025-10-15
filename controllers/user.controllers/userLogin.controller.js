@@ -12,10 +12,7 @@ const getUserLogin = async (req, res) => {
 const userLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(email);
-    console.log(password);
     const userExist = await User.findOne({ email });
-    console.log(userExist);
     if (!userExist) {
       req.session.message = "User does not Exist - Please Create Account";
       return res.redirect("/login");

@@ -2,7 +2,6 @@ const passport = require("passport")
 const GoogleStrategy = require("passport-google-oauth20").Strategy
 const User = require("../models/user.model")
 const cloudinary = require("./cloudinaryConfig.js")
-const { deleteOne } = require("../models/user-otp.model")
 require("dotenv").config()
 
 passport.use( new GoogleStrategy({
