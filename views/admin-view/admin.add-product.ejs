@@ -28,6 +28,7 @@
                         <% } %>
                     </select>
                 </div>
+
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Brand</label>
@@ -37,6 +38,18 @@
                             <option value="<%= brands[i]._id %>"><%= brands[i].brandName %></option>
                         <% } %>
                     </select>
+                </div>
+
+                <div >
+                    <fieldset>
+                        <legend>Featured</legend>
+                    
+                        <input type="radio" id="yes" name="isFeatured" value="true">
+                        <label for="yes">Yes</label><br>
+                    
+                        <input type="radio" id="no" name="isFeatured" value="false" checked>
+                        <label for="no">No</label><br>
+                    </fieldset>
                 </div>
                 
                 <div class="md:col-span-2">
@@ -125,9 +138,9 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Stock Status</label>
                         <select name="variants[${index}][stockStatus]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
-                            <option value="In-Stock">In Stock</option>
-                            <option value="Out-of-Stock">Out of Stock</option>
-                            <option value="Pre-Order">Pre-Order</option>
+                            <option value="In Stock">In Stock</option>
+                            <option value="Out of Stock">Out of Stock</option>
+                            <option value="Pre Order">Pre-Order</option>
                         </select>
                     </div>
                     <div class="lg:col-span-4">

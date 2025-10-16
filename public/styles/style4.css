@@ -1,0 +1,66 @@
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+}
+@font-face {
+  font-family: "Batangas"; /* Choose a name for your font */
+  src: url("../fonts/Batangas\ Bold\ 700.otf") format("opentype"); /* Adjust the path to your font file */
+}
+#nav-logo{
+  font-family: Batangas;
+}
+.category{
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+.background-gray{
+  background-color: rgb(43, 43, 43);
+}
+
+.custom-checkbox-container input {
+  position: absolute;
+  opacity: 0; /* Hide the native checkbox */
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: relative;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-color: #eee;
+  border: 1px solid #ccc;
+  vertical-align: middle; /* Align with text */
+  margin-right: 5px;
+}
+
+/* Style the checkmark when the input is checked */
+.custom-checkbox-container input:checked ~ .checkmark {
+  background-color: #2196F3;
+}
+
+/* Create the checkmark visual */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
+}
+
+.custom-checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.checkbox-value {
+  vertical-align: middle;
+}

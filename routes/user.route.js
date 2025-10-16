@@ -25,6 +25,9 @@ router.post("/register",userRegisterController.userRegister)
 router.get("/otp-verification",userAuth.otpSession,userOtpRegisterController.getUserOtp)
 router.post("/otp-verification",userOtpRegisterController.userOtp)
 router.get("/",userAuth.checkSession,homeController.getHomepage)
+router.get("/shop",userAuth.checkSession,homeController.getShop)
+router.post("/shop/filter",userAuth.checkSession,homeController.shopFiltered)
+router.get("/product",userAuth.checkSession,homeController.getProductDetail)
 router.post("/resend-otp",userOtpRegisterController.resendOtp)
 router.post("/resend-otp-for-new-pass",userOtpNewPassController.resendOtpForNewPass)
 router.get("/email-auth",emailAuthController.getEmailAuth)
@@ -33,6 +36,6 @@ router.get("/otp-verification-for-new-pass",userAuth.otpSession,otpNewPassContro
 router.post("/otp-verification-for-new-pass",otpNewPassController.userOtpForNewPass)
 router.get("/reset-password",userAuth.otpSession,resetPassController.getResetPassword)
 router.post("/reset-password",resetPassController.resetPassword)
-
+router.get("/logout",userAuth.checkSession,homeController.logoutUser)
 
 module.exports = router

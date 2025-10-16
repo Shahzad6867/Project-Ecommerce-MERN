@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaMart - Online Shopping</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="/javascript/user-javascript/carousel.js"></script>
+    <link rel="stylesheet" href="/styles/style4.css">
+    
+</head>
+<body class="bg-gray-50">
+  <nav class="bg-green-500 shadow-md py-3 px-4 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <!-- Logo -->
+        <div class="flex items-center">
+            <a id="nav-logo" href="/" class="text-2xl font-bold text-black" >NovaMart</a>
+        </div>
+        
+        <!-- Search Bar -->
+        <div class="flex-1 mx-8">
+            <div class="relative">
+                <input type="text" placeholder="Search for products..." 
+                       class="w-full py-2 px-4 pr-10 rounded-full search-bar border border-gray-300 focus:outline-none">
+                <button class="absolute right-2 top-2 text-gray-500 hover:text-blue-600">
+                    <i data-feather="search"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- User Actions -->
+        <div class="flex items-center space-x-6">
+          <a href="/" class="flex flex-col items-center relative">
+            <i data-feather="home" class="w-6 h-6"></i>
+            <span class="text-xs mt-1">Home</span>
+        </a>
+            <a href="/shop" class="flex flex-col items-center relative">
+                <i data-feather="shopping-bag" class="w-6 h-6"></i>
+                <span class="text-xs mt-1">Shop</span>
+            </a>
+            <a href="#" class="flex flex-col items-center">
+                <span class="iconify" data-icon="qlementine-icons:user-16" style="width: 26;height: 26;"></span>
+                <span class="text-xs mt-1">Account</span>
+            </a>
+            <a href="#" class="flex flex-col items-center">
+                <span class="iconify" data-icon="ri:heart-line" style="width: 26;height: 26;"></span>
+                <span class="text-xs mt-1">Wishlist</span>
+            </a>
+            <a href="#" class="flex flex-col items-center relative">
+                <span class="iconify" data-icon="solar-cart-linear" style="width: 26;height: 26;"></span>
+                <span class="text-xs mt-1">Cart</span>
+                <span class="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"><%= products.length %></span>
+            </a>
+        </div>
+    </div>
+</nav>
+
+  <!-- Main Container -->
+  <div class="flex max-w-7xl mx-auto mt-10 px-4 gap-8">
+    
+    <!-- Sidebar Filters -->
+    <aside class="w-1/4 bg-white p-5 rounded-xl shadow-sm">
+      <h2 class="text-lg font-semibold mb-4">Filters</h2>
+
+      <form action="/shop/filter" method="POST" class="space-y-6">
+
+        <!-- Category Filter -->
+        <div>
+          <h3 class="font-medium mb-2">Category</h3>
+          <div class="space-y-1">
+            <% for( let i = 0; i < categories.length; i++ ) { %>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" name="category" value="<%= categories[i]._id  %>" class="accent-emerald-600">
+              <%= categories[i].categoryName %>
+            </label>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Price Filter -->
+        <div>
+          <h3 class="font-medium mb-2">Price Range</h3>
+          <div class="flex items-center gap-2">
+            <input type="number" name="minPrice" placeholder="Min" class="border rounded-lg w-1/2 p-2">
+            <input type="number" name="maxPrice" placeholder="Max" class="border rounded-lg w-1/2 p-2">
+          </div>
+        </div>
+
+        <!-- Brand Filter -->
+        <div>
+          <h3 class="font-medium mb-2">Brand</h3>
+          <div class="space-y-1">
+            <% for( let i = 0; i < brands.length; i++ ) { %>
+              <label class="flex items-center gap-2">
+                <input type="checkbox" name="brand" value="<%= brands[i]._id %>" class="accent-emerald-600">
+                <%= brands[i].brandName %>
+              </label>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Apply Filter Button -->
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-medium">
+          Apply Filters
+        </button>
+      </form>
+    </aside>
+
+    <!-- Product Section -->
+    <section class="flex-1">
+
+      <!-- Sort Buttons -->
+      <div class="flex flex-wrap items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold">All Products</h2>
+        <div class="flex gap-2">
+          <button class="sort-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-md" data-sort="featured">Featured</button>
+          <button class="sort-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-md" data-sort="low-high">Price: Low → High</button>
+          <button class="sort-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-md" data-sort="high-low">Price: High → Low</button>
+          <button class="sort-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-md" data-sort="az">A → Z</button>
+          <button class="sort-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-md" data-sort="za">Z → A</button>
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <% for( let i = 0; i < products.length; i++ ) { %>
+          <% if (!products[i].categoryId.isDeleted && !products[i].brandId.isDeleted) { %>
+            <% if (!products[i].isDeleted) { %>
+                <% for( let j = 0; j < products[i].variants.length; j++ ) { %>
+        <div class="relative bg-white border rounded-xl p-3 hover:shadow-md transition">
+          <img src="<%= products[i].variants[j].productImages[0]  %>" class="w-full h-40 object-contain" alt="${p.name}">
+          <a href="/product?id=<%= products[i]._id %>">
+            <button class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
+                <i data-feather="eye" class="w-4 h-4"></i>
+            </button>
+          </a>
+          <h4 class="font-semibold text-sm mt-2"><%= products[i].productName %></h4>
+          <p class="text-emerald-600 font-bold mt-1">$<%= products[i].variants[j].price  %></p>
+        </div>
+                <% } %>
+               <% } %>
+            <% } %>
+         <% } %>
+      </div>
+    </section>
+  </div>
+
+  <script>
+
+    feather.replace()
+
+    // Sorting Logic
+    document.querySelectorAll(".sort-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const sortType = btn.dataset.sort;
+
+        document.querySelectorAll(".sort-btn").forEach(b => b.classList.remove("bg-emerald-600", "text-white"));
+        btn.classList.add("bg-emerald-600", "text-white");
+
+        let sorted = [...products];
+        if (sortType === "low-high") sorted.sort((a, b) => a.price - b.price);
+        else if (sortType === "high-low") sorted.sort((a, b) => b.price - a.price);
+        else if (sortType === "az") sorted.sort((a, b) => a.name.localeCompare(b.name));
+        else if (sortType === "za") sorted.sort((a, b) => b.name.localeCompare(a.name));
+        else sorted = [...products]; // featured default
+
+        renderProducts(sorted);
+      });
+    });
+  </script>
+
+</body>
+</html>

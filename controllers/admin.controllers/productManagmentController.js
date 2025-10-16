@@ -29,7 +29,7 @@ const getProducts = async (req,res) => {
 
   const addProduct = async (req,res) => {
     try {
-      const { productName, description,brandId,categoryId} = req.body;
+      const { productName, description,brandId,categoryId,isFeatured} = req.body;
       const productExist = await Product.findOne({ productName : productName });
       if(productExist){
         req.session.message = "Product already Exists"
@@ -40,7 +40,12 @@ const getProducts = async (req,res) => {
         req.session.message = "Minimum 3 Images required."
         return res.redirect("/admin/add-product")
       }
-     
+     let booleanValue;
+      if(isFeatured === "true"){
+        booleanValue = true
+      }else{
+        booleanValue = false
+      }
       
       const variants = req.body.variants
       const variantEntries = Object.keys(variants).map(async (index) => {
@@ -75,6 +80,7 @@ const getProducts = async (req,res) => {
         description,
         brandId,
         categoryId,
+        isFeatured : booleanValue,
         variants: finalVariants,
       })
 

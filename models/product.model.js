@@ -5,7 +5,7 @@ const variantSchema = Schema({
     stockQuantity: { type: Number, required: false, default : 0 },
     stockStatus: { 
       type: String, 
-      enum: ["In-Stock", "Out-of-Stock", "Pre-Order"], 
+      enum: ["In Stock", "Out of Stock", "Pre Order"], 
       default: "In-Stock" 
     },
     price: { type: Number, required: false, default : 0.00 },
@@ -27,6 +27,10 @@ const productSchema = Schema({
         default : null
     },
     isDeleted : {
+        type : Boolean,
+        default : false
+    },
+    isFeatured : {
         type : Boolean,
         default : false
     },
