@@ -31,27 +31,29 @@
                 </button>
             </div>
             
-            <form autocomplete="off" class="space-y-4" action="/admin/add-category" method="post" enctype="multipart/form-data">
+            <form autocomplete="off" class="space-y-4" action="/admin/add-category" method="post" enctype="multipart/form-data" onsubmit="return validateForm()" novalidate>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Category Image</label>
+                    <label for="categoryImage" class="block text-sm font-medium text-gray-700 mb-1">Category Image</label>
                     <div class="mt-1 flex items-center">
-                        <span class="inline-block h-12 w-12 border border-gray-300 rounded-full overflow-hidden bg-gray-100">
+                        <span class="inline-block h-16 w-16 border border-gray-300 rounded-full overflow-hidden bg-gray-100">
                             <img id="categoryImagePreview" src="/images/cloud-image-upload.jpg" class="h-full w-full text-gray-300">
                         </span>
-                        <input type="file" id="categoryImage" name="categoryImage" class="ml-4 hidden" accept="image/gif, image/jpeg, image/png">
-                        <label for="categoryImage" class="ml-4 addBtn-primary bg-white py-2 px-3 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 cursor-pointer">
-                            Upload
-                        </label>
+                        <input type="file" id="categoryImage"  name="categoryImage" class="ml-4 w-[80%]" accept="image/gif, image/jpeg, image/png" onchange="previewImage(this)">
+                        
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
-                    <input type="text" name="categoryName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <label for="categoryName" class="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
+                    <input type="text" id="categoryName" name="categoryName" class="w-full uppercase px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" oninput="isExisting(this)">
+                    <div id="validation-message-for-name" class="hidden mt-1 flex items-center ">
+                      <i data-feather="info" class="w-4 h-4 text-red-500 mr-1 "></i>
+                      <p  class=" text-xs" ></p>
+                    </div>
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <textarea name="description" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" rows="3"></textarea>
+                    <label for="categoryDescription" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea id="categoryDescription" name="description" class="w-full  px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" rows="3"></textarea>
                 </div>
                     
                 <div class="flex justify-end space-x-3 pt-4">
@@ -94,7 +96,7 @@
           <tr>
             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">No</th>
             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">Category</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase tracking-wider">Description</th>
+            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Description</th>
             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Status</th>
             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Created Date</th>
             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Actions</th>
@@ -151,25 +153,25 @@
                             </button>
                         </div>
                         
-                        <form class="space-y-4" action="/admin/edit-category?id=<%= categories[i]._id %>" method="post" enctype="multipart/form-data">
+                        <form id="editCategoryForm<%= i %>" class="space-y-4" action="/admin/edit-category?id=<%= categories[i]._id %>" method="post" enctype="multipart/form-data" onsubmit="return validateEditForm('<%= i %>','<%= categories[i].categoryName.trim() %>','<%= categories[i].description.trim() %>')" novalidate>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Category Image</label>
+                                <label for="editCategoryImage"  class="block text-sm font-medium text-gray-700 mb-1">Category Image</label>
                                 <div id="categoryImageSection" class="mt-1 flex items-center">
                                     <span class="inline-block h-16 w-16 border border-gray-300 rounded-full overflow-hidden bg-gray-100">
                                         <img id="categoryImagePreview<%= i %>" src="<%= categories[i].categoryImage %>" class="h-full w-full text-gray-300">
                                     </span>
-                                 
-                                    <input type="file" id="categoryImage"  name="categoryImage" class="ml-4 " accept="image/gif, image/jpeg, image/png" onchange="previewImage(this,'<%= i %>')"> 
+                        
+                                    <input type="file"  name="categoryImage" id="editCategoryImage" class="ml-4 " accept="image/gif, image/jpeg, image/png" onchange="previewImage(this,'<%= i %>')"> 
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
-                                <input type="text" value="<%= categories[i].categoryName %>" name="categoryName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <label for="editCategoryName" class="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
+                                <input id="editCategoryName" type="text" value="<%= categories[i].categoryName %>" name="categoryName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                             </div>
                             
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                <textarea name="description"  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" rows="3"><%= categories[i].description %></textarea>
+                                <label for="editCategoryDescription" class=" block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                <textarea name="description" id="editCategoryDescription" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" rows="3"><%= categories[i].description %></textarea>
                             </div>
                                 
                             <div class="flex justify-end space-x-3 pt-4">
@@ -177,7 +179,7 @@
                                     Cancel
                                 </button>
                                 <button type="submit" class="px-4 py-2  rounded-md  text-sm font-semibold text-gray-700 btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                    Save Category
+                                    Update Category
                                 </button>
                             </div>
                         </form>
@@ -244,49 +246,5 @@
       </div>
     </div>
   </div>
-
- 
-   <script>
-       feather.replace();
-    document.addEventListener('DOMContentLoaded', () => {
-        let userLog = document.getElementById("userLogged")?.value
-    console.log(userLog)
-    if(userLog){
-        iziToast.show({
-        title : "Notification",
-        message: userLog,
-        messageColor: '#ffffff !important',
-        position: 'topCenter',
-        backgroundColor: "#4f46e5", 
-        titleColor: '#ffffff',
-        
-     })
-    }
-
-    });
-    function blockUser(id){
-        if(confirm("Are you sure ? Do you Want to block the User ?")){
-            window.location.href = "/admin/block-user?id="+id
-        }
-    }
-    function restoreCategory(id){
-       window.location.href = "/admin/restore-category?id="+id
-    }
-    function areYouSure(id){
-        if(confirm("Are you sure ? Do you Want to delete the Category ?")){
-            window.location.href = "/admin/delete-category?id="+id
-        }
-    }
-
-    function previewImage(input,index){
-      const reader = new FileReader()
-      reader.onload = function(e){
-        console.log(input.files)
-        console.log(e.target.result)
-        document.getElementById(`categoryImagePreview${index}`).src = e.target.result
-      }
-      reader.readAsDataURL(input.files[0])
-    }
- </script>
-</body>
-</html>
+<!-- Script -->
+<%- include("../../public/javascript/admin-javascript/categoryManagmentScript.ejs") %>

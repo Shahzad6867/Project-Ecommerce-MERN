@@ -163,7 +163,6 @@ const getProducts = async (req,res) => {
       variants : finalVariants
       }})
   
-      await product.save();
   
       req.session.message = "Product updated successfully!";
       return res.redirect("/admin/products");

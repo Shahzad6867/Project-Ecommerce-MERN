@@ -24,25 +24,18 @@ const getCategories = async (req,res) => {
         }
         let result = null;
         let newCategory = null;
-        if(req.file){
+       
             result = await cloudinary.uploader.upload(req.file.path,{
               folder : "category-image"
             })
              newCategory = new Category({
               categoryName : categoryName.toUpperCase(),
-              description,
               categoryImage : result.secure_url ,
+              description,
               isDeleted :  false
             });
             fs.unlinkSync(req.file.path)
-        }else{
-          newCategory = new Category({
-            categoryName : categoryName.toUpperCase(),
-            description,
-            categoryImage : null,
-            isDeleted :  false
-          });
-        }
+        
         
         await newCategory.save();
         
@@ -50,6 +43,8 @@ const getCategories = async (req,res) => {
         return res.redirect("/admin/categories");
       } catch (error) {
         console.error(error);
+        req.session.message = "Something went Wrong!"
+        res.redirect("/admin/categories")
       }
   }
   const restoreCategory = async (req,res) => {
@@ -60,16 +55,20 @@ const getCategories = async (req,res) => {
     res.redirect("/admin/categories")
     } catch (error) {
         console.log(error)
+        req.session.message = "Something went Wrong!"
+        res.redirect("/admin/categories")
     }
 }   
     const deleteCategory = async (req,res) => {
     try {
         const {id} = req.query
      await Category.findByIdAndUpdate({_id : id},{$set : {isDeleted : true}})
-    req.session.message = "Category Soflty Deleted"
+    req.session.message = "Category Deleted"
     res.redirect("/admin/categories")
     } catch (error) {
         console.log(error)
+        req.session.message = "Something went Wrong!"
+        res.redirect("/admin/categories")
     }
 }
   const editCategory = async (req, res) => {
@@ -77,6 +76,7 @@ const getCategories = async (req,res) => {
 
       const {id} = req.query
       const { categoryName,description} = req.body;
+      
       let result = null; 
       if(req.file){
         result = await cloudinary.uploader.upload(req.file.path,{
@@ -99,7 +99,7 @@ const getCategories = async (req,res) => {
                }
         );
       }
-      req.session.message = "Category Updated";
+      req.session.message = "Category Updated Successfully";
       return res.redirect("/admin/categories");
     } catch (error) {
       console.error(error);

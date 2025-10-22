@@ -103,8 +103,7 @@
                   </td>
                   
           
-                  <!-- Category & Brand only once -->
-                  
+                
                   <td class="px-6 py-4 whitespace-nowrap  text-sm text-center text-gray-500">
                     <%= products[i].categoryId.categoryName %>
                   </td>
@@ -133,7 +132,6 @@
           
                   <!-- Actions only once -->
                   <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                    <% if (j === 0) { %>
                       <a href="/admin/edit-product?id=<%= products[i]._id %>">
                         <button title="Edit" class="text-cyan-500 hover:text-cyan-700 mr-3 unblock-user-btn" >
                           <i class="fas fa-edit"></i>
@@ -147,7 +145,6 @@
                           class="text-red-600 hover:text-red-900 delete-user-btn">
                         <i class="fas fa-trash"></i>
                       </button>
-                    <% } %>
                   </td>
                 </tr>
               <% } %>

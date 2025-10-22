@@ -1,0 +1,166 @@
+
+ 
+<script>
+    feather.replace();
+
+ function restoreCategory(id){
+    window.location.href = "/admin/restore-category?id="+id
+ }
+ function areYouSure(id){
+     if(confirm("Are you sure ? Do you Want to delete the Category ?")){
+         window.location.href = "/admin/delete-category?id="+id
+     }
+ }
+
+ function previewImage(input,index){
+   const reader = new FileReader()
+   reader.onload = function(e){
+     if(index){
+       document.getElementById(`categoryImagePreview${index}`).src = e.target.result
+     }else{
+       document.getElementById("categoryImagePreview").src = e.target.result
+     }
+     
+   }
+   reader.readAsDataURL(input.files[0])
+ }
+
+
+ const categoryArrayString = '<%- JSON.stringify(categories.map((category) => category.categoryName.trim(),[])) %>';
+ let categoryNames =  JSON.parse(categoryArrayString)
+ console.log(categoryNames)
+
+ function isExisting(input){
+   const divElement = document.getElementById("validation-message-for-name")
+   if(input.value){
+       if(categoryNames.some(name => name === input.value.toUpperCase())){
+       divElement.classList.remove("hidden")
+       divElement.querySelector("p").classList.add("text-red-500")
+       divElement.querySelector("p").textContent = "Category already Exists"
+     }else{
+       divElement.classList.add("hidden")
+     }
+   } else{
+     divElement.classList.add("hidden")
+   }
+ }
+
+ function validateForm(){
+
+   const categoryImage = document.getElementById("categoryImage").files
+   const categoryInput =  document.getElementById("categoryName")
+   const categoryDescription = document.getElementById("categoryDescription")
+   if(categoryImage.length < 1){
+    
+        iziToast.error({
+         title: "Error",
+         message: "Please Upload an Image",
+         position: "topRight",
+       });
+     return false
+   }else if(!categoryInput.value){
+     iziToast.error({
+         title: "Error",
+         message: "Please enter a Category Name",
+         position: "topRight",
+       });
+       return false
+   }else if(!categoryDescription.value){
+     iziToast.error({
+         title: "Error",
+         message: "Please enter a Description",
+         position: "topRight",
+       });
+       return false
+   }
+   
+   return true
+ }
+
+ 
+
+
+
+ function validateEditForm(index, initialCategoryName, initialCategoryDescription) {
+ try {
+   const form = document.getElementById(`editCategoryForm${index}`);
+ const categoryName = form.querySelector('input[name="categoryName"]').value.trim();
+ const categoryDescription = form.querySelector('textarea[name="description"]').value.trim();
+ const categoryImage = form.querySelector('input[name="categoryImage"]').files;
+
+ // Use .trim() for all string comparisons to ignore whitespace differences
+ const isNameChanged = initialCategoryName.trim() !== categoryName;
+ const isDescriptionChanged = initialCategoryDescription.trim() !== categoryDescription;
+ const isImageChanged = categoryImage.length > 0;
+
+ // Check if any change has been made
+ if (isNameChanged || isDescriptionChanged || isImageChanged) {
+     // If the name was changed, check if the new name is unique
+     if (isNameChanged && categoryNames.some(name => name.trim() === categoryName)) {
+         iziToast.error({
+             title: "Error",
+             message: "A category with this name already exists",
+             position: "topCenter"
+         });
+         return false;
+     }
+     return true;
+ } else {
+     iziToast.error({
+         title: "Error",
+         message: "No changes were found,<br>Please make changes to update the category.",
+         position: "topCenter"
+     });
+     return false;
+ }
+ } catch (error) {
+   console.error(error)
+ }
+}
+
+
+
+ let serverMessage = '<%- message %>'
+ if(serverMessage){
+   if(serverMessage === "Category Created Successfully"){
+     iziToast.success({
+         title : "Success",
+         message: serverMessage,
+       position: 'topRight'
+       })
+   }else if(serverMessage === "Category already Exists"){
+     iziToast.error({
+       title: "Error",
+         message: serverMessage,
+         position: "topCenter",
+     })
+   }else if(serverMessage === "Something went Wrong!"){
+     iziToast.error({
+       title : "Error",
+       message : serverMessage,
+       position : "topCenter"
+     })
+   }else if(serverMessage === "Category Restored Successfully"){
+     iziToast.success({
+         title : "Success",
+         message: serverMessage,
+       position: 'topRight'
+       })
+   }else if(serverMessage === "Category Deleted"){
+     iziToast.error({
+       title : "Deleted",
+       message : serverMessage,
+       position : "topRight"
+     })
+ }else if(serverMessage === "Category Updated Successfully"){
+     iziToast.success({
+         title : "Success",
+         message: serverMessage,
+       position: 'topCenter'
+       })
+
+   }
+ }
+</script>
+</body>
+</html>

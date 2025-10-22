@@ -24,7 +24,7 @@ const getBrand = async (req,res) => {
         }
         let result = null;
         let newBrand = null;
-        if(req.file){
+
             result = await cloudinary.uploader.upload(req.file.path,{
               folder : "brand-images"
             })
@@ -35,14 +35,6 @@ const getBrand = async (req,res) => {
               isDeleted :  false
             });
             fs.unlinkSync(req.file.path)
-        }else{
-          newBrand = new Brand({
-            brandName : brandName.toUpperCase(),
-            description,
-            brandImage : null,
-            isDeleted :  false
-          });
-        }
         
         await newBrand.save();
         
@@ -67,7 +59,7 @@ const getBrand = async (req,res) => {
     try {
         const {id} = req.query
      await Brand.findByIdAndUpdate({_id : id},{$set : {isDeleted : true}})
-    req.session.message = "Brand Soflty Deleted"
+    req.session.message = "Brand Deleted"
     res.redirect("/admin/brands")
     } catch (error) {
         console.log(error)
@@ -98,7 +90,7 @@ const getBrand = async (req,res) => {
                }
         );
       }
-      req.session.message = "Update Succesful";
+      req.session.message = "Brand Updated Successfully";
       return res.redirect("/admin/brands");
     } catch (error) {
       console.error(error);

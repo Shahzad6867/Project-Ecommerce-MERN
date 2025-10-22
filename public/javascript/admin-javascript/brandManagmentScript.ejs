@@ -1,0 +1,167 @@
+
+ 
+<script>
+ feather.replace();
+    
+    function restoreBrand(id){
+       window.location.href = "/admin/restore-brand?id="+id
+    }
+    function areYouSure(id){
+        if(confirm("Are you sure ? Do you Want to delete the Brand ?")){
+            window.location.href = "/admin/delete-brand?id="+id
+        }
+    }
+    
+    function previewImage(input,index){
+      const reader = new FileReader()
+      reader.onload = function(e){
+        document.getElementById(`brandImagePreview${index}`).src = e.target.result
+      }
+      reader.readAsDataURL(input.files[0])
+    }
+
+    document.getElementById("brandImage").addEventListener("change", () => {
+      const reader = new FileReader()
+      reader.onload = function(e){
+        document.getElementById("addBrandImagePreview").src = e.target.result
+      }
+      reader.readAsDataURL(document.getElementById("brandImage").files[0])
+    })
+
+ const brandArrayString = '<%- JSON.stringify(brands.map((brand) => brand.brandName.trim(),[])) %>';
+ let brandNames =  JSON.parse(brandArrayString)
+ console.log(brandNames)
+
+ function isExisting(input){
+   const divElement = document.getElementById("validation-message-for-name")
+   if(input.value){
+       if(brandNames.some(name => name === input.value.toUpperCase())){
+       divElement.classList.remove("hidden")
+       divElement.querySelector("p").classList.add("text-red-500")
+       divElement.querySelector("p").textContent = "Brand already Exists"
+     }else{
+       divElement.classList.add("hidden")
+     }
+   } else{
+     divElement.classList.add("hidden")
+   }
+ }
+
+ function validateForm(){
+
+   const brandImage = document.getElementById("brandImage").files
+   const brandInput =  document.getElementById("brandName")
+   const brandDescription = document.getElementById("brandDescription")
+   if(brandImage.length < 1){
+    
+        iziToast.error({
+         title: "Error",
+         message: "Please Upload an Image",
+         position: "topRight",
+       });
+     return false
+   }else if(!brandInput.value){
+     iziToast.error({
+         title: "Error",
+         message: "Please enter a Brand Name",
+         position: "topRight",
+       });
+       return false
+   }else if(!brandDescription.value){
+     iziToast.error({
+         title: "Error",
+         message: "Please enter a Description",
+         position: "topRight",
+       });
+       return false
+   }
+   
+   return true
+ }
+
+ 
+
+
+
+ function validateEditForm(index, initialBrandName, initialBrandDescription) {
+    const form = document.getElementById(`editBrandForm${index}`);
+    const brandName = form.querySelector('input[name="brandName"]').value.toUpperCase().trim();
+    const brandDescription = form.querySelector('textarea[name="description"]').value.trim();
+    const brandImage = form.querySelector('input[name="brandImage"]').files;
+    console.log(brandName,brandDescription,brandImage.length)
+    console.log(initialBrandName,initialBrandDescription)
+    // Use .trim() consistently for comparison with initial values.
+    const isNameChanged = initialBrandName.trim() !== brandName;
+    const isDescriptionChanged = initialBrandDescription.trim() !== brandDescription;
+    const isImageChanged = brandImage.length > 0;
+
+    console.log(isNameChanged,isDescriptionChanged,isImageChanged)
+    // Check if any change has been made
+    if (isNameChanged || isDescriptionChanged || isImageChanged) {
+        // If the name was changed, check if the new name is unique, excluding the original name.
+        if (isNameChanged ) {
+          if (brandNames.some(name => name.trim() === brandName)) {
+            iziToast.error({
+                 title: "Error",
+                 message: "A brand with this name already exists",
+                 position: "topCenter"
+             });
+             return false;
+          } 
+        }
+        return true;
+    } else {
+        iziToast.error({
+            title: "Error",
+            message: "No changes were found,<br>Please make changes to update the brand.",
+            position: "topCenter"
+        });
+        return false;
+    }
+}
+
+
+ let serverMessage = '<%- message %>'
+ if(serverMessage){
+   if(serverMessage === "Brand Created Successfully"){
+     iziToast.success({
+         title : "Success",
+         message: serverMessage,
+       position: 'topRight'
+       })
+   }else if(serverMessage === "Brand already Exists"){
+     iziToast.error({
+       title: "Error",
+         message: serverMessage,
+         position: "topCenter",
+     })
+   }else if(serverMessage === "Something went Wrong!"){
+     iziToast.error({
+       title : "Error",
+       message : serverMessage,
+       position : "topCenter"
+     })
+   }else if(serverMessage === "Brand Restored Successfully"){
+     iziToast.success({
+         title : "Success",
+         message: serverMessage,
+       position: 'topRight'
+       })
+   }else if(serverMessage === "Brand Deleted"){
+     iziToast.error({
+       title : "Deleted",
+       message : serverMessage,
+       position : "topRight"
+     })
+ }else if(serverMessage === "Brand Updated Successfully"){
+     iziToast.success({
+         title : "Success",
+         message: serverMessage,
+       position: 'topCenter'
+       })
+
+   }
+ }
+</script>
+</body>
+</html>
