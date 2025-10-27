@@ -12,16 +12,16 @@
             </div>
         </div>
 
-        <form  autocomplete="off" id="productForm" action="/admin/add-product" method="post" enctype="multipart/form-data"  class="bg-white rounded-lg shadow p-6">
+        <form  autocomplete="off" id="productForm" action="/admin/add-product" method="post" enctype="multipart/form-data"  class="bg-white rounded-lg shadow p-6" onsubmit="return validateForm()" novalidate>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-                    <input type="text" name="productName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <label for="productName" class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+                    <input id="productName" type="text" name="productName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                    <select name="categoryId" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                    <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select id="category" name="categoryId" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
                         <option value="">Select Category</option>
                         <% for( let i = 0; i < categories.length; i++ ) { %>
                             <option value="<%= categories[i]._id  %>"><%= categories[i].categoryName %></option>
@@ -31,8 +31,8 @@
 
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-                    <select name="brandId" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <label for="brand" class="block text-sm font-medium text-gray-700 mb-1">Brand</label>
+                    <select id="brand" name="brandId" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                         <option value="">Select Brand</option>
                         <% for( let i = 0; i < brands.length; i++ ) { %>
                             <option value="<%= brands[i]._id %>"><%= brands[i].brandName %></option>
@@ -53,8 +53,8 @@
                 </div>
                 
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <textarea name="description" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" rows="3"></textarea>
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea id="description" name="description" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" rows="3"></textarea>
                 </div>
             </div>
 
@@ -111,218 +111,5 @@
     </div>
 
 
-    <script>
-        feather.replace();
-        let fileList = {}
-        // Variant template
-        const variantTemplate = (index) => `
-            <div class="variant-item" data-index="${index}">
-                <span class="remove-variant" onclick="removeVariant(this)"><i data-feather="x"></i></span>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Size</label>
-                        <input type="text" name="variants[${index}][size]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
-                        <input type="text" name="variants[${index}][color]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
-                        <input type="number" step="0.01" name="variants[${index}][price]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
-                        <input type="number" name="variants[${index}][stockQuantity]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Stock Status</label>
-                        <select name="variants[${index}][stockStatus]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
-                            <option value="In Stock">In Stock</option>
-                            <option value="Out of Stock">Out of Stock</option>
-                            <option value="Pre Order">Pre-Order</option>
-                        </select>
-                    </div>
-                    <div class="lg:col-span-4">
-                       <div class="flex justify-start align-items-center">
-                         <label for="productImages${index}" class=" addBtn-primary bg-white py-3 px-3 rounded-md shadow-sm text-xl leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 cursor-pointer">Upload Images</label>
-                         <span class="ml-2 text-lg font-medium "><strong>(Minimum 3 and Maximum 20 Images)</strong></span>
-                        <input id="productImages${index}" type="file" name="variants[${index}][productImages]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 hidden" multiple accept="image/*"  onchange="previewImages(this, ${index})">
-                        </div>
-                        <div id="imagePreview-${index}" class="flex  flex-wrap gap-2 mt-2"></div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        // Add variant
-        let variantCount = 0;
-        document.getElementById('addVariantBtn').addEventListener('click', function() {
-            document.getElementById('variantsContainer').insertAdjacentHTML('beforeend', variantTemplate(variantCount));
-            feather.replace();
-            variantCount++;
-        });
-
-        // Remove variant
-        function removeVariant(el) {
-            el.closest('.variant-item').remove();
-        }
-        // Image preview function
-       
-       
-        function previewImages(input, index) {
-            const previewContainer = document.getElementById(`imagePreview-${index}`);
-            previewContainer.innerHTML = '';
-            
-            if (input.files.length < 3) {
-                iziToast.warning({
-                    title: 'Warning',
-                    message: 'Please select at least 3 images',
-                    position: 'topCenter'
-                });
-                input.value = '';
-                return;
-            }
-            if (input.files.length > 20) {
-                iziToast.warning({
-                    title: 'Warning',
-                    message: 'You can upload a maximum of 20 images',
-                    position: 'topCenter'
-                });
-                input.value = '';
-                return;
-            }
-            
-            fileList[index] = new DataTransfer()
-
-            for (let i = 0; i < input.files.length; i++) {
-                fileList[index].items.add(input.files[i])
-                console.log(fileList)
-            }
-
-            input.files = fileList[index].files
-
-            let count = 0
-            for (let i = 0; i < input.files.length; i++) {
-                const reader = new FileReader();
-                const file = input.files[i]
-                reader.onload = function(e) {
-                    
-                    const imgBox = document.createElement('div');
-                    imgBox.className = 'inline-block min-w-[25%] max-w-[30%]  border rounded-md overflow-auto relative';
-                    imgBox.id = `imgCount${count}`
-                    count++
-                    imgBox.innerHTML = `
-                        <img src="${e.target.result}" class="w-full h-full object-cover" alt="Preview">
-                        <button type="button" onclick="removeImage(this, ${index})" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                            ×
-                        </button>
-                    `;
-                    previewContainer.appendChild(imgBox);
-
-                    let cropperModal = document.getElementById("cropperModal")
-                    let cropperModalImg = document.getElementById("cropperImagePreview")
-                    let cropBtn = document.getElementById("crop-btn")
-                    let cancelBtn = document.getElementById("cancel-btn")
-                    let closeXBtn = document.getElementById("close-x-btn")
-                    imgBox.addEventListener("click",() => {
-                        cropperModal.classList.remove("hidden")
-                        cropperModalImg.src  = `${e.target.result}`
-
-                        let cropper = new Cropper(cropperModalImg,{
-                            aspectRatio : 1,
-                            viewMode : 1,
-                            guides : true,
-                            background : true,
-                            autoCropArea : 1,
-                            zoomable : true
-                        })
-                        cancelBtn.addEventListener("click", () => {
-                        cropper.destroy()
-                        cropperModal.classList.add("hidden")
-                         })
-                        closeXBtn.addEventListener("click",() => {
-                            cropper.destroy()
-                            cropperModal.classList.add("hidden")
-                        })
-                        cropBtn.addEventListener("click", async () => {
-
-                            let croppedCanvas = cropper.getCroppedCanvas()
-                            if(croppedCanvas){
-                               const fileName = file.name
-                               const blob = await new Promise(res => croppedCanvas.toBlob(res,"image/jpeg"))
-                               const croppedFile = new File([blob],fileName,{type : "image/jpeg"})
-                               
-                               const newList = new DataTransfer()
-                               for(let j = 0 ; j < fileList[index].files.length ; j++){
-                                const existingFile = fileList[index].files[j]
-
-                                if(existingFile.name === fileName){
-                                    newList.items.add(croppedFile)
-                                }else{
-                                    newList.items.add(existingFile)
-                                }
-
-                                
-                               }
-                               fileList[index] = newList
-                                input.files = newList.files
-                                imgBox.querySelector("img").src =  croppedCanvas.toDataURL("image/png")
-                            }
-
-                            cropper.destroy()
-                            cropperModal.classList.add("hidden")
-                        })
-                    })
-
-
-                   
-
-
-                };
-                reader.readAsDataURL(input.files[i]);
-                
-            }
-
-            let cropInfo = document.createElement("span")
-            cropInfo.style.paddingTop = "6rem"
-            cropInfo.innerHTML = "Click on image <br> to crop"
-            previewContainer.appendChild(cropInfo)
-            
-            
-        }
-        
-
-        // Remove image function
-        function removeImage(btn, index) {
-            const previewContainer = document.getElementById(`imagePreview-${index}`);
-            btn.parentElement.remove();
-            
-            const input = document.querySelector(`input[name="variants[${index}][productImages]"]`);
-            if (previewContainer.children.length < 3) {
-                iziToast.warning({
-                    title: 'Warning',
-                    message: 'Please Keep at least 3 images',
-                    position: 'topCenter'
-                });
-                input.value = '';
-            } 
-        }
-
-        // Form submission
-            const form = document.getElementById("productForm");
-            const input = document.getElementById("productImages");
-
-            form.addEventListener("submit", function (e) {
-            if (input.files.length < 3) {
-                e.preventDefault(); // stop form submission
-                alert("Please upload at least 3 images before submitting.");
-            }
-            })
-
-        // Add initial variant
-        document.getElementById('addVariantBtn').click();
-    </script>
-    
-</body>
-</html>
+   
+<%- include("../../public/javascript/admin-javascript/addProductScript.ejs") %>

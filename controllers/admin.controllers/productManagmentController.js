@@ -22,9 +22,10 @@ const getProducts = async (req,res) => {
   const getAddProduct = async (req,res) => {
     const categories = await Category.find({})
     const brands = await Brand.find({})
+    const products = await Product.find({})
     const message = req.session.message || null
     delete req.session.message
-    res.render("admin-view/admin.add-product.ejs",{message,categories,brands})
+    res.render("admin-view/admin.add-product.ejs",{message,categories,brands,products})
   }
 
   const addProduct = async (req,res) => {
@@ -37,7 +38,7 @@ const getProducts = async (req,res) => {
       }
       if(!req.files || req.files.length < 3){
         console.log(!req.files || req.files.length < 3)
-        req.session.message = "Minimum 3 Images required."
+        req.session.message = "Minimum 3 Images required"
         return res.redirect("/admin/add-product")
       }
      let booleanValue;
@@ -85,7 +86,7 @@ const getProducts = async (req,res) => {
       })
 
       await newProduct.save()
-      req.session.message = "Product created successfully!";
+      req.session.message = "Product Created Successfully";
      return res.redirect("/admin/products");
     } catch (error) {
       console.error(error);
@@ -96,9 +97,10 @@ const getProducts = async (req,res) => {
     const product = await Product.find({_id : id}).populate("categoryId").populate("brandId")
     const categories = await Category.find({})
     const brands = await Brand.find({})
+    const products = await Product.find({})
     const message = req.session.message || null
     delete req.session.message
-    res.render("admin-view/admin.edit-product.ejs",{message,product,categories,brands})
+    res.render("admin-view/admin.edit-product.ejs",{message,product,categories,brands,products})
   }
 
   const editProduct = async (req, res) => {
@@ -164,7 +166,7 @@ const getProducts = async (req,res) => {
       }})
   
   
-      req.session.message = "Product updated successfully!";
+      req.session.message = "Product Updated Successfully";
       return res.redirect("/admin/products");
     } catch (error) {
       console.error(error);
@@ -186,7 +188,7 @@ const getProducts = async (req,res) => {
     try {
         const {id} = req.query
      await Product.findByIdAndUpdate({_id : id},{$set : {isDeleted : true}})
-    req.session.message = "Product Soflty Deleted"
+    req.session.message = "Product Deleted"
     res.redirect("/admin/products")
     } catch (error) {
         console.log(error)

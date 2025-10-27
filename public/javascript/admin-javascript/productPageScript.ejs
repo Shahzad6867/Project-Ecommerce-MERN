@@ -1,0 +1,111 @@
+<script>
+    feather.replace();
+
+
+    const productCardTemplate = document.querySelector("[data-product-template]")
+    const productCardContainer = document.querySelector("[data-product-container]")
+    const searchInput = document.querySelector("[data-search]")
+
+
+   const productsString = '<%- JSON.stringify(productsFullList) %>' ;
+   const productData = JSON.parse(productsString)
+   
+  
+   productCardContainer.innerHTML = ""
+    searchInput.addEventListener("input",(e) => {
+     const value = e.target.value.toLowerCase()
+     productCardContainer.style.display = "block"
+       productCardContainer.innerHTML = ""
+     
+     if(!value){
+     document.getElementById("search-icon").classList.remove("hidden")
+     productCardContainer.style.display = "none"
+     return;
+    }else{
+     document.getElementById("search-icon").classList.add("hidden")
+    }
+    productData.forEach(product => {
+     if(product.productName.toLowerCase().includes(value)){
+       const listItem = productCardTemplate.content.cloneNode(true).children[0]
+       listItem.querySelector("[data-header]").textContent = product.productName
+       productCardContainer.appendChild(listItem)
+       
+       listItem.addEventListener("click",() => {
+         searchInput.value = product.productName
+         searchInput.focus()
+         productCardContainer.style.display = "none"
+       })
+     }
+     
+    });
+    })
+
+
+
+
+
+
+
+
+ 
+
+ function restoreProduct(id){
+    window.location.href = "/admin/restore-product?id="+id
+ }
+ function areYouSure(id){
+     if(confirm("Are you sure ? Do you Want to delete the Product ?")){
+         window.location.href = "/admin/delete-product?id="+id
+     }
+ }
+ 
+ let serverMessage = '<%- message %>'
+if(serverMessage){
+if(serverMessage === "Product Created Successfully"){
+  iziToast.success({
+      title : "Success",
+      message: serverMessage,
+    position: 'topRight'
+    })
+}else if(serverMessage === "Product already Exists"){
+  iziToast.error({
+    title: "Error",
+      message: serverMessage,
+      position: "topCenter",
+  })
+}else if(serverMessage === "Something went Wrong!"){
+  iziToast.error({
+    title : "Error",
+    message : serverMessage,
+    position : "topCenter"
+  })
+}else if(serverMessage === "Product Restored Successfully"){
+  iziToast.success({
+      title : "Success",
+      message: serverMessage,
+    position: 'topRight'
+    })
+}else if(serverMessage === "Product Deleted"){
+  iziToast.error({
+    title : "Deleted",
+    message : serverMessage,
+    position : "topRight"
+  })
+}else if(serverMessage === "Product Updated Successfully"){
+  iziToast.success({
+      title : "Success",
+      message: serverMessage,
+    position: 'topCenter'
+    })
+
+}else if(serverMessage === "Minimum 3 Images required"){
+ iziToast.success({
+      title : "Success",
+      message: serverMessage,
+    position: 'topCenter'
+    })
+}
+}
+ 
+</script>
+</body>
+</html>

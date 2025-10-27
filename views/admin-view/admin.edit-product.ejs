@@ -12,30 +12,30 @@
             </div>
         </div>
 
-        <form  autocomplete="off" id="productForm" action="/admin/edit-product?id=<%= product[0]._id %>" method="post" enctype="multipart/form-data"  class="bg-white rounded-lg shadow p-6">
+        <form  autocomplete="off" id="productForm" action="/admin/edit-product?id=<%= product[0]._id %>" method="post" enctype="multipart/form-data"  class="bg-white rounded-lg shadow p-6" onsubmit="return validateForm('<%= product[0].productName%>')" novalidate>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-                    <input type="text" name="productName" value="<%= product[0].productName %>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <label for="productName" class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+                    <input type="text" id="productName" name="productName" value="<%= product[0].productName %>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                    <select name="categoryId" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
-                        <option value="<%= product[0].categoryId._id %>" ><%= product[0].categoryId.categoryName%></option>
+                    <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select id="category" name="categoryId" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                        <option value="" >Select Category</option>
                         <% for( let i = 0; i < categories.length; i++ ) { %>
-                            <option value="<%= categories[i]._id  %>"><%= categories[i].categoryName %></option>
+                            <option value="<%= categories[i]._id  %>" <%= product[0].categoryId.categoryName === categories[i].categoryName ? 'selected' : '' %> ><%= categories[i].categoryName %></option>
                         <% } %>
                     </select>
                 </div>
 
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-                    <select name="brandId" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-                        <option value="<%= product[0].brandId._id%>"><%= product[0].brandId.brandName%></option>
+                    <label for="brand" class="block text-sm font-medium text-gray-700 mb-1">Brand</label>
+                    <select id="brand" name="brandId" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="">Select Brand</option>
                         <% for( let i = 0; i < brands.length; i++ ) { %>
-                            <option value="<%= brands[i]._id %>"><%= brands[i].brandName %></option>
+                            <option value="<%= brands[i]._id %>" <%= product[0].brandId.brandName === brands[i].brandName ? 'selected' : '' %>><%= brands[i].brandName %></option>
                         <% } %>
                     </select>
                 </div>
@@ -53,8 +53,8 @@
                 </div>
                 
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <textarea name="description" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" rows="3"><%= product[0].description %></textarea>
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea id="description" name="description" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" rows="3"><%= product[0].description %></textarea>
                 </div>
             </div>
 
@@ -111,69 +111,85 @@
     </div>
 
     
+    
 
     <script>
         feather.replace();
         let fileList = {}
         // Variant template
-        const variantTemplate = (index) => `
-        
-        <% for( let j = 0; j < product[0].variants.length; j++ ) { %>
-            <div class="variant-item" data-index="${index}">
-                <span class="remove-variant" onclick="removeVariant(this)"><i data-feather="x"></i></span>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Size</label>
-                        <input type="text" name="variants[${index}][size]" value="<%= product[0].variants[j].size %>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+        const variantTemplate = (index,size,color,price,stockQuantity,stockStatus) => `
+        <div class="variant-item" data-index="${index}"  data-size="${size}" data-color="${color}" data-price="${price}" data-stockQuantity="${stockQuantity}" data-stockStatus="${stockStatus}">
+            <span class="remove-variant" onclick="removeVariant(this)"><i data-feather="x"></i></span>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Size</label>
+                    <input type="text" name="variants[${index}][size]" value="${size}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                    <input  type="text" name="variants[${index}][color]" value="${color}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+                    <input   type="number" step="0.01" name="variants[${index}][price]" value="${price}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
+                    <input   type="number" name="variants[${index}][stockQuantity]" value="${stockQuantity}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Stock Status</label>
+                    <select  name="variants[${index}][stockStatus]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                         <option value="">Select Stock Status</option>
+                        <option value="In Stock" ${stockStatus === 'In Stock' ? 'selected' : ""}>In Stock</option>
+                        <option value="Out of Stock" ${stockStatus === 'Out of Stock' ? 'selected' : ""}>Out of Stock</option>
+                        <option value="Pre Order" ${stockStatus === 'Pre Order' ? 'selected' : ""}>Pre-Order</option>
+                    </select>
+                </div>
+                <div class="lg:col-span-4">
+                   <div class="flex justify-start align-items-center">
+                     <label for="productImages${index}" class=" addBtn-primary bg-white py-3 px-3 rounded-md shadow-sm text-xl leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 cursor-pointer">Upload Images</label>
+                     <span class="ml-2 text-lg font-medium "><strong>(Minimum 3 and Maximum 10 Images)</strong></span>
+                    <input id="productImages${index}" type="file" name="variants[${index}][productImages]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 hidden" multiple accept="image/*"  onchange="previewImages(this, ${index})">
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
-                        <input type="text" name="variants[${index}][color]" value="<%= product[0].variants[j].color %>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
-                        <input type="number" step="0.01" name="variants[${index}][price]" value="<%= product[0].variants[j].price %>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
-                        <input type="number" name="variants[${index}][stockQuantity]" value="<%= product[0].variants[j].stockQuantity %>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Stock Status</label>
-                        <select name="variants[${index}][stockStatus]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
-                            <option value="<%= product[0].variants[j].stockStatus %>"><%= product[0].variants[j].stockStatus %> (Saved At)</option>
-                            <option value="In-Stock">In Stock</option>
-                            <option value="Out-of-Stock">Out of Stock</option>
-                            <option value="Pre-Order">Pre-Order</option>
-                        </select>
-                    </div>
-                    <div class="lg:col-span-4">
-                       <div class="flex justify-start align-items-center">
-                         <label for="productImages${index}" class=" addBtn-primary bg-white py-3 px-3 rounded-md shadow-sm text-xl leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 cursor-pointer">Upload Images</label>
-                         <span class="ml-2 text-lg font-medium "><strong>(Minimum 3 and Maximum 20 Images)</strong></span>
-                        <input id="productImages${index}" type="file" name="variants[${index}][productImages]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 hidden" multiple accept="image/*"  onchange="previewImages(this, ${index})">
-                        </div>
-                        <div id="imagePreview-${index}" class="flex  flex-wrap gap-2 mt-2">
-                               <p>To Edit this Image re-upload</p>    
-                           <% for( let k = 0; k < product[0].variants[j].productImages.length; k++ ) { %>
-                            
-                            <div id="imgCount<%= k %>" class="inline-block min-w-[25%] max-w-[30%]  border rounded-md overflow-auto relative">
-                                <img src="<%= product[0].variants[j].productImages[k] %>" class="w-full h-full object-cover" alt="Preview">
-                                <button type="button"  onclick="removeImage(this, ${index})" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                                    ×
-                                </button>
-                            </div>
-                            <% } %>
-                            </div>
-                    </div>
+                    <div id="imagePreview-${index}" class="flex  flex-wrap gap-2 mt-2"></div>
                 </div>
             </div>
-        <% } %>`;
-
+        </div>
+    `;
         // Add variant
         let variantCount = 0;
         document.getElementById('addVariantBtn').addEventListener('click', function() {
-            document.getElementById('variantsContainer').insertAdjacentHTML('beforeend', variantTemplate(variantCount));
+            const variants = JSON.parse('<%- JSON.stringify( product[0].variants)%>')
+            if (variants[variantCount]) {
+                const variantSize = variants[variantCount].size 
+                const variantColor = variants[variantCount].color
+                const variantPrice = variants[variantCount].price
+                const variantStockQty = variants[variantCount].stockQuantity
+                const variantStockStatus = variants[variantCount].stockStatus
+                const variantProductImages = variants[variantCount].productImages
+                
+                document.getElementById('variantsContainer').insertAdjacentHTML('beforeend', variantTemplate(variantCount,variantSize,variantColor,variantPrice,variantStockQty,variantStockStatus));        
+                const previewContainer = document.getElementById(`imagePreview-${variantCount}`)
+                previewContainer.innerHTML = "<span style='padding-top : 6rem;'>Re-upload above to edit images<br>or to add new Images.</span>"
+                let count = 0;
+                for(let i = 0 ; i < variantProductImages.length ; i++){
+                    
+                    const imgBox = document.createElement('div');
+                    imgBox.className = 'inline-block min-w-[25%] max-w-[25%] min-h-[25%] max-h-[25%]  border rounded-md overflow-auto relative'
+                    imgBox.id = `imgCount${count}`
+                     count++
+                     imgBox.innerHTML = `
+                        <img src="${variantProductImages[i]}" class="w-full h-full object-cover" alt="Preview">`
+                    previewContainer.appendChild(imgBox)
+                }
+              
+            }else{
+                document.getElementById('variantsContainer').insertAdjacentHTML('beforeend', variantTemplate(variantCount,"","","","",""));       
+            }
+               
+            
+           
             feather.replace();
             variantCount++;
         });
@@ -224,14 +240,12 @@
                 reader.onload = function(e) {
                     
                     const imgBox = document.createElement('div');
-                    imgBox.className = 'inline-block min-w-[25%] max-w-[30%]  border rounded-md overflow-auto relative';
+                    imgBox.className = 'inline-block  min-w-[25%] max-w-[25%] min-h-[25%] max-h-[25%]  border rounded-md overflow-auto relative';
                     imgBox.id = `imgCount${count}`
                     count++
                     imgBox.innerHTML = `
                         <img src="${e.target.result}" class="w-full h-full object-cover" alt="Preview">
-                        <button type="button"  onclick="removeImage(this, ${index})" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                            ×
-                        </button>
+                       
                     `;
                     previewContainer.appendChild(imgBox);
 
@@ -301,42 +315,181 @@
 
             let cropInfo = document.createElement("span")
             cropInfo.style.paddingTop = "6rem"
-            cropInfo.innerHTML = "Click on image <br> to crop"
+            cropInfo.innerHTML = "Click on image to Crop,<br><strong>Re-upload</strong> images<br>to update or remove any."
             previewContainer.appendChild(cropInfo)
             
             
         }
         
 
-        // Remove image function
-        function removeImage(btn, index) {
-            const previewContainer = document.getElementById(`imagePreview-${index}`);
-            btn.parentElement.remove();
-            
-            const input = document.querySelector(`input[name="variants[${index}][productImages]"]`);
-            if (previewContainer.children.length < 3) {
-                iziToast.warning({
-                    title: 'Warning',
-                    message: 'Please Keep at least 3 images',
-                    position: 'topCenter'
-                });
-                input.value = '';
-            } 
-        }
+        
 
         // Form submission
-            const form = document.getElementById("productForm");
-            const input = document.getElementById("productImages");
+        const productArrayString = '<%- JSON.stringify(products.map((product) => product.productName.toUpperCase().trim(),[])) %>';
+     let productNames =  JSON.parse(productArrayString)
+    // Function to check if a form has been modified
+function hasChanges(variantItem) {
+    const index = variantItem.getAttribute("data-index");
+    const initialSize = variantItem.getAttribute("data-size");
+    const initialColor = variantItem.getAttribute("data-color");
+    const initialPrice = variantItem.getAttribute("data-price");
+    const initialStockQuantity = variantItem.getAttribute("data-stockQuantity");
+    const initialStockStatus = variantItem.getAttribute("data-stockStatus");
 
-            form.addEventListener("submit", function (e) {
-            if (input.files.length < 3) {
-                e.preventDefault(); // stop form submission
-                alert("Please upload at least 3 images before submitting.");
-            }
-            })
+    // If initialSize is null, it's a new variant, so it's considered changed
+    if (initialSize === null) {
+        return true;
+    }
+
+    const size = variantItem.querySelector(`[name="variants[${index}][size]"]`).value;
+    const color = variantItem.querySelector(`[name="variants[${index}][color]"]`).value;
+    const price = variantItem.querySelector(`[name="variants[${index}][price]"]`).value;
+    const stockQuantity = variantItem.querySelector(`[name="variants[${index}][stockQuantity]"]`).value;
+    const stockStatus = variantItem.querySelector(`[name="variants[${index}][stockStatus]"]`).value;
+    const productImages = variantItem.querySelector(`[name="variants[${index}][productImages]"]`);
+
+    // Check if new files were selected
+    const isImageChanged = productImages.files && productImages.files.length > 0;
+
+    return (
+        initialSize.toUpperCase().trim() !== size.toUpperCase().trim() ||
+        initialColor.toUpperCase().trim() !== color.toUpperCase().trim() ||
+        parseFloat(initialPrice) !== parseFloat(price) ||
+        parseInt(initialStockQuantity, 10) !== parseInt(stockQuantity, 10) ||
+        initialStockStatus !== stockStatus ||
+        isImageChanged
+    );
+}
+
+// Variant Validation
+function validateVariant(variantItem) {
+    const index = variantItem.getAttribute("data-index");
+    const size = variantItem.querySelector(`[name="variants[${index}][size]"]`);
+    const color = variantItem.querySelector(`[name="variants[${index}][color]"]`);
+    const price = variantItem.querySelector(`[name="variants[${index}][price]"]`);
+    const stockQuantity = variantItem.querySelector(`[name="variants[${index}][stockQuantity]"]`);
+    const stockStatus = variantItem.querySelector(`[name="variants[${index}][stockStatus]"]`);
+    const productImages = variantItem.querySelector(`[name="variants[${index}][productImages]"]`);
+
+    // Basic required field validation
+    if (!size.value) {
+        iziToast.error({ title: "Error", message: `Variant ${parseInt(index) + 1}: Please provide a size.`, position: "topRight" });
+        return false;
+    }
+    if (!color.value) {
+        iziToast.error({ title: "Error", message: `Variant ${parseInt(index) + 1}: Please provide a color.`, position: "topRight" });
+        return false;
+    }
+    if (!price.value || parseFloat(price.value) <= 0) {
+        iziToast.error({ title: "Error", message: `Variant ${parseInt(index) + 1}: Please provide a valid price above 0`, position: "topRight" });
+        return false;
+    }
+    if (!stockQuantity.value || parseInt(stockQuantity.value, 10) < 0) {
+        iziToast.error({ title: "Error", message: `Variant ${parseInt(index) + 1}: Please provide a valid stock quantity (0 or above)`, position: "topRight" });
+        return false;
+    }
+    if (!stockStatus.value) {
+        iziToast.error({ title: "Error", message: `Variant ${parseInt(index) + 1}: Please select a stock status`, position: "topRight" });
+        return false;
+    }
+
+    // New image check logic
+    const existingImageCount = variantItem.querySelectorAll('#imagePreview-' + index + ' img').length;
+    if (productImages.files.length + existingImageCount < 3) {
+        iziToast.error({
+            title: "Error",
+            message: `Variant ${parseInt(index) + 1}: Please select at least 3 Images for the Product`,
+            position: "topRight"
+        });
+        return false;
+    }
+
+    return true;
+}
+
+// Overall Form Validation
+function validateForm(initialProductName) {
+    const productName = document.getElementById("productName").value.toUpperCase().trim();
+    const category = document.getElementById("category");
+    const brand = document.getElementById("brand");
+    const description = document.getElementById("description");
+
+    if (!productName) {
+        iziToast.error({ title: "Error", message: "Please provide a name for the product", position: "topRight" });
+        return false;
+    } else {
+        if (productName !== initialProductName.toUpperCase().trim() && productNames.includes(productName)) {
+            iziToast.error({ title: "Error", message: "Product already exists", position: "topRight" });
+            return false;
+        }
+    }
+
+    if (!category.value) {
+        iziToast.error({ title: "Error", message: "Select a category", position: "topRight" });
+        return false;
+    }
+    if (!brand.value) {
+        iziToast.error({ title: "Error", message: "Select a brand", position: "topRight" });
+        return false;
+    }
+    if (!description.value) {
+        iziToast.error({ title: "Error", message: "Provide a description", position: "topRight" });
+        return false;
+    }
+
+    const variantItems = document.querySelectorAll(".variant-item");
+    if (variantItems.length === 0) {
+        iziToast.error({ title: "Error", message: "Please add at least one variant", position: "topRight" });
+        return false;
+    }
+    
+    // Check for any changes in existing variants
+    let anyVariantChanged = false;
+    for (const variantItem of variantItems) {
+        if (hasChanges(variantItem)) {
+            anyVariantChanged = true;
+            break;
+        }
+    }
+
+    if (
+        !anyVariantChanged &&
+        productName === initialProductName.toUpperCase().trim() &&
+        category.value === '<%= product[0].categoryId._id %>' &&
+        brand.value === '<%= product[0].brandId._id %>' &&
+        description.value.trim() === '<%= product[0].description.trim() %>'
+    ) {
+        iziToast.error({
+            title: "Error",
+            message: "No changes have been made. Modify at least one field before saving.",
+            position: "topRight"
+        });
+        return false;
+    }
+
+
+    // Validate individual variants for data integrity
+    let allVariantsValid = true;
+    for (const variantItem of variantItems) {
+        if (!validateVariant(variantItem)) {
+            allVariantsValid = false;
+            break;
+        }
+    }
+
+    if (!allVariantsValid) {
+        return false;
+    }
+
+    return true;
+}
+
 
         // Add initial variant
-        document.getElementById('addVariantBtn').click();
+       const variantLen = Number('<%- product[0].variants.length %>')
+       for(let j = 0 ; j < variantLen ; j++){
+        document.getElementById("addVariantBtn").click()
+       }
     </script>
     
 </body>
