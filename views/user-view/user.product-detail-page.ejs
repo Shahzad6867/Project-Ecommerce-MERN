@@ -1,56 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NovaMart - Online Shopping</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
-    <script src="https://unpkg.com/feather-icons"></script>
-    <script src="/javascript/user-javascript/carousel.js"></script>
-    <link rel="stylesheet" href="/styles/style4.css">
-    
-</head>
-<body class="bg-white">
-    <!-- Navigation Bar -->
-    <nav class="bg-green-500 shadow-md py-3 px-4 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
-            <!-- Logo -->
-            <div class="flex items-center">
-                <a id="nav-logo" href="/home" class="text-2xl font-bold text-black" >NovaMart</a>
-            </div>
-            
-            <!-- Search Bar -->
-            <div class="flex-1 mx-8">
-                <div class="relative">
-                    <input type="text" placeholder="Search for products..." 
-                           class="w-full py-2 px-4 pr-10 rounded-full search-bar border border-gray-300 focus:outline-none">
-                    <button class="absolute right-2 top-2 text-gray-500 hover:text-blue-600">
-                        <i data-feather="search"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- User Actions -->
-            <div class="flex items-center space-x-6">
-                <a href="#" class="flex flex-col items-center">
-                    <span class="iconify" data-icon="qlementine-icons:user-16" style="width: 26;height: 26;"></span>
-                    <span class="text-xs mt-1">Account</span>
-                </a>
-                <a href="#" class="flex flex-col items-center">
-                    <span class="iconify" data-icon="ri:heart-line" style="width: 26;height: 26;"></span>
-                    <span class="text-xs mt-1">Wishlist</span>
-                </a>
-                <a href="#" class="flex flex-col items-center relative">
-                    <span class="iconify" data-icon="solar-cart-linear" style="width: 26;height: 26;"></span>
-                    <span class="text-xs mt-1">Cart</span>
-                    <span class="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"></span>
-                </a>
-            </div>
-        </div>
-    </nav>
-
+<%- include("../partials/user-side/navbar.ejs")%>
 
   <!-- Product Section -->
   <main class="max-w-7xl mx-auto py-8 px-6">
@@ -142,10 +90,17 @@
          <% for( let j = 0; j < relatedProduct[i].variants.length; j++ ) { %>
           <% if (!relatedProduct[i].categoryId.isDeleted && !relatedProduct[i].brandId.isDeleted) { %>
            <% if (!relatedProduct[i].isDeleted) { %>
-            <% if (String(product._id) !== String(relatedProduct[i]._id)) { %>
              
-        <div class="border rounded-xl shadow-sm bg-white p-3 hover:shadow-md transition">
+        <div class="relative border rounded-xl shadow-sm bg-white p-3 hover:shadow-md transition">
           <img src="<%= relatedProduct[i].variants[j].productImages[0] %>" class="w-full h-40 object-contain" alt="">
+          <button class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
+            <i data-feather="heart" class="w-4 h-4"></i>
+        </button>
+        <a href="/product?id=<%= relatedProduct[i]._id %>">
+            <button class="absolute top-12 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
+                <i data-feather="eye" class="w-4 h-4"></i>
+            </button>
+        </a>
           <h4 class="font-semibold text-sm mt-2"><%= relatedProduct[i].productName %></h4>
           <p class="text-emerald-600 font-bold mt-1"><%= (relatedProduct[i].variants[j].price * 75/100).toFixed(2) %></p>
         </div>
@@ -154,7 +109,6 @@
              <% } %>
            <% } %>
          <% } %>
-        <% } %>
       </div>
     </section>
   </main>

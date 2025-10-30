@@ -10,17 +10,17 @@ const getHomepage = async(req,res) => {
     delete req.session.message
     const categories = await Category.find({})
     const products = await Product.find({}).populate("categoryId").populate("brandId")
-    res.render("user-view/user.homepage.ejs",{categories,products})
+    const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
+    res.render("user-view/user.homepage.ejs",{categories,products,productsFullList})
 }
 
 const getProductDetail = async(req,res) => {
     try {
     const {id} = req.query
     const product = await Product.findById({ _id : id})
-    console.log(product)
     const relatedProduct = await Product.find({ categoryId : product.categoryId}).limit(5).populate("categoryId").populate("brandId")
-    console.log(relatedProduct)
-    res.render("user-view/user.product-detail-page.ejs",{product,relatedProduct})
+    const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
+    res.render("user-view/user.product-detail-page.ejs",{product,relatedProduct,productsFullList})
     } catch (error) {
         console.log(error.message)
     }
@@ -33,7 +33,8 @@ try {
     const categories = await Category.find({})
     const brands = await Brand.find({})
     const products = await Product.find({}).populate("categoryId").populate("brandId")
-    res.render("user-view/user.shop.ejs",{categories,products,brands})
+    const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
+    res.render("user-view/user.shop.ejs",{categories,products,brands,productsFullList})
     
 } catch (error) {
     console.log(error)
@@ -76,13 +77,15 @@ const shopFiltered = async (req,res) => {
 
       const categories = await Category.find({})
       const brands = await Brand.find({})
+      const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
 
     // Re-render your product listing EJS or HTML
     res.render("user-view/user.shop-filtered.ejs", {
       products: filteredProducts,
       filters: req.body, 
       categories,
-      brands
+      brands,
+      productsFullList
     });
 
   } catch (error) {
