@@ -1,16 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product Listing</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/feather-icons"></script>
-</head>
-<body class="bg-gray-50">
-
+<%- include("../partials/user-side/navbar.ejs")%>
   <!-- Main Container -->
-  <div class="flex max-w-7xl mx-auto mt-10 px-4 gap-8">
+  <div class="flex max-w-7xl mx-auto my-10 px-4 gap-8">
 
     <!-- Sidebar Filters -->
     <aside class="w-1/4 bg-white p-5 rounded-xl shadow-sm">
@@ -22,21 +12,29 @@
         <div>
           <h3 class="font-medium mb-2">Category</h3>
           <div class="space-y-1">
-            <% for( let i = 0; i < categories.length; i++ ) { %>
-            <label class="flex items-center gap-2">
-              <input type="checkbox" name="category" value="<%= categories[i]._id  %>" class="accent-emerald-600">
-              <%= categories[i].categoryName %>
-            </label>
+            <% for(let i = 0; i < categories.length; i++) { %>
+              <label class="flex items-center gap-2">
+                <input type="checkbox" name="category" value="<%= categories[i]._id %>" class="accent-green-500"
+                  <% if(Array.isArray(filters.category) && filters.category.includes(String(categories[i]._id))) { %> 
+                    checked <% } else if(!Array.isArray(filters.category) && filters.category === String(categories[i]._id)) { %> 
+                      checked
+                      <%}%> >
+
+                <%= categories[i].categoryName %>
+              </label>
             <% } %>
           </div>
         </div>
+        
 
         <!-- Price Filter -->
         <div>
           <h3 class="font-medium mb-2">Price Range</h3>
           <div class="flex items-center gap-2">
-            <input type="number" name="minPrice" placeholder="Min" class="border rounded-lg w-1/2 p-2">
-            <input type="number" name="maxPrice" placeholder="Max" class="border rounded-lg w-1/2 p-2">
+            <label for="minPrice">Min</label>
+            <input type="number" id="minPrice" name="minPrice" placeholder="Min" class="border rounded-lg w-1/2 p-2" value="<%= filters.minPrice %>">
+            <label for="maxPrice">Max</label>
+            <input type="number" id="maxPrice" name="maxPrice" placeholder="Max" class="border rounded-lg w-1/2 p-2" value="<%= filters.maxPrice %>">
           </div>
         </div>
 
@@ -46,7 +44,12 @@
           <div class="space-y-1">
             <% for( let i = 0; i < brands.length; i++ ) { %>
               <label class="flex items-center gap-2">
-                <input type="checkbox" name="brand" value="<%= brands[i]._id %>" class="accent-emerald-600">
+                <input type="checkbox" name="brand" value="<%= brands[i]._id %>" class="accent-green-500"
+                <% if(Array.isArray(filters.brand) && filters.brand.includes(String(brands[i]._id))) { %> 
+                  checked <% } else if(!Array.isArray(filters.brand) && filters.brand === String(brands[i]._id)) { %> 
+                    checked
+                    <%}%> 
+                >
                 <%= brands[i].brandName %>
               </label>
             <% } %>
@@ -54,7 +57,7 @@
         </div>
 
         <!-- Apply Filter Button -->
-        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-medium">
+        <button type="submit" class="filterButton w-full font-bold text-gray-700 py-2 px-4 rounded-lg transition duration-300 mb-4">
           Apply Filters
         </button>
       </form>
@@ -102,29 +105,9 @@
     </section>
   </div>
 
-  <script>
+  <!-- Footer -->
+  <%- include("../partials/user-side/footer.ejs")%>
+  <%- include("../../public/javascript/user-javascript/shop-validation.ejs")%>
 
-    feather.replace()
 
-    // Sorting Logic
-    document.querySelectorAll(".sort-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const sortType = btn.dataset.sort;
-
-        document.querySelectorAll(".sort-btn").forEach(b => b.classList.remove("bg-emerald-600", "text-white"));
-        btn.classList.add("bg-emerald-600", "text-white");
-
-        let sorted = [...products];
-        if (sortType === "low-high") sorted.sort((a, b) => a.price - b.price);
-        else if (sortType === "high-low") sorted.sort((a, b) => b.price - a.price);
-        else if (sortType === "az") sorted.sort((a, b) => a.name.localeCompare(b.name));
-        else if (sortType === "za") sorted.sort((a, b) => b.name.localeCompare(a.name));
-        else sorted = [...products]; // featured default
-
-        renderProducts(sorted);
-      });
-    });
-  </script>
-
-</body>
-</html>
+  

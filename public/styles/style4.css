@@ -113,3 +113,41 @@ body {
 .hide{
   display: none !important;
 }
+.filterButton{
+  background: linear-gradient(135deg, #fbb804 0%, #ffd700 100%);
+  box-shadow: 0 0 6px rgba(251, 184, 4, 0.3);
+}
+.filterButton:hover{
+   transform: translateY(-2px);
+   box-shadow: 0 10px 15px rgba(251, 184, 4, 0.4);
+}
+#imageZoom{
+  width : 500px;
+  height : 500px;
+  border-radius: 10px;
+  position: relative;
+}
+
+#imageZoom img{
+  width : 100%;
+  height : 100%;
+  object-fit: cover;
+  object-position: 0 0;
+  pointer-events: none;
+}
+
+#imageZoom::after{
+  position: absolute;
+  display: var(--display);
+  content: '';
+  width: 100%;
+  height: 100%;
+  background-color: #2196F3;
+  background-image: var(--url);
+  background-size: 200% 200%;
+  background-position: var(--zoom-x) var(--zoom-y);
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.150);
+  top: 0;
+  left: 0;
+}

@@ -36,9 +36,22 @@ const userLogin = async (req, res) => {
     console.log(error);
   }
 };
-
-
+const logoutUser = async (req,res) => {
+  try {
+      if(req.session.user){
+          req.session.user = null
+      }else if(req.user){
+          req.user = null
+      }
+    res.redirect("/login")
+    } catch (error) {
+      console.error(error);
+      req.session.message = "Something Went Wrong";
+      res.redirect("/admin/dashboard");
+    }
+}
 module.exports = {
   getUserLogin,
-  userLogin
+  userLogin,
+  logoutUser
 };

@@ -16,11 +16,11 @@ const getHomepage = async(req,res) => {
 
 const getProductDetail = async(req,res) => {
     try {
-    const {id} = req.query
+    const {id,variant} = req.query
     const product = await Product.findById({ _id : id})
     const relatedProduct = await Product.find({ categoryId : product.categoryId}).limit(5).populate("categoryId").populate("brandId")
     const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
-    res.render("user-view/user.product-detail-page.ejs",{product,relatedProduct,productsFullList})
+    res.render("user-view/user.product-detail-page.ejs",{product,relatedProduct,productsFullList,variant})
     } catch (error) {
         console.log(error.message)
     }
@@ -79,6 +79,17 @@ const shopFiltered = async (req,res) => {
       const brands = await Brand.find({})
       const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
 
+      if(Array.isArray(req.body.category)){
+       req.body.category = req.body.category.map(value => String(value))
+      }else{
+        req.body.category = String(req.body.category)
+      }
+
+      if(Array.isArray(req.body.brand)){
+        req.body.brand = req.body.brand.map(value => String(value))
+       }else{
+         req.body.brand = String(req.body.brand)
+       }
     // Re-render your product listing EJS or HTML
     res.render("user-view/user.shop-filtered.ejs", {
       products: filteredProducts,
@@ -93,26 +104,12 @@ const shopFiltered = async (req,res) => {
   }
 };
 
-const logoutUser = async (req,res) => {
-    try {
-        if(req.session.user){
-            req.session.user = null
-        }else if(req.user){
-            req.user = null
-        }
-      res.redirect("/login")
-      } catch (error) {
-        console.error(error);
-        req.session.message = "Something Went Wrong";
-        res.redirect("/admin/dashboard");
-      }
-}
+
 
 
 module.exports = {
     getHomepage,
     getProductDetail,
     getShop,
-    shopFiltered,
-    logoutUser
+    shopFiltered
 }

@@ -1,0 +1,50 @@
+
+<script>
+
+    feather.replace()
+
+    document.getElementById("minPrice").addEventListener("input",() => {
+      const minPrice = document.getElementById("minPrice").value
+      if(minPrice < 0){
+      iziToast.error({
+        title : "Error",
+        message : "Minimum Price should not be less than 0",
+        position : "topRight"
+      })
+    }
+
+    })
+    document.getElementById("maxPrice").addEventListener("input",() => {
+      const maxPrice = document.getElementById("maxPrice").value
+      if(maxPrice < 0){
+      iziToast.error({
+        title : "Error",
+        message : "Maximum Price should not be less than 0",
+        position : "topRight"
+      })
+    }
+
+    })
+    
+    // Sorting Logic
+    document.querySelectorAll(".sort-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const sortType = btn.dataset.sort;
+
+        document.querySelectorAll(".sort-btn").forEach(b => b.classList.remove("bg-emerald-600", "text-white"));
+        btn.classList.add("bg-emerald-600", "text-white");
+
+        let sorted = [...products];
+        if (sortType === "low-high") sorted.sort((a, b) => a.price - b.price);
+        else if (sortType === "high-low") sorted.sort((a, b) => b.price - a.price);
+        else if (sortType === "az") sorted.sort((a, b) => a.name.localeCompare(b.name));
+        else if (sortType === "za") sorted.sort((a, b) => b.name.localeCompare(a.name));
+        else sorted = [...products]; // featured default
+
+        renderProducts(sorted);
+      });
+    });
+  </script>
+
+</body>
+</html>
