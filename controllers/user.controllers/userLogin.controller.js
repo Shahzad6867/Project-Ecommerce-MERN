@@ -38,12 +38,20 @@ const userLogin = async (req, res) => {
 };
 const logoutUser = async (req,res) => {
   try {
-      if(req.session.user){
+
+        if(req.user){
+          req.logout((err) => {
+            if(err){
+              return next(err)
+            }
+            return res.redirect("/login")
+          })
+        }else if(req.session.user){
           req.session.user = null
-      }else if(req.user){
-          req.user = null
+          return res.redirect("/login")
       }
-    res.redirect("/login")
+      
+     
     } catch (error) {
       console.error(error);
       req.session.message = "Something Went Wrong";
