@@ -46,17 +46,17 @@
               <% for( let i = 0; i < product.variants.length; i++ ) { %>
                 <% if (variant == i) { %>
                   <label class="cursor-pointer">
-                    <input type="radio" name="color" value="<%= product.variants[i].color %>" class="hidden peer" checked>
+                    <input type="radio" name="color" value="<%= product.variants[i].size %>" class="hidden peer" checked>
                     <div class="border border-gray-300 px-5 py-2 rounded-lg peer-checked:bg-black peer-checked:text-white transition">
-                      <%= product.variants[i].color %>
+                      <%= product.variants[i].size %>
                     </div>
                   </label>
                 <% }else{ %>
                   <label class="cursor-pointer">
-                    <input type="radio" name="color" value="<%= product.variants[i].color %>" class="hidden peer" >
+                    <input type="radio" name="color" value="<%= product.variants[i].size %>" class="hidden peer" >
                     <a href="/product?id=<%= product._id %>&variant=<%= i %>">
                       <div class="border border-gray-300 px-5 py-2 rounded-lg peer-checked:bg-black peer-checked:text-white transition">
-                        <%= product.variants[i].color %>
+                        <%= product.variants[i].size %>
                       </div>
                     </a>
                   </label>
@@ -65,15 +65,15 @@
              <% } %>
             <% }else{ %>
               <div class="border border-gray-500 px-5 py-2 rounded-lg peer-checked:bg-black peer-checked:text-white transition">
-                <%= product.variants[variant].color %>
+                <%= product.variants[variant].size %>
               </div>
               <%}%>
           </form>
           </div>
           
         <div class="flex items-center gap-3 mt-3">
-          <p class="text-3xl font-bold text-black">$<%= (product.variants[0].price * 75/100).toFixed(2) %></p>
-          <p class="line-through text-gray-400 text-lg">$<%= product.variants[0].price %></p>
+          <p class="text-3xl font-bold text-black">$<%= (product.variants[variant].price * 75/100).toFixed(2) %></p>
+          <p class="line-through text-gray-400 text-lg">$<%= product.variants[variant].price %></p>
         </div>
         <div class=" items-center gap-3 mt-3">
             <p class="text-gray-600 flex"><span class="iconify text-green-400" data-icon="charm-tick" style="width: 20;height: 20;"></span>&ensp;Free Delivery</p>
@@ -130,7 +130,7 @@
                       <span class="font-regular text-xs">Brand : <a href="#" class="text-blue-700"><%= (relatedProduct[i].brandId.brandName) %></a></span>
                   </div>
                   <div class="flex items-center mb-2">
-                      <span class="font-regular text-gray-400 text-xs">Color : <a href="#" ><%= (relatedProduct[i].variants[j].color) %></a></span>
+                      <span class="font-regular text-gray-400 text-xs">Size : <a href="#" ><%= (relatedProduct[i].variants[j].size) %></a></span>
                   </div>
                   <div class="flex items-center mb-2">
                       <span class="font-bold text-lg">$<%= (relatedProduct[i].variants[j].price * 62/100).toFixed(2) %></span>
@@ -171,7 +171,7 @@
                         <span class="font-regular text-xs">Brand : <a href="#" class="text-blue-700"><%= (relatedProduct[i].brandId.brandName) %></a></span>
                     </div>
                     <div class="flex items-center mb-2">
-                        <span class="font-regular text-gray-400 text-xs">Color : <a href="#" ><%= (relatedProduct[i].variants[j].color) %></a></span>
+                        <span class="font-regular text-gray-400 text-xs">Size : <a href="#" ><%= (relatedProduct[i].variants[j].size) %></a></span>
                     </div>
                     <div class="flex items-center mb-2">
                         <span class="font-bold text-lg">$<%= (relatedProduct[i].variants[j].price * 62/100).toFixed(2) %></span>

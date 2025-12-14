@@ -73,11 +73,15 @@
               
               <% for(let j = 0; j < products[i].variants.length; j++ ) { %>
                 <tr>
-                  <!-- Product index only for the first variant -->
+                  <% if (products[i].variants.length > 1) { %>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
+                      <%= i + 1 %>.<%= j + 1 %>
+                    </td>
+                  <% }else{ %>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
                     <%= i + 1 %>
                   </td>
-          
+                  <% } %>
                   <!-- Product info (image + name) only for first variant -->
                   <td class="px-6 py-4 whitespace-wrap text-center">
                     <div class="flex items-center justify-center">

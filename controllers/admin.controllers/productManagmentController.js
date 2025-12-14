@@ -105,23 +105,29 @@ const getProducts = async (req,res) => {
 
   const editProduct = async (req, res) => {
     try {
-      const { id } = req.query;
-      const { productName, description, brandId, categoryId } = req.body;
+      const { id} = req.query;
+      const { productName, description, brandId, categoryId,imageInsertType } = req.body;
       const variants = req.body.variants;
   
-      
+     
+
+
       const product = await Product.findById(id);
       if (!product) {
         req.session.message = "Product not found!";
         return res.redirect("/admin/products");
       }
-  
+
+      let imageVariant = req.query.variant?.split(",").map(value => Number(value))
+      let imageToBeDeleted = req.query.image?.split(",").map(value => Number(value))
+      
+        
       
       const variantEntries = Object.keys(variants).map(async (index) => {
         const variant = variants[index];
-  
         
         const filesOfVariant = req.files.filter(
+         
           (file) => file.fieldname === `variants[${index}][productImages]`
         );
   
@@ -138,10 +144,73 @@ const getProducts = async (req,res) => {
           });
   
           imageUrls = await Promise.all(uploadImages);
+
+          if(imageInsertType[index] === "Deleted First"){
+            let setImageCounter = 0;
+            
+                  for(let i = 0 ; i < imageVariant.length ; i++){
+                    
+                    if(imageVariant[i] === Number(index)){
+                     if(setImageCounter <= imageUrls.length - 1){
+                      product.variants[imageVariant[i]].productImages[imageToBeDeleted[i]] = imageUrls[setImageCounter]
+                        imageUrls[setImageCounter] = null
+                        setImageCounter++
+                     }else{
+                      product.variants[imageVariant[i]].productImages[imageToBeDeleted[i]] = null
+                     }
+                    }
+                  }
+                  for(let i = 0 ; i < imageUrls.length ; i++){
+                    if(imageUrls[i] !== null){
+                      product.variants[index].productImages.push(imageUrls[i])
+                      imageUrls[i] = null
+                    }
+                  }
+                  product.variants[index].productImages = product.variants[index].productImages.filter(link => link !== null)
+                  
+                  imageUrls = product.variants[index].productImages
+          }else if(imageInsertType[index] === "Add Normally"){
+            for(let i = 0 ; i < imageVariant.length ; i++){
+              if(imageVariant[i] === Number(index)){
+                product.variants[imageVariant[i]].productImages[imageToBeDeleted[i]] = null
+              }
+            }
+            for(let i = 0 ; i < imageUrls.length ; i++){
+              product.variants[imageVariant[i]].productImages.push(imageUrls[i])
+            }
+            product.variants[index].productImages = product.variants[index].productImages.filter(link => link !== null)
+            imageUrls = product.variants[index].productImages
+          }else if(imageInsertType[index] === "Not Applicable"){
+            console.log("Hello")
+            if(imageVariant === undefined){
+              if(product?.variants[index]?.productImages !== undefined){
+                for(let i = 0 ; i < imageUrls.length ; i++){
+                  product.variants[index].productImages.push(imageUrls[i])
+                }
+                imageUrls = product.variants[index].productImages
+              }else{
+                imageUrls = imageUrls
+              }
+            }
+              
+          }
+          
+          
         } else {
           
           const oldVariant = product.variants[index];
-          imageUrls = oldVariant ? oldVariant.productImages : [];
+          if(imageVariant !== undefined){
+            for(let i = 0 ; i < imageVariant.length ; i++){
+              if(imageVariant[i] === Number(index)){
+                product.variants[imageVariant[i]].productImages[imageToBeDeleted[i]] = null
+              }
+            }
+            product.variants[index].productImages = product.variants[index].productImages.filter(link => link !== null)
+            imageUrls = product.variants[index].productImages
+          }else{
+            imageUrls = oldVariant ? oldVariant.productImages : [];
+          }
+         
         }
   
         return {
@@ -155,7 +224,6 @@ const getProducts = async (req,res) => {
       });
   
       const finalVariants = await Promise.all(variantEntries);
-  
       
       await Product.findByIdAndUpdate({_id : id},{$set : {
       productName,
@@ -174,6 +242,10 @@ const getProducts = async (req,res) => {
       return res.redirect("/admin/products");
     }
   };
+
+
+
+
   const restoreProduct = async (req,res) => {
     try {
         const {id} = req.query
