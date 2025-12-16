@@ -4,6 +4,7 @@ const fs = require("fs");
 const Product = require("../../models/product.model.js");
 const Brand = require("../../models/brand.model.js");
 const Category = require("../../models/category.model.js");
+const {extractPublicId} = require("cloudinary-build-url")
 
 
 
@@ -144,18 +145,38 @@ const getProducts = async (req,res) => {
           });
   
           imageUrls = await Promise.all(uploadImages);
-
-          if(imageInsertType[index] === "Deleted First"){
+          let insertImage = null;
+          if(Array.isArray(imageInsertType)){
+            insertImage = imageInsertType[index]
+          }else{
+            insertImage = imageInsertType
+          }
+          if(insertImage === "Deleted First"){
             let setImageCounter = 0;
-            
                   for(let i = 0 ; i < imageVariant.length ; i++){
                     
                     if(imageVariant[i] === Number(index)){
                      if(setImageCounter <= imageUrls.length - 1){
+                      let publicId = extractPublicId(product.variants[imageVariant[i]].productImages[imageToBeDeleted[i]])
+                      let result = await cloudinary.uploader.destroy(publicId,(error,result) => {
+                        if(error) {
+                          console.error(error)
+                        }else{
+                          console.log(result)
+                        }
+                      })
                       product.variants[imageVariant[i]].productImages[imageToBeDeleted[i]] = imageUrls[setImageCounter]
                         imageUrls[setImageCounter] = null
                         setImageCounter++
                      }else{
+                      let publicId = extractPublicId(product.variants[imageVariant[i]].productImages[imageToBeDeleted[i]])
+                      let result = await cloudinary.uploader.destroy(publicId,(error,result) => {
+                        if(error) {
+                          console.error(error)
+                        }else{
+                          console.log(result)
+                        }
+                      })
                       product.variants[imageVariant[i]].productImages[imageToBeDeleted[i]] = null
                      }
                     }
@@ -169,9 +190,17 @@ const getProducts = async (req,res) => {
                   product.variants[index].productImages = product.variants[index].productImages.filter(link => link !== null)
                   
                   imageUrls = product.variants[index].productImages
-          }else if(imageInsertType[index] === "Add Normally"){
+          }else if(insertImage === "Add Normally"){
             for(let i = 0 ; i < imageVariant.length ; i++){
               if(imageVariant[i] === Number(index)){
+                let publicId = extractPublicId(product.variants[imageVariant[i]].productImages[imageToBeDeleted[i]])
+                let result = await cloudinary.uploader.destroy(publicId,(error,result) => {
+                  if(error) {
+                    console.error(error)
+                  }else{
+                    console.log(result)
+                  }
+                })
                 product.variants[imageVariant[i]].productImages[imageToBeDeleted[i]] = null
               }
             }
@@ -180,8 +209,8 @@ const getProducts = async (req,res) => {
             }
             product.variants[index].productImages = product.variants[index].productImages.filter(link => link !== null)
             imageUrls = product.variants[index].productImages
-          }else if(imageInsertType[index] === "Not Applicable"){
-            console.log("Hello")
+          }else if(insertImage === "Not Applicable"){
+            
             if(imageVariant === undefined){
               if(product?.variants[index]?.productImages !== undefined){
                 for(let i = 0 ; i < imageUrls.length ; i++){
@@ -202,6 +231,14 @@ const getProducts = async (req,res) => {
           if(imageVariant !== undefined){
             for(let i = 0 ; i < imageVariant.length ; i++){
               if(imageVariant[i] === Number(index)){
+                let publicId = extractPublicId(product.variants[imageVariant[i]].productImages[imageToBeDeleted[i]])
+                      let result = await cloudinary.uploader.destroy(publicId,(error,result) => {
+                        if(error) {
+                          console.error(error)
+                        }else{
+                          console.log(result)
+                        }
+                      })
                 product.variants[imageVariant[i]].productImages[imageToBeDeleted[i]] = null
               }
             }

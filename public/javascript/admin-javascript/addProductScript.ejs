@@ -37,7 +37,7 @@
                      <span class="ml-2 text-lg font-medium "><strong>(Minimum 3 and Maximum 10 Images)</strong></span>
                     <input id="productImages${index}" type="file" name="variants[${index}][productImages]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 hidden" multiple accept="image/*"  onchange="previewImages(this, ${index})">
                     </div>
-                    <div id="imagePreview-${index}" class="flex  flex-wrap gap-2 mt-2"></div>
+                   <div id="imagePreview-${index}" class="flex border rounded-lg flex-wrap gap-2  mt-2 pl-2 pt-2 pb-2" hidden>
                 </div>
             </div>
         </div>
@@ -60,7 +60,34 @@
    
     function previewImages(input, index) {
         const previewContainer = document.getElementById(`imagePreview-${index}`);
-        previewContainer.innerHTML = '';
+        previewContainer.hidden = false;
+        previewContainer.innerHTML = `<div class="w-[100%] my-2 ml-3" > 
+                <h1 class="text-lg font-semibold">Images to be Uploaded</h1>
+                <div class="w-[25%] border rounded-lg border-yellow-400 bg-yellow-200 p-3">
+                            <h3 class="text-md font-medium"><svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="12"
+                                height="12"
+                                fill="currentColor"
+                                class="bi bi-info-circle inline-block"
+                                viewBox="0 0 16 16"
+                                style="margin-top : -2.4px"
+                                >
+                                <path
+                                    d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"
+                                />
+                                <path
+                                    d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"
+                                />
+                                </svg>
+                            INFO :</h3>
+                        <ul class="text-lg pl-10 list-disc font-medium">
+                            
+                            <li class="text-sm">Click on the Image to Crop it</li>
+                            <li class="text-sm">Re-upload the entire Image group to Update or Delete any Image</li>
+                            </ul>
+                    </div>
+                </div>`;
         
         if (input.files.length < 3) {
             iziToast.warning({
@@ -168,10 +195,6 @@
             
         }
 
-        let cropInfo = document.createElement("span")
-        cropInfo.style.paddingTop = "6rem"
-        cropInfo.innerHTML =  "Click on image to Crop,<br><strong>Re-upload</strong> images<br>to update or remove any."
-        previewContainer.appendChild(cropInfo)
         
         
     }
