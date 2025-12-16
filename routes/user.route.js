@@ -8,6 +8,7 @@ const otpManagementController = require("../controllers/user.controllers/otpMana
 const emailAuthController = require("../controllers/user.controllers/emailAuthForNewPass.controller.js")
 const resetPassController = require("../controllers/user.controllers/resetPassword.controller.js")
 const homeController = require("../controllers/user.controllers/home.controller.js")
+const profileManagementController = require("../controllers/user.controllers/userProfileManagment.controller.js")
 
 
 
@@ -36,4 +37,5 @@ router.get("/reset-password",userAuth.otpSession,resetPassController.getResetPas
 router.post("/reset-password",resetPassController.resetPassword)
 router.get("/logout",userAuth.checkSession,userLoginController.logoutUser)
 
+router.get("/profile",userAuth.checkSession,profileManagementController.getProfile)
 module.exports = router

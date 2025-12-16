@@ -1,0 +1,68 @@
+
+  .main-content {
+    width: 100%;
+    padding: 30px;
+}
+.profile-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+.avatar-upload {
+    position: relative;
+    display: inline-block;
+}
+.avatar-edit {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+}
+.avatar-edit input {
+    display: none;
+}
+.avatar-edit label {
+    display: inline-block;
+    width: 34px;
+    height: 34px;
+    background: #2eec71;
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 34px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.btn-primary {
+    background: linear-gradient(135deg, #fbb804 0%, #ffd700 100%);
+    box-shadow: 0 4px 6px rgba(251, 184, 4, 0.3);
+    transition: all 0.3 ease;
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px rgba(251, 184, 4, 0.4);
+}
+.sidebar button {
+    display: flex;
+    align-items: center;
+    width: 80%;
+    padding : 0.5rem;
+    border: none;
+    background: none;
+    font-size: 14px;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    margin-left: 0.5rem;
+  }
+  .sidebar button:hover {
+    background-color: #eaf8e7;
+  }
+  .sidebar button.active {
+    background-color: #2eec71;
+    color: #ffff;
+    font-weight: bold;
+    border-radius: 8px;
+  }
