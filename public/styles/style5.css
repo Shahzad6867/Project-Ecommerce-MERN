@@ -35,12 +35,23 @@
 .btn-primary {
     background: linear-gradient(135deg, #fbb804 0%, #ffd700 100%);
     box-shadow: 0 4px 6px rgba(251, 184, 4, 0.3);
+    color: #334155;
     transition: all 0.3 ease;
 }
 .btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 15px rgba(251, 184, 4, 0.4);
 }
+.sidebar {
+
+    background: white;
+    min-height: 90vh;
+    max-height: auto;
+    left: 0;
+    top: 0;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+}
+
 .sidebar button {
     display: flex;
     align-items: center;
@@ -66,3 +77,23 @@
     font-weight: bold;
     border-radius: 8px;
   }
+  .address-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: all 0.3s;
+}
+.address-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+}
+.default-badge {
+    background: #eaf8e7;
+    color: #2eec71;
+}
+
+#address {
+    width : 100%;
+    height : 100px;
+    padding: 5px;
+}

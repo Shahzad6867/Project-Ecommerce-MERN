@@ -1,0 +1,674 @@
+<%- include("../partials/user-side/navbar.ejs")%>
+
+<div class="flex">
+    <%- include("../partials/user-side/userProfile-sidebar.ejs",{dashboardBtn : "",profileBtn : "",ordersBtn : "",shoppingCartBtn : "",addressBtn : "active disabled",walletBtn : ""})%>
+    <div class="main-content">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold">Address Book</h1>
+            <button onclick="openAddAddressModal()" class="btn-primary px-4 py-2  rounded-xl  flex items-center">
+                <i data-feather="plus" class="w-4 h-4 mr-2"></i>
+                Add New Address
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <input id="serverMessage" type="text" value="<%= message %>"  hidden>
+            <!-- Default Address -->
+            <% if (defaultAddress !== null) { %>
+                <div class="address-card p-6 relative">
+                    <div class="flex justify-between items-start mb-4">
+                        <h2 class="text-lg font-bold">Default Address</h2>
+                        <span class="default-badge text-xs font-medium px-2 py-1 rounded-full">Default</span>
+                    </div>
+                    <div class="space-y-2 text-gray-700">
+                        <p><strong>Name:</strong><span id="firstName0"> <%= defaultAddress.firstName %></span> <span id="lastName0"><%= defaultAddress.lastName %></span></p>
+                        <p><strong>Country:</strong><span id="country0"> <%= defaultAddress.country %></span></p>
+                        <p><strong>State:</strong><span id="state0"> <%= defaultAddress.state %></span></p>
+                        <p><strong>City:</strong><span id="city0"> <%= defaultAddress.city %></span></p>
+                        <p><strong>Address:</strong><span id="address0"> <%= defaultAddress.address %></span></p>
+                        <p><strong>Pincode:</strong><span  id="pincode0" > <%= defaultAddress.pincode %></span></p>
+                        <p  class="mt-2"><strong>Phone:</strong><span id="mobileNo0"> <%= defaultAddress.mobileNo  %></span></p>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-4">
+                        <button id="editBtn0" class="btn-primary px-4 py-2 rounded-xl font-bold" onclick="editAddress(0,'<%- defaultAddress._id %>')" >
+                            Edit
+                        </button>
+                        <button class="text-gray-700 font-bold hover:text-black flex rounded-xl  bg-red-400 hover:bg-red-500 px-4 py-2 items-center text-sm" onclick="deleteAddress('<%- defaultAddress._id %>','<%- defaultAddress.userId %>')">
+                            <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            <% }else{ %>
+                <div class="address-card p-6 relative">
+                    <div class="flex justify-between items-start mb-4">
+                        <h2 class="text-lg font-bold">Default Address</h2>
+                        <span class="text-xs text-gray-300 rounded-full bg-gray-100 font-medium px-2 py-1 rounded-full">Default</span>
+                    </div>
+                    <div class="space-y-2 text-gray-700">
+                        <p><strong>Name:</strong> Not Provided</p>
+                        <p><strong>Country:</strong>  Not Provided</p>
+                        <p><strong>State:</strong> Not Provided</p>
+                        <p><strong>City:</strong> Not Provided</p>
+                        <p><strong>Address:</strong> Not Provided</p>
+                        <p><strong>Pincode:</strong> Not Provided</p>
+                        <p class="mt-2"><strong>Phone:</strong> Not Provided</p>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-4">
+                        <button class="text-gray-300 flex items-center text-sm" disabled>
+                            <i data-feather="edit" class="w-4 h-4 mr-1"></i> Edit
+                        </button>
+                        <button class="text-gray-300  flex items-center text-sm" disabled>
+                            <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Remove
+                        </button>
+                    </div>
+                </div>
+                <% } %>
+
+            <!-- Other Addresses -->
+            <% for( let i = 0; i < addressList.length; i++ ) { %>
+                <div class="address-card p-6">
+                    <h2 class="text-lg font-bold mb-4">Other Address <%= i + 1 %></h2>
+                    <div class="space-y-2 text-gray-700">
+                        <p><strong>Name:</strong><span id="firstName<%= i + 1 %>"> <%= addressList[i].firstName %></span> <span id="lastName<%= i + 1 %>"><%= addressList[i].lastName %></span></p>
+                        <p><strong>Country:</strong><span id="country<%= i + 1 %>"> <%= addressList[i].country %></span></p>
+                        <p><strong>State:</strong><span id="state<%= i + 1 %>"> <%= addressList[i].state %></span></p>
+                        <p><strong>City:</strong><span id="city<%= i + 1 %>"> <%= addressList[i].city %></span></p>
+                        <p><strong>Address:</strong><span id="address<%= i + 1  %>"> <%= addressList[i].address %></span></p>
+                        <p><strong>Pincode:</strong><span id="pincode<%= i + 1  %>"> <%= addressList[i].pincode %></span></p>
+                        <p class="mt-2"><strong>Phone:</strong><span id="mobileNo<%= i + 1  %>"> <%= addressList[i].mobileNo  %></span></p>
+                    </div>
+                    <div class="flex justify-between mt-4">
+                        <button id="resetDefaultAddressBtn<%= i + 1 %>" class="text-gray-700 bg-green-300 hover:bg-green-400 pl-2 pr-3 font-bold py-2 rounded-xl flex items-center text-sm" onclick="changeDefaultAddress('<%- addressList[i]._id %>')">
+                            <i data-feather="check" class="w-4 h-4 mr-1"></i> Set as Default
+                        </button>
+                        <div class="flex space-x-3">
+                            <button id="editBtn<%= i + 1  %>" class="btn-primary px-4 py-2 rounded-xl font-bold" onclick="editAddress('<%= i + 1%>','<%- addressList[i]._id %>')">
+                                Edit
+                            </button>
+                            <button class="text-gray-700 font-bold hover:text-black flex rounded-xl  bg-red-400 hover:bg-red-500 px-4 py-2 items-center text-sm" onclick="deleteAddress('<%- addressList[i]._id %>','<%- addressList[i].userId %>')">
+                                <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+
+            <!-- More addresses would go here -->
+        </div>
+    </div>
+
+    <!-- Add Address Modal -->
+    
+</div>
+<div id="addAddressModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+            <h2 id="addressFormHeading" class="text-xl font-bold">Add New Address</h2>
+            <button onclick="closeAddAddressModal()" class="text-gray-500 hover:text-gray-700">
+                <i data-feather="x"></i>
+            </button>
+        </div>
+        <form action="/address" method="post" class="space-y-4"  novalidate>
+            
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                    <input type="text" id="firstName" name="firstName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                    <input type="text" id="lastName" name="lastName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                
+            </div>
+            <div>
+                <p id="reg-name-p" class="text-xs text-gray-500 mt-1">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="13"
+                    height="13"
+                    fill="currentColor"
+                    class="bi bi-info-circle inline-block"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"
+                    />
+                    <path
+                      d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"
+                    />
+                  </svg>
+                  Name must contain only letters and spaces, with at least 5
+                  characters and should not contain any number
+                </p>
+              </div>
+            <div class="flex items-center">
+                <input type="checkbox" id="accountName" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                <label id="forAccountName" for="accountName" class="ml-2 block text-sm text-gray-700">Same as account name</label>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">State / Province</label>
+                    <input type="text" id="state" name="state" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                    <input type="text" id="city" name="city" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                    <select id="countryList" name="country" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+
+                        <option value="" selected>Select Country</option>
+
+                        <option value="Afghanistan">🇦🇫 Afghanistan</option>
+                        <option value="Albania">🇦🇱 Albania</option>
+                        <option value="Algeria">🇩🇿 Algeria</option>
+                        <option value="Andorra">🇦🇩 Andorra</option>
+                        <option value="Angola">🇦🇴 Angola</option>
+                        <option value="Antigua and Barbuda">🇦🇬 Antigua and Barbuda</option>
+                        <option value="Argentina">🇦🇷 Argentina</option>
+                        <option value="Armenia">🇦🇲 Armenia</option>
+                        <option value="Australia">🇦🇺 Australia</option>
+                        <option value="Austria">🇦🇹 Austria</option>
+                        <option value="Azerbaijan">🇦🇿 Azerbaijan</option>
+
+                        <option value="Bahamas">🇧🇸 Bahamas</option>
+                        <option value="Bahrain">🇧🇭 Bahrain</option>
+                        <option value="Bangladesh">🇧🇩 Bangladesh</option>
+                        <option value="Barbados">🇧🇧 Barbados</option>
+                        <option value="Belarus">🇧🇾 Belarus</option>
+                        <option value="Belgium">🇧🇪 Belgium</option>
+                        <option value="Belize">🇧🇿 Belize</option>
+                        <option value="Benin">🇧🇯 Benin</option>
+                        <option value="Bhutan">🇧🇹 Bhutan</option>
+                        <option value="Bolivia">🇧🇴 Bolivia</option>
+                        <option value="Bosnia and Herzegovina">🇧🇦 Bosnia and Herzegovina</option>
+                        <option value="Botswana">🇧🇼 Botswana</option>
+                        <option value="Brazil">🇧🇷 Brazil</option>
+                        <option value="Brunei">🇧🇳 Brunei</option>
+                        <option value="Bulgaria">🇧🇬 Bulgaria</option>
+                        <option value="Burkina Faso">🇧🇫 Burkina Faso</option>
+                        <option value="Burundi">🇧🇮 Burundi</option>
+
+                        <option value="Cambodia">🇰🇭 Cambodia</option>
+                        <option value="Cameroon">🇨🇲 Cameroon</option>
+                        <option value="Canada">🇨🇦 Canada</option>
+                        <option value="Cape Verde">🇨🇻 Cape Verde</option>
+                        <option value="Central African Republic">🇨🇫 Central African Republic</option>
+                        <option value="Chad">🇹🇩 Chad</option>
+                        <option value="Chile">🇨🇱 Chile</option>
+                        <option value="China">🇨🇳 China</option>
+                        <option value="Colombia">🇨🇴 Colombia</option>
+                        <option value="Comoros">🇰🇲 Comoros</option>
+                        <option value="Congo">🇨🇬 Congo</option>
+                        <option value="Costa Rica">🇨🇷 Costa Rica</option>
+                        <option value="Croatia">🇭🇷 Croatia</option>
+                        <option value="Cuba">🇨🇺 Cuba</option>
+                        <option value="Cyprus">🇨🇾 Cyprus</option>
+                        <option value="Czech Republic">🇨🇿 Czech Republic</option>
+
+                        <option value="Denmark">🇩🇰 Denmark</option>
+                        <option value="Djibouti">🇩🇯 Djibouti</option>
+                        <option value="Dominica">🇩🇲 Dominica</option>
+                        <option value="Dominican Republic">🇩🇴 Dominican Republic</option>
+
+                        <option value="Ecuador">🇪🇨 Ecuador</option>
+                        <option value="Egypt">🇪🇬 Egypt</option>
+                        <option value="El Salvador">🇸🇻 El Salvador</option>
+                        <option value="Equatorial Guinea">🇬🇶 Equatorial Guinea</option>
+                        <option value="Eritrea">🇪🇷 Eritrea</option>
+                        <option value="Estonia">🇪🇪 Estonia</option>
+                        <option value="Eswatini">🇸🇿 Eswatini</option>
+                        <option value="Ethiopia">🇪🇹 Ethiopia</option>
+
+                        <option value="Fiji">🇫🇯 Fiji</option>
+                        <option value="Finland">🇫🇮 Finland</option>
+                        <option value="France">🇫🇷 France</option>
+
+                        <option value="Gabon">🇬🇦 Gabon</option>
+                        <option value="Gambia">🇬🇲 Gambia</option>
+                        <option value="Georgia">🇬🇪 Georgia</option>
+                        <option value="Germany">🇩🇪 Germany</option>
+                        <option value="Ghana">🇬🇭 Ghana</option>
+                        <option value="Greece">🇬🇷 Greece</option>
+                        <option value="Grenada">🇬🇩 Grenada</option>
+                        <option value="Guatemala">🇬🇹 Guatemala</option>
+                        <option value="Guinea">🇬🇳 Guinea</option>
+                        <option value="Guinea-Bissau">🇬🇼 Guinea-Bissau</option>
+                        <option value="Guyana">🇬🇾 Guyana</option>
+
+                        <option value="Haiti">🇭🇹 Haiti</option>
+                        <option value="Honduras">🇭🇳 Honduras</option>
+                        <option value="Hungary">🇭🇺 Hungary</option>
+
+                        <option value="Iceland">🇮🇸 Iceland</option>
+                        <option value="India">🇮🇳 India</option>
+                        <option value="Indonesia">🇮🇩 Indonesia</option>
+                        <option value="Iran">🇮🇷 Iran</option>
+                        <option value="Iraq">🇮🇶 Iraq</option>
+                        <option value="Ireland">🇮🇪 Ireland</option>
+                        <option value="Israel">🇮🇱 Israel</option>
+                        <option value="Italy">🇮🇹 Italy</option>
+
+                        <option value="Jamaica">🇯🇲 Jamaica</option>
+                        <option value="Japan">🇯🇵 Japan</option>
+                        <option value="Jordan">🇯🇴 Jordan</option>
+
+                        <option value="Kazakhstan">🇰🇿 Kazakhstan</option>
+                        <option value="Kenya">🇰🇪 Kenya</option>
+                        <option value="Kiribati">🇰🇮 Kiribati</option>
+                        <option value="North Korea">🇰🇵 North Korea</option>
+                        <option value="South Korea">🇰🇷 South Korea</option>
+                        <option value="Kuwait">🇰🇼 Kuwait</option>
+                        <option value="Kyrgyzstan">🇰🇬 Kyrgyzstan</option>
+
+                        <option value="Laos">🇱🇦 Laos</option>
+                        <option value="Latvia">🇱🇻 Latvia</option>
+                        <option value="Lebanon">🇱🇧 Lebanon</option>
+                        <option value="Lesotho">🇱🇸 Lesotho</option>
+                        <option value="Liberia">🇱🇷 Liberia</option>
+                        <option value="Libya">🇱🇾 Libya</option>
+                        <option value="Liechtenstein">🇱🇮 Liechtenstein</option>
+                        <option value="Lithuania">🇱🇹 Lithuania</option>
+                        <option value="Luxembourg">🇱🇺 Luxembourg</option>
+
+                        <option value="Madagascar">🇲🇬 Madagascar</option>
+                        <option value="Malawi">🇲🇼 Malawi</option>
+                        <option value="Malaysia">🇲🇾 Malaysia</option>
+                        <option value="Maldives">🇲🇻 Maldives</option>
+                        <option value="Mali">🇲🇱 Mali</option>
+                        <option value="Malta">🇲🇹 Malta</option>
+                        <option value="Marshall Islands">🇲🇭 Marshall Islands</option>
+                        <option value="Mauritania">🇲🇷 Mauritania</option>
+                        <option value="Mauritius">🇲🇺 Mauritius</option>
+                        <option value="Mexico">🇲🇽 Mexico</option>
+                        <option value="Micronesia">🇫🇲 Micronesia</option>
+                        <option value="Moldova">🇲🇩 Moldova</option>
+                        <option value="Monaco">🇲🇨 Monaco</option>
+                        <option value="Mongolia">🇲🇳 Mongolia</option>
+                        <option value="Montenegro">🇲🇪 Montenegro</option>
+                        <option value="Morocco">🇲🇦 Morocco</option>
+                        <option value="Mozambique">🇲🇿 Mozambique</option>
+                        <option value="Myanmar">🇲🇲 Myanmar</option>
+
+                        <option value="Namibia">🇳🇦 Namibia</option>
+                        <option value="Nauru">🇳🇷 Nauru</option>
+                        <option value="Nepal">🇳🇵 Nepal</option>
+                        <option value="Netherlands">🇳🇱 Netherlands</option>
+                        <option value="New Zealand">🇳🇿 New Zealand</option>
+                        <option value="Nicaragua">🇳🇮 Nicaragua</option>
+                        <option value="Niger">🇳🇪 Niger</option>
+                        <option value="Nigeria">🇳🇬 Nigeria</option>
+                        <option value="North Macedonia">🇲🇰 North Macedonia</option>
+                        <option value="Norway">🇳🇴 Norway</option>
+
+                        <option value="Oman">🇴🇲 Oman</option>
+
+                        <option value="Pakistan">🇵🇰 Pakistan</option>
+                        <option value="Palau">🇵🇼 Palau</option>
+                        <option value="Panama">🇵🇦 Panama</option>
+                        <option value="Papua New Guinea">🇵🇬 Papua New Guinea</option>
+                        <option value="Paraguay">🇵🇾 Paraguay</option>
+                        <option value="Peru">🇵🇪 Peru</option>
+                        <option value="Philippines">🇵🇭 Philippines</option>
+                        <option value="Poland">🇵🇱 Poland</option>
+                        <option value="Portugal">🇵🇹 Portugal</option>
+
+                        <option value="Qatar">🇶🇦 Qatar</option>
+
+                        <option value="Romania">🇷🇴 Romania</option>
+                        <option value="Russia">🇷🇺 Russia</option>
+                        <option value="Rwanda">🇷🇼 Rwanda</option>
+
+                        <option value="Saint Kitts and Nevis">🇰🇳 Saint Kitts and Nevis</option>
+                        <option value="Saint Lucia">🇱🇨 Saint Lucia</option>
+                        <option value="Saint Vincent and the Grenadines">🇻🇨 Saint Vincent and the Grenadines</option>
+                        <option value="Samoa">🇼🇸 Samoa</option>
+                        <option value="San Marino">🇸🇲 San Marino</option>
+                        <option value="Sao Tome and Principe">🇸🇹 Sao Tome and Principe</option>
+                        <option value="Saudi Arabia">🇸🇦 Saudi Arabia</option>
+                        <option value="Senegal">🇸🇳 Senegal</option>
+                        <option value="Serbia">🇷🇸 Serbia</option>
+                        <option value="Seychelles">🇸🇨 Seychelles</option>
+                        <option value="Sierra Leone">🇸🇱 Sierra Leone</option>
+                        <option value="Singapore">🇸🇬 Singapore</option>
+                        <option value="Slovakia">🇸🇰 Slovakia</option>
+                        <option value="Slovenia">🇸🇮 Slovenia</option>
+                        <option value="Solomon Islands">🇸🇧 Solomon Islands</option>
+                        <option value="Somalia">🇸🇴 Somalia</option>
+                        <option value="South Africa">🇿🇦 South Africa</option>
+                        <option value="South Sudan">🇸🇸 South Sudan</option>
+                        <option value="Spain">🇪🇸 Spain</option>
+                        <option value="Sri Lanka">🇱🇰 Sri Lanka</option>
+                        <option value="Sudan">🇸🇩 Sudan</option>
+                        <option value="Suriname">🇸🇷 Suriname</option>
+                        <option value="Sweden">🇸🇪 Sweden</option>
+                        <option value="Switzerland">🇨🇭 Switzerland</option>
+                        <option value="Syria">🇸🇾 Syria</option>
+
+                        <option value="Taiwan">🇹🇼 Taiwan</option>
+                        <option value="Tajikistan">🇹🇯 Tajikistan</option>
+                        <option value="Tanzania">🇹🇿 Tanzania</option>
+                        <option value="Thailand">🇹🇭 Thailand</option>
+                        <option value="Timor-Leste">🇹🇱 Timor-Leste</option>
+                        <option value="Togo">🇹🇬 Togo</option>
+                        <option value="Tonga">🇹🇴 Tonga</option>
+                        <option value="Trinidad and Tobago">🇹🇹 Trinidad and Tobago</option>
+                        <option value="Tunisia">🇹🇳 Tunisia</option>
+                        <option value="Turkey">🇹🇷 Turkey</option>
+                        <option value="Turkmenistan">🇹🇲 Turkmenistan</option>
+                        <option value="Tuvalu">🇹🇻 Tuvalu</option>
+
+                        <option value="Uganda">🇺🇬 Uganda</option>
+                        <option value="Ukraine">🇺🇦 Ukraine</option>
+                        <option value="United Arab Emirates">🇦🇪 United Arab Emirates</option>
+                        <option value="United Kingdom">🇬🇧 United Kingdom</option>
+                        <option value="United States" >🇺🇸 United States</option>
+
+                        <option value="Uruguay">🇺🇾 Uruguay</option>
+                        <option value="Uzbekistan">🇺🇿 Uzbekistan</option>
+
+                        <option value="Vanuatu">🇻🇺 Vanuatu</option>
+                        <option value="Vatican City">🇻🇦 Vatican City</option>
+                        <option value="Venezuela">🇻🇪 Venezuela</option>
+                        <option value="Vietnam">🇻🇳 Vietnam</option>
+
+                        <option value="Yemen">🇾🇪 Yemen</option>
+
+                        <option value="Zambia">🇿🇲 Zambia</option>
+                        <option value="Zimbabwe">🇿🇼 Zimbabwe</option>
+                      </select>
+                      
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Postal Code / Pincode / ZIP</label>
+                    <input type="text" id="pincode" name="pincode" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+            </div>
+
+             
+            <div>
+                <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <input type="tel" id="phoneNumber" name="mobileNo" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            
+
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <textarea type="text" id="address" name="address" class=" border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+            </div>
+            
+            <div class="flex items-center">
+                <input type="checkbox" id="defaultAddress" name="isDefault" value="false" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                <label id="forDefaultAddress" for="defaultAddress" class="ml-2 block text-sm text-gray-700">Set as default address</label>
+            </div>
+            
+            <div class="flex justify-end space-x-3 pt-4">
+                <button type="button" onclick="closeAddAddressModal()" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button type="submit" class="btn-primary font-bold px-4 py-2 border border-transparent rounded-lg ">
+                    Save Address
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+
+</script>
+<%- include("../partials/user-side/footer.ejs")%>
+<script>
+      const input = document.querySelector("#phoneNumber");
+    let iti = window.intlTelInput(input, {
+      utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js", // for formatting and validation
+      initialCountry: "auto", // or a specific country code like "us"
+      geoIpLookup: function(callback) { // optional: lookup user's country based on IP
+        fetch("https://ipapi.co/json")
+          .then(res => res.json())
+          .then(data => {
+            countryCode = data.country_calling_code
+          return callback(data.country_code)
+          })
+          .catch(() => callback("us")); // default to US on error
+      },
+    });
+
+    const serverMessage = document.getElementById("serverMessage").value
+    if(serverMessage === "Address added successfully!"){
+        iziToast.success({
+            title : "Success",
+            message : "Address added successfully!",
+            position : "topRight"
+        })
+    }
+    if(serverMessage === "Oops! some error has occured"){
+        iziToast.error({
+            title : "Error",
+            message :"Oops! some error has occured",
+            position : "topRight"
+        })
+    }
+    if(serverMessage === "Address updated Successfully"){
+        iziToast.success({
+            title : "Success",
+            message :"Address updated Successfully",
+            position : "topRight"
+        })
+    }
+    if(serverMessage === "Address deleted Successfully"){
+        iziToast.success({
+            title : "Success",
+            message :"Address deleted Successfully",
+            position : "topRight"
+        })
+    }
+
+    if(serverMessage === "Your Default address has been Updated" ){
+        iziToast.success({
+            title : "Success",
+            message :"Your Default address has been Updated",
+            position : "topRight"
+        })
+    }
+
+
+    feather.replace();
+
+    
+    function openAddAddressModal() {
+       document.getElementById('addAddressModal').classList.remove('hidden');
+       document.getElementById("accountName").classList.remove("hidden")
+       document.getElementById("forAccountName").classList.remove("hidden")
+       document.getElementById("defaultAddress").classList.remove("hidden")
+       document.getElementById("forDefaultAddress").classList.remove("hidden")
+       document.getElementById(`firstName`).value = ""
+       document.getElementById(`lastName`).value = ""
+       document.getElementById(`countryList`).value = ""
+       document.getElementById(`state`).value = ""
+       document.getElementById(`address`).value = ""
+       document.getElementById(`pincode`).value = ""
+       document.getElementById(`city`).value = ""
+       document.getElementById(`phoneNumber`).value = ""
+       document.getElementById("addressFormHeading").innerText = "Add New Address"
+       document.getElementById('addAddressModal').action = "/address"
+    }
+    
+    function closeAddAddressModal() {
+        document.getElementById('addAddressModal').classList.add('hidden');
+    }
+
+    function editAddress(index,id){
+        document.querySelector('#addAddressModal form').action = `/address/edit-address?id=${id}`
+
+
+       let editFirstName = document.getElementById(`firstName${index}`).innerText.trim()
+       let editLastName = document.getElementById(`lastName${index}`).innerText.trim()
+       let editCountry = document.getElementById(`country${index}`).innerText.trim()
+       let editState = document.getElementById(`state${index}`).innerText.trim()
+       let editAddress = document.getElementById(`address${index}`).innerText.trim()
+       let editPincode = document.getElementById(`pincode${index}`).innerText.trim()
+       let editCity = document.getElementById(`city${index}`).innerText.trim()
+       
+
+       document.getElementById("accountName").classList.add("hidden")
+       document.getElementById("forAccountName").classList.add("hidden")
+       document.getElementById("defaultAddress").classList.add("hidden")
+       document.getElementById("forDefaultAddress").classList.add("hidden")
+       document.getElementById("addressFormHeading").innerText = "Edit Address"
+       let editAddressModal = document.getElementById("addAddressModal")
+       editAddressModal.classList.remove("hidden")
+       
+
+       document.getElementById(`firstName`).value = editFirstName
+       document.getElementById(`lastName`).value = editLastName
+       document.getElementById(`countryList`).value = editCountry 
+       document.getElementById(`state`).value = editState
+       document.getElementById(`address`).value = editAddress
+       document.getElementById(`pincode`).value = editPincode
+       document.getElementById(`city`).value = editCity
+              
+    }
+
+    function deleteAddress(addressId,userId){
+        if(confirm("Are you sure you want to Delete this address ?")){
+            window.location.href = `/address/delete-address?id=${addressId}&userId=${userId}`
+        }
+    }
+    function changeDefaultAddress(addressId){
+        if(confirm("Are you sure you want to set this address as your Default Address?")){
+            window.location.href = `/address/reset-default-address?id=${addressId}`
+        }
+    }
+
+    document.getElementById("accountName").addEventListener("click", function() {
+        let useSameName = document.getElementById("accountName")
+        let firstName = '<%- user.firstName %>'
+        let lastName = '<%- user.lastName %>'
+        if(useSameName.checked === true){
+            document.getElementById("firstName").value = firstName
+            document.getElementById("lastName").value = lastName
+            console.log(iti.getNumber())
+        }else{
+            document.getElementById("firstName").value = ""
+            document.getElementById("lastName").value = ""
+        }
+    })
+    
+    // Form submission would go here
+    document.querySelector('#addAddressModal form').addEventListener('submit',function (e){
+    const firstName = document.getElementById("firstName").value.trim()
+    const lastName = document.getElementById("lastName").value.trim()
+    const city = document.getElementById("city").value.trim()
+    const state = document.getElementById("state").value.trim()
+    const country = document.getElementById("countryList").value
+    const pincode = document.getElementById("pincode").value.trim()
+    const mobileNo = document.getElementById("phoneNumber")
+    const address = document.getElementById("address").value.trim()
+    const defaultAddress = document.getElementById("defaultAddress")
+
+
+        const nameRegex =/^[A-Za-z]+(?:[ '-][A-Za-z]+)*(?:\d{0,5})?$/
+        const addressRegex = /^[A-Za-z0-9 ,./-]{5,}$/
+        const pincodeRegex = /^[0-9]{4,10}$/
+
+        if(!nameRegex.test(firstName)){
+            iziToast.error({
+                title : "Error",
+                message : "Please enter a valid First Name",
+                position : "topRight"
+            })
+            e.preventDefault()
+            return 
+        }
+
+        if(!nameRegex.test(lastName)){
+            iziToast.error({
+                title : "Error",
+                message : "Please enter a valid Last Name",
+                position : "topRight"
+            })
+            e.preventDefault()
+            return 
+        }
+
+        if(!nameRegex.test(city)){
+            iziToast.error({
+                title : "Error",
+                message : "Please enter a valid City Name",
+                position : "topRight"
+            })
+            e.preventDefault()
+            return 
+        }
+
+        if(!nameRegex.test(state)){
+            iziToast.error({
+                title : "Error",
+                message : "Please enter a valid State",
+                position : "topRight"
+            })
+            e.preventDefault()
+            return 
+        }
+        if(country === ""){
+            iziToast.error({
+                title : "Error",
+                message : "Please select a Country",
+                position : "topRight"
+            })
+            e.preventDefault()
+            return 
+        }
+
+        if(!pincodeRegex.test(pincode)){
+            iziToast.error({
+                title : "Error",
+                message : "Please enter a valid Pincode",
+                position : "topRight"
+            })
+            e.preventDefault()
+            return 
+
+        }
+
+        
+        if(!addressRegex.test(address)){
+            iziToast.error({
+                title : "Error",
+                message : "Please enter a valid Address",
+                position : "topRight"
+            })
+            e.preventDefault()
+            return 
+        }
+
+        if(defaultAddress.checked){
+            defaultAddress.value = true
+        }else{
+            defaultAddress.checked
+            defaultAddress.value = false
+        }
+
+        if(mobileNo.value === ""){
+            e.preventDefault()
+            iziToast.error({
+                title : "Error",
+                message : "Please enter a Mobile Number",
+                position : "topRight"
+            })
+            return
+        }
+        
+        mobileNo.value = iti.getNumber()
+    });
+    
+</script>

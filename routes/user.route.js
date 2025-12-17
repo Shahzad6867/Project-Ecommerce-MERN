@@ -38,4 +38,9 @@ router.post("/reset-password",resetPassController.resetPassword)
 router.get("/logout",userAuth.checkSession,userLoginController.logoutUser)
 
 router.get("/profile",userAuth.checkSession,profileManagementController.getProfile)
+router.get("/address",userAuth.checkSession,profileManagementController.getAddress)
+router.post("/address",profileManagementController.addAddress)
+router.post("/address/edit-address",profileManagementController.editAddress)
+router.get("/address/delete-address",profileManagementController.deleteAddress)
+router.get("/address/reset-default-address",profileManagementController.resetDefaultAddress)
 module.exports = router
