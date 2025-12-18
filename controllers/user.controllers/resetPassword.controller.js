@@ -17,9 +17,9 @@ try {
     const {newPassword} = req.body
     const hashedPassword = await bcryptjs.hash(newPassword,12)
     const updatedPassword = await User.findByIdAndUpdate(userId,{password : hashedPassword})
-    req.session.message = "Password Updated Succesfully, Please Login with the New Password"
+    req.session.message = "Password Updated Succesfully"
     delete req.session.otpUser
-    res.redirect("/login")
+    res.redirect("/profile")
     } catch (error) {
     console.log(error)
 }

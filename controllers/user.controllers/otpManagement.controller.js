@@ -26,7 +26,7 @@ const getUserOtp = async (req, res) => {
           message: "OTP Expired, Click Resend OTP",
         });
       }
-      let userOtp = await Otp.findById({ _id : req.session.otp._id });
+      let userOtp = await Otp.findById({ _id : req.session.otp?._id });
       
       if (!userOtp || userOtp.createdAt < Date.now()) {
         return res.render("user-view/user.otp-verification.ejs", {
@@ -91,7 +91,8 @@ const getUserOtp = async (req, res) => {
   const getUserOtpForNewPass = async (req, res) => {
     let message = req.session.message || null;
     delete req.session.message;
-  
+ 
+    
     res.render("user-view/user.otp-verification-for-new-pass.ejs", { message: message, allocatedTime : req.session.otp.createdAt});
   };
   
@@ -144,14 +145,76 @@ const getUserOtp = async (req, res) => {
       console.log(generatedOtp);
       console.log("Otp Sent");
       req.session.user = userData;
-      req.session.otpTimer = savedOtp.createdAt
+      req.session.otp = savedOtp
       res.redirect("/otp-verification-for-new-pass");
     } catch (error) {
       console.log(error);
+      req.session.message = "Oops! some error has occured"
+      res.redirect("/email-auth")
     }
   
   }
+  const getUserOtpForNewEmail = async (req, res) => {
+    let message = req.session.message || null;
+    delete req.session.message;
+    
+    res.render("user-view/user.otp-verification-for-new-email.ejs", { message: message, allocatedTime : req.session.otp.createdAt});
+  };
+  const userOtpForNewEmail = async (req, res) => {
+    try {
+      let inputOtp = req.body.otp.join("");
+      inputOtp = parseInt(inputOtp);
+      console.log(inputOtp);
+      
+     
+      let userOtp = await Otp.findById({ _id: req.session.otp._id });
+      console.log(userOtp);
+      
+      if (!userOtp || userOtp.createdAt < Date.now()) {
+        return res.render("user-view/user.otp-verification-for-new-email.ejs", {
+          message: "OTP Expired, Click Resend OTP",
+        });
+      }
+      if (userOtp.otpCode === inputOtp) {
+        await Otp.deleteOne({_id : userOtp._id})
+        await User.findByIdAndUpdate({_id : req.session.user._id},{$set : {email : req.session.userEmail}})
+        req.session.message = "Email Updated Successfully"
+        return res.redirect("/profile")
+      } else {
+        return res.render("user-view/user.otp-verification-for-new-email.ejs", {
+          message: "Incorrect OTP", allocatedTime : userOtp.createdAt 
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
+  const resendOtpForNewEmail = async (req,res) => {
+    try {
+      const userEmail = req.session.userEmail
+       await Otp.findOneAndDelete({_id : req.session.otp._id})
+      let generatedOtp = otpGenerator();
+      await mailer.sendVerificationEmail(userEmail, generatedOtp);
+      const now = new Date()
+      const newOtp = new Otp({
+        userEmail: userEmail,
+        otpCode: generatedOtp,
+        createdAt : new Date(now.getTime() + (3 * 60 * 1000))
+      });
+      let savedOtp = await newOtp.save();
+      console.log(savedOtp)
+      console.log(generatedOtp);
+      console.log("Otp Sent");
+      req.session.otp = savedOtp
+      res.redirect("/otp-verification-for-new-email");
+    } catch (error) {
+      console.log(error);
+      req.session.message = "Oops! some error has occured"
+      res.redirect("/email-auth-for-new-email")
+    }
+  
+  }
 
 
 
@@ -163,5 +226,9 @@ const getUserOtp = async (req, res) => {
     resendOtp,
     getUserOtpForNewPass,
     userOtpForNewPass,
-    resendOtpForNewPass
+    resendOtpForNewPass,
+    getUserOtpForNewEmail,
+    userOtpForNewEmail,
+    resendOtpForNewEmail
+    
   }

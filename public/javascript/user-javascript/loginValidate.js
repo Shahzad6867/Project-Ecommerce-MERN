@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded",function () {
     
   }
 
-  if(serverMessage === "Password Updated Succesfully, Please Login with the New Password"){
+  if(serverMessage === "Password Updated Succesfully"){
     iziToast.success({
       title : "Success",
       message: serverMessage,

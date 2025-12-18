@@ -11,7 +11,8 @@ const getHomepage = async(req,res) => {
     const categories = await Category.find({})
     const products = await Product.find({}).populate("categoryId").populate("brandId")
     const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
-    res.render("user-view/user.homepage.ejs",{categories,products,productsFullList})
+    const user = req.session.user || req.user
+    res.render("user-view/user.homepage.ejs",{categories,products,productsFullList,user})
 }
 
 const getProductDetail = async(req,res) => {
@@ -20,7 +21,8 @@ const getProductDetail = async(req,res) => {
     const product = await Product.findById({ _id : id})
     const relatedProduct = await Product.find({ categoryId : product.categoryId}).limit(5).populate("categoryId").populate("brandId")
     const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
-    res.render("user-view/user.product-detail-page.ejs",{product,relatedProduct,productsFullList,variant})
+    const user = req.session.user || req.user
+    res.render("user-view/user.product-detail-page.ejs",{product,relatedProduct,productsFullList,variant,user})
     } catch (error) {
         console.log(error.message)
     }
@@ -34,7 +36,8 @@ try {
     const brands = await Brand.find({})
     const products = await Product.find({}).populate("categoryId").populate("brandId")
     const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
-    res.render("user-view/user.shop.ejs",{categories,products,brands,productsFullList})
+    const user = req.session.user || req.user
+    res.render("user-view/user.shop.ejs",{categories,products,brands,productsFullList,user})
     
 } catch (error) {
     console.log(error)

@@ -4,8 +4,12 @@ const User = require("../../models/user.model")
 const getProfile = async (req,res) => {
     const theUser = req.session.user || req.user 
     const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
+    const address = await Address.findOne({userId : theUser._id, isDefault : false})
+    const defaultAddress = await Address.findOne({userId : theUser._id,isDefault : true})
     const user = await User.findOne({_id : theUser._id})
-    res.render("user-view/user.profile-page.ejs",{productsFullList,user})
+    let message = req.session.message || null
+    delete req.session.message
+    res.render("user-view/user.profile-page.ejs",{message,productsFullList,user,address,defaultAddress})
 }
 
 const getAddress = async (req,res) => {
@@ -19,10 +23,8 @@ const getAddress = async (req,res) => {
         defaultAddress = null
     }
    
-    const user = {
-        firstName : req.session.user?.firstName || req.user?.firstName,
-        lastName : req.session.user?.lastName || req.user?.lastName 
-    }
+    const user = req.session.user || req.user
+
     const message = req.session.message || null
     delete req.session.message
     res.render("user-view/user.address-management.ejs",{productsFullList,user,addressList,defaultAddress,message})
@@ -115,9 +117,8 @@ const resetDefaultAddress = async (req,res) => {
     const id = req.query.id
     
     const idOfUser = req.session.user?._id || req.user?._id
-    const result1 =  await Address.findOneAndUpdate({userId : idOfUser,isDefault : true},{$set : {isDefault : false}})
-    const result2 = await Address.findByIdAndUpdate({_id : id},{$set : {isDefault : true}})
-    console.log(id + result1 + result2)
+     await Address.findOneAndUpdate({userId : idOfUser,isDefault : true},{$set : {isDefault : false}})
+     await Address.findByIdAndUpdate({_id : id},{$set : {isDefault : true}})
     req.session.message = "Your Default address has been Updated"
     res.redirect("/address")
 }

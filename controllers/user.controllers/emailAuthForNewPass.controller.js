@@ -9,8 +9,9 @@ require("dotenv").config();
 const getEmailAuth = async (req,res) => {
     let message = req.session.message || null;
     delete req.session.message;
-  
-    res.render("user-view/user.email-auth.ejs", { message: message });
+    let userEmail = req.session.user?.email
+    let backTo = (req.query?.location === "Profile") ? "Profile" : "Login"
+    res.render("user-view/user.email-auth.ejs", { message: message,userEmail,backTo});
   }
   
 const emailAuth = async (req,res) => {
@@ -36,8 +37,44 @@ try {
     console.log("Otp Sent");
     req.session.otpUser = userData;
     req.session.otp = savedOtp
+    req.session.message = 'OTP has been sent to your mail! Check your email'
     return res.redirect("/otp-verification-for-new-pass");
     }    
+
+} catch (error) {
+    console.log(error)
+}
+}
+
+const getEmailAuthForNewEmail = async (req,res) => {
+    let message = req.session.message || null;
+    delete req.session.message;
+    let userEmail = await User.findOne({_id : req.session.user._id},{_id : 0,email : 1})
+    userEmail = userEmail.email
+    res.render("user-view/user.email-auth-for-new-email.ejs", { message: message,userEmail});
+  }
+  
+const emailAuthForNewEmail = async (req,res) => {
+try {
+    const {email} = req.body
+    req.session.userEmail = email
+    console.log(req.session.email)
+    let generatedOtp = otpGenerator();
+    console.log(generatedOtp)
+    const emailSent = await mailer.sendVerificationEmail(email, generatedOtp);
+    const now = new Date()
+    const newOtp = new Otp({
+        userEmail: email,
+        otpCode: generatedOtp,
+        createdAt : new Date(now.getTime() + (3 * 60 * 1000))
+    });
+    let savedOtp = await newOtp.save();
+    console.log(savedOtp)
+    console.log(generatedOtp);
+    console.log("Otp Sent");
+    req.session.otp = savedOtp
+    req.session.message = 'OTP has been sent to your New Mail Id! Check your email'
+    return res.redirect("/otp-verification-for-new-email");
 } catch (error) {
     console.log(error)
 }
@@ -45,5 +82,7 @@ try {
 
 module.exports = {
     getEmailAuth,
-    emailAuth
+    emailAuth,
+    getEmailAuthForNewEmail,
+    emailAuthForNewEmail
 }

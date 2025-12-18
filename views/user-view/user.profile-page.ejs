@@ -4,7 +4,7 @@
     <%- include("../partials/user-side/userProfile-sidebar.ejs",{dashboardBtn : "",profileBtn : "active disabled",ordersBtn : "",shoppingCartBtn : "",addressBtn : "",walletBtn : ""})%>
         <div class="main-content">
             <h1 class="text-3xl font-bold mb-8">My Profile</h1>
-            
+            <input type="text"  id="serverMessage" value="<%= message %>" hidden>
             <div class="flex gap-6">
                 <div class="w-[45%]">
                     <div class="profile-card  p-6">
@@ -30,7 +30,7 @@
                             </a>
                         </div>
                     </div>
-                    
+                    <% if (!user.googleId) { %>
                     <div class="profile-card p-6 mt-6">
                         <h2 class="text-lg font-bold mb-4">Account Security</h2>
                         <div class="space-y-4">
@@ -39,22 +39,23 @@
                                     
                                     <p class="font-medium mb-4">Email</p>
                                     <p class="font-medium ">Password</p>
-                                    
-
+                                        
+    
                                 </div>
                                 <div class="w-full text-end">
                                     
-                                    <a href="#">
+                                   
+                                    <a href="/email-auth-for-new-email">
                                         <button type="button" class="px-2 py-1 mb-2 btn-primary text-gray-700 font-bold rounded-xl focus:outline-none focus:ring-2 ">
                                             Edit / Update Email
                                         </button>
                                     </a>
-                                    <a href="#">
+                                    <a href="/email-auth?location=Profile">
                                         <button type="button" class="px-2 py-1  btn-primary text-gray-700 font-bold rounded-xl focus:outline-none focus:ring-2 ">
                                             Update / Forgot Password
                                         </button>
                                     </a>
-                                    
+                                   
 
                                 </div>
                                
@@ -63,7 +64,59 @@
                             
                         </div>
                     </div>
-                    
+                    <% } else {%>
+                            <div  class="profile-card p-6 mt-6">
+                                <div class="flex justify-between mb-2">
+                                            <h2 class="text-xl font-bold mt-2">Address Book</h2>
+                                        <a href="/address">
+                                            <button type="button" class="px-4 py-2  btn-primary text-gray-700 font-bold rounded-xl focus:outline-none focus:ring-2 ">
+                                                Add / Update Address
+                                            </button>
+                                        </a>
+                                </div>
+                                <div class="flex gap-4 ">
+                                    <% if (defaultAddress) { %>
+                                        <div class="border rounded-md p-4 mt-2 relative min-w-[50%] max-w-[50%]">
+                                            <div class="flex justify-between items-start mb-2 ">
+                                                <h3 class="font-medium">Default Address</h3>
+                                                <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Default</span>
+                                            </div>
+                                            <p class="text-gray-600 text-sm"><%= defaultAddress.firstName + " " + defaultAddress.lastName %></p>
+                                            <p class="text-gray-600 text-sm"><%= defaultAddress.city + " " + defaultAddress.state +", "+defaultAddress.pincode %></p>
+                                            <p class="text-gray-600 text-sm"><%= defaultAddress.country %></p>
+                                            <p class="text-gray-600 text-sm"><%= defaultAddress.address %></p>
+                                           
+                                        </div>
+                                    <% } else { %>
+                                        <div class="border rounded-md p-4 mt-2 relative min-w-[50%] max-w-[50%]">
+                                            <div class="flex justify-between items-start mb-2 ">
+                                                <h3 class="font-medium text-gray-400">Default Address</h3>
+                                                <span class="bg-gray-100 text-gray-400 text-xs px-2 py-1 rounded">Default</span>
+                                            </div>
+                                            <h1 class="text-5xl text-gray-200">Not Provided</h1>
+                                           
+                                        </div>
+                                        <% } %>
+                                    <!-- More address cards would go here -->
+                                     
+                                        <% if (address) { %>
+                                            <div class="border rounded-md p-4 mt-2 relative min-w-[48%] max-w-[48%]">
+                                                <div class="flex justify-between items-start mb-2 ">
+                                                    <h3 class="font-medium">Other Address</h3>
+                                                    
+                                                </div>
+                                                <p class="text-gray-600 text-sm"><%= address.firstName + " " + address.lastName %></p>
+                                                <p class="text-gray-600 text-sm"><%= address.city + " " + address.state +", "+address.pincode %></p>
+                                                <p class="text-gray-600 text-sm"><%= address.country %></p>
+                                                <p class="text-gray-600 text-sm"><%= address.address %></p>
+                                               
+                                            </div>
+                                        <% } %>
+                                    
+                                </div>
+                               
+                            </div>
+                        <% } %>
                 </div>
                 
                 <div class="w-[55%]">
@@ -105,32 +158,59 @@
                             
                         
                     </div>
+                    <% if (!user.googleId) { %>
                     <div  class="profile-card p-6 mt-6">
                         <div class="flex justify-between mb-2">
                                     <h2 class="text-xl font-bold mt-2">Address Book</h2>
-                                <a href="#">
+                                <a href="/address">
                                     <button type="button" class="px-4 py-2  btn-primary text-gray-700 font-bold rounded-xl focus:outline-none focus:ring-2 ">
                                         Add / Update Address
                                     </button>
                                 </a>
                         </div>
                         <div class="flex gap-4 ">
-                            <div class="border rounded-md p-4 mt-2 relative">
-                                <div class="flex justify-between items-start mb-2 ">
-                                    <h3 class="font-medium">Home Address</h3>
-                                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Default</span>
+                            <% if (defaultAddress) { %>
+                                <div class="border rounded-md p-4 mt-2 relative min-w-[50%] max-w-[50%]">
+                                    <div class="flex justify-between items-start mb-2 ">
+                                        <h3 class="font-medium">Default Address</h3>
+                                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Default</span>
+                                    </div>
+                                    <p class="text-gray-600 text-sm"><%= defaultAddress.firstName + " " + defaultAddress.lastName %></p>
+                                    <p class="text-gray-600 text-sm"><%= defaultAddress.city + " " + defaultAddress.state +", "+defaultAddress.pincode %></p>
+                                    <p class="text-gray-600 text-sm"><%= defaultAddress.country %></p>
+                                    <p class="text-gray-600 text-sm"><%= defaultAddress.address %></p>
+                                   
                                 </div>
-                                <p class="text-gray-600 text-sm">123 Main Street</p>
-                                <p class="text-gray-600 text-sm">Apt 4B</p>
-                                <p class="text-gray-600 text-sm">New York, NY 10001</p>
-                                <p class="text-gray-600 text-sm">United States</p>
-                               
-                            </div>
+                            <% } else { %>
+                                <div class="border rounded-md p-4 mt-2 relative min-w-[50%] max-w-[50%]">
+                                    <div class="flex justify-between items-start mb-2 ">
+                                        <h3 class="font-medium text-gray-400">Default Address</h3>
+                                        <span class="bg-gray-100 text-gray-400 text-xs px-2 py-1 rounded">Default</span>
+                                    </div>
+                                    <h1 class="text-5xl text-gray-200">Not Provided</h1>
+                                   
+                                </div>
+                                <% } %>
                             <!-- More address cards would go here -->
+                             
+                                <% if (address) { %>
+                                    <div class="border rounded-md p-4 mt-2 relative min-w-[48%] max-w-[48%]">
+                                        <div class="flex justify-between items-start mb-2 ">
+                                            <h3 class="font-medium">Other Address</h3>
+                                            
+                                        </div>
+                                        <p class="text-gray-600 text-sm"><%= address.firstName + " " + address.lastName %></p>
+                                        <p class="text-gray-600 text-sm"><%= address.city + " " + address.state +", "+address.pincode %></p>
+                                        <p class="text-gray-600 text-sm"><%= address.country %></p>
+                                        <p class="text-gray-600 text-sm"><%= address.address %></p>
+                                       
+                                    </div>
+                                <% } %>
+                            
                         </div>
                        
                     </div>
-                    
+                    <% } %>
                 </div>
             </div>
         </div>
@@ -139,6 +219,16 @@
     
     <script>
         feather.replace();
+        const serverMessage = document.getElementById("serverMessage").value 
+
+    
+        if(serverMessage === "Password Updated Succesfully"){
+            iziToast.success({
+                title : "Success",
+                message : serverMessage,
+                position : "topRight"
+            })
+        }
         
         // Image preview for avatar upload
         document.getElementById('imageUpload').addEventListener('change', function(e) {

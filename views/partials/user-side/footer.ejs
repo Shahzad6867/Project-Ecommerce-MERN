@@ -87,3 +87,23 @@
         </div>
     </div>
 </footer>
+<script>
+    feather.replace();
+    
+const accountBtn = document.getElementById('accountBtn');
+const accountDropdown = document.getElementById('accountDropdown');
+
+accountBtn.addEventListener('click', () => {
+accountDropdown.classList.toggle('hidden');
+});
+
+// Optional: hide dropdown if clicked outside
+window.addEventListener('click', (e) => {
+if (!accountBtn.contains(e.target) && !accountDropdown.contains(e.target)) {
+  accountDropdown.classList.add('hidden');
+}
+});
+
+
+
+</script>

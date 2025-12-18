@@ -1,0 +1,45 @@
+<%- include("../partials/user-side/otpVerification-header.ejs",{title : "User - OTP Verification"}) %>
+<body class="flex items-center justify-center p-4">
+    <div class="bg-white  rounded-2xl shadow-xl p-8 max-w-md w-full" data-aos="zoom-in">
+        <div class="text-center mb-8">
+            
+            <h1 class="text-3xl font-bold text-black mb-2">OTP Verification</h1>
+            <p class="text-black text-opacity-80">We've sent a verification code to your email</p>
+        </div>
+
+        <form method="post" action="/otp-verification-for-new-email"  class="space-y-6">
+            <input type="hidden" id="serverMessage"  value="<%= typeof message !== 'undefined' ? message : '' %>">
+            <input type="hidden" id="otpTimer"  value="<%= typeof allocatedTime !== 'undefined' ? allocatedTime : '' %>">
+            <div class="flex justify-center">
+                <input type="text" name="otp" maxlength="1" class="otp-input" pattern="\d*" inputmode="numeric" >
+                <input type="text" name="otp" maxlength="1" class="otp-input" pattern="\d*" inputmode="numeric" >
+                <input type="text" name="otp" maxlength="1" class="otp-input" pattern="\d*" inputmode="numeric" >
+                <input type="text" name="otp" maxlength="1" class="otp-input" pattern="\d*" inputmode="numeric" >
+                <input type="text" name="otp" maxlength="1" class="otp-input" pattern="\d*" inputmode="numeric" >
+                <input type="text" name="otp" maxlength="1" class="otp-input" pattern="\d*" inputmode="numeric" >
+            </div>
+
+            <button type="submit" id="verifyOtpButton" class="w-full py-3 px-4 bg-yellow-400  hover:bg-yellow-300 text-black font-semibold rounded-lg transition duration-300 flex items-center justify-center space-x-2">
+                <span>Verify OTP</span>
+                <i data-feather="arrow-right" class="w-5 h-5"></i>
+            </button>
+        </form>
+
+      
+        <div class="mt-3 text-center">
+            <span id="otp-text" class="text-black text-opacity-70" >OTP Expires in </span><span id="timer" class="text-green-500" ></span><span id="seconds-text" class="text-black text-opacity-70"> seconds</span>
+        </div>
+
+        <div class="mt-2 text-center">
+            <form action="/resend-otp-for-new-email" method="post">
+                <button type="submit" id="resend-otp-btn" class="w-full py-3 px-4   text-black font-semibold rounded-lg transition duration-300 flex items-center justify-center space-x-2" disabled>
+                    <span>Resend OTP</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/javascript/user-javascript/otpVerification.js"></script>
+    
+</body>
+</html>

@@ -67,6 +67,15 @@ feather.replace();
 
                 var serverMessage = document.getElementById("serverMessage")?.value
 
+                if(serverMessage === 'OTP has been sent to your mail! Check your email'){
+                iziToast.success({
+                    title : "Success",
+                    message: serverMessage,
+                    position: 'topCenter'
+                    })
+                        
+                }
+
                 if(serverMessage === "Incorrect OTP"){
         
                 iziToast.error({
