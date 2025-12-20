@@ -49,7 +49,7 @@ try {
 const getEmailAuthForNewEmail = async (req,res) => {
     let message = req.session.message || null;
     delete req.session.message;
-    let userEmail = req.session.user
+    let userEmail = await User.findOne({_id : req.session.user._id},{_id : 0,email : 1})
     userEmail = userEmail.email
     res.render("user-view/user.email-auth-for-new-email.ejs", { message: message,userEmail});
   }
@@ -57,14 +57,11 @@ const getEmailAuthForNewEmail = async (req,res) => {
 const emailAuthForNewEmail = async (req,res) => {
 try {
     const {email} = req.body
-    if(email === req.session.user.email){
-        req.session.message = "No changes detected. Please enter a new email"
-        return res.redirect("/email-auth-for-new-email")
-    }
     req.session.userEmail = email
+    console.log(req.session.email)
     let generatedOtp = otpGenerator();
     console.log(generatedOtp)
-    await mailer.sendVerificationEmail(email, generatedOtp);
+    const emailSent = await mailer.sendVerificationEmail(email, generatedOtp);
     const now = new Date()
     const newOtp = new Otp({
         userEmail: email,

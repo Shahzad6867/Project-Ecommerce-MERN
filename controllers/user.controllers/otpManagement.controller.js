@@ -177,8 +177,7 @@ const getUserOtp = async (req, res) => {
       }
       if (userOtp.otpCode === inputOtp) {
         await Otp.deleteOne({_id : userOtp._id})
-        const userWithNewEmail = await User.findByIdAndUpdate({_id : req.session.user._id},{$set : {email : req.session.userEmail}},{new : true})
-        req.session.user = userWithNewEmail
+        await User.findByIdAndUpdate({_id : req.session.user._id},{$set : {email : req.session.userEmail}})
         req.session.message = "Email Updated Successfully"
         return res.redirect("/profile")
       } else {

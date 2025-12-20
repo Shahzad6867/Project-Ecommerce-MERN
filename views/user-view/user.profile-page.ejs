@@ -23,7 +23,7 @@
                             </div>
                             <h2 class="text-xl font-bold"><%= user.firstName +" "+ user.lastName %></h2>
                             <p class="text-gray-600 mb-4"><%= user.email %></p>
-                            <a href="/edit-profile">
+                            <a href="#">
                                 <button type="button" class="px-4 py-2  btn-primary text-gray-700 font-bold rounded-xl focus:outline-none focus:ring-2 ">
                                     Edit Profile
                                 </button>
@@ -47,12 +47,12 @@
                                    
                                     <a href="/email-auth-for-new-email">
                                         <button type="button" class="px-2 py-1 mb-2 btn-primary text-gray-700 font-bold rounded-xl focus:outline-none focus:ring-2 ">
-                                            Update Email
+                                            Edit / Update Email
                                         </button>
                                     </a>
                                     <a href="/email-auth?location=Profile">
                                         <button type="button" class="px-2 py-1  btn-primary text-gray-700 font-bold rounded-xl focus:outline-none focus:ring-2 ">
-                                            Update Password
+                                            Update / Forgot Password
                                         </button>
                                     </a>
                                    
@@ -149,9 +149,8 @@
                                 <a href="#">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                                        <input type="tel" class="w-full px-3 py-2 border border-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" value="<%= user.phone %>" disabled>
+                                        <input type="tel" class="w-full px-3 py-2 border border-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" value="<% user.phone %>" disabled>
                                     </div>
-                              </a>
                                 <%}%>
                             
                            
@@ -223,21 +222,7 @@
         const serverMessage = document.getElementById("serverMessage").value 
 
     
-        if(serverMessage === "Password Updated Successfully"){
-            iziToast.success({
-                title : "Success",
-                message : serverMessage,
-                position : "topRight"
-            })
-        }
-        if(serverMessage === "Email Updated Successfully"){
-            iziToast.success({
-                title : "Success",
-                message : serverMessage,
-                position : "topRight"
-            })
-        }
-        if(serverMessage === "Profile Updated Successfully"){
+        if(serverMessage === "Password Updated Succesfully"){
             iziToast.success({
                 title : "Success",
                 message : serverMessage,
@@ -246,7 +231,16 @@
         }
         
         // Image preview for avatar upload
-       
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('imagePreview').src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
     </script>
     <%- include("../partials/user-side/footer.ejs")%>
 
