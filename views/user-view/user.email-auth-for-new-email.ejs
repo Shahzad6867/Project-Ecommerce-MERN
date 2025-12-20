@@ -24,7 +24,7 @@
             </p>
         </div>
 
-        <form id="resetPassEmailForm" method="post" action="/email-auth-for-new-email" class="space-y-6" onsubmit="return validate()" novalidate>
+        <form id="resetPassEmailForm" method="post" action="/email-auth-for-new-email" class="space-y-6"  novalidate>
             <input type="hidden" id="serverMessage"  value="<%= typeof message !== 'undefined' ? message : '' %>">
             <div class="relative">
                 <label for="oldEmail" class="font-bold text-gray-700">Current Email Address</label>
