@@ -1,0 +1,328 @@
+<%- include("../partials/user-side/navbar.ejs")%>
+<div class="flex ">
+    <%- include("../partials/user-side/userProfile-sidebar.ejs",{dashboardBtn : "",profileBtn : "active disabled",ordersBtn : "",shoppingCartBtn : "",addressBtn : "",walletBtn : ""})%>
+        <div class="edit-profile-content">
+            <input type="text"  id="serverMessage" value="<%= message %>" hidden>
+            <div class="flex justify-center  mb-6">
+                <h1 class="text-3xl font-bold">Edit Profile</h1>
+                
+            </div>
+    
+           <div class="flex justify-center w-full">
+                <div class="profile-card p-6 max-w-md ">
+                    <form id="edit-profile-form" action="/edit-profile" method="post" class="space-y-6"  enctype="multipart/form-data">
+                        <div class="flex flex-col items-center border border-gray-300 rounded-xl p-2">
+                            <div class="avatar-upload mb-4">
+                                <div class="avatar-preview flex justify-center ">
+                                   <% if (!user.profileImage) { %>
+                                    <img src="/images/user.jpg" class="w-32 h-32 border rounded-full object-cover" id="imagePreview" alt="Profile">
+                                   <% }else{ %>
+                                    <img src="<%= user.profileImage %>" class="w-32 h-32 border rounded-full object-cover" id="imagePreview" alt="Profile">
+                                    <% } %>
+                                </div>
+                                <div class="avatar-edit">
+                                    <input name="profileImage" type="file" id="imageUpload" accept=".png, .jpg, .jpeg" >
+                                    <label for="imageUpload" class="py-2 px-4 rounded-full">
+                                        Upload Image
+                                    </label>
+                                    <button type="button" id="cropBtn" class="h-10 w-20 font-bold mt-4 btn-primary py-1 px-4 ml-1 rounded-full" onclick="cropImage()"  hidden>
+                                        Crop
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                                <input type="text" id="firstName" name="firstName" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" value="<%= user.firstName %>">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                                <input type="text" id="lastName" name="lastName" class="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" value="<%= user.lastName %>">
+                            </div>
+                        </div>
+        
+                       <% if (user.googleId) { %>
+                        <div>
+                            
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Email</label>
+                            <input type="email"  class="w-full px-3 py-2 border border-gray-300 rounded-xl  text-gray-500" value="<%= user.email  %>" disabled>
+                            <div class="flex justify-between">
+                                <p class=" mt-1 text-xs ml-2 text-gray-500"><svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="13"
+                                    height="13"
+                                    fill="currentColor"
+                                    class="bi bi-info-circle inline-block text-gray-700"
+                                    viewBox="0 0 16 16"
+                                  >
+                                    <path
+                                      d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"
+                                    />
+                                    <path
+                                      d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"
+                                    />
+                                  </svg> Email cannot be updated as you have signed in through Google Sign up</p>
+                               
+                            </div>
+                        </div>
+                       <% } else {%>
+                        <div>
+                            
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email"  class="w-full px-3 py-2 border border-gray-300 rounded-xl " value="<%= user.email  %>" disabled>
+                            <div class="flex justify-between">
+                                <p class=" mt-1 text-xs ml-2 text-gray-500"><svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="13"
+                                    height="13"
+                                    fill="currentColor"
+                                    class="bi bi-info-circle inline-block text-gray-700"
+                                    viewBox="0 0 16 16"
+                                  >
+                                    <path
+                                      d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"
+                                    />
+                                    <path
+                                      d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"
+                                    />
+                                  </svg> Email updates require verification via OTP</p>
+                                <a href="/email-auth-for-new-email">
+                                    <button type="button" class="btn-primary px-3 py-1 min-w-[154px] rounded-full font-bold mt-1 ">Update Email</button>
+                                </a>
+                            </div>
+                        </div>
+                        <% } %>
+        
+                        <div>
+                           
+                            <div class="flex justify-start ">
+                               <div class="w-[36%]">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Old Phone Number</label>
+                               </div>
+                                <div class="w-[50%]">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">New Phone Number</label>
+                                </div>
+                            </div>
+                          <% if (!user.phone) { %>
+                            <span id="oldMobileNo" class="bg-gray-100 border border-gray-300 px-5 rounded-xl py-3">Not Provided</span>
+                          <% } else {%>
+                            <span id="oldMobileNo" class="bg-gray-100 border border-gray-300 px-5 rounded-xl py-3"> <%= user.phone  %></span>
+                         <% } %>
+                            <input id="phoneNumber" name="phone" type="tel" class="w-half px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" value="" >
+                        </div>
+        
+                    
+        
+                        <div class="pt-4">
+                            <button type="submit" class="px-4 py-2 btn-primary font-bold text-gray-700 rounded-xl ">
+                                Save Changes
+                            </button>
+                            <a href="/profile">
+                                <button type="button" onclick="window.location.href='user-profile.html'" class="px-4 py-2 ml-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50">
+                                    Cancel
+                                </button>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+           </div>
+        </div>
+        <div id="cropModal" class="modal-overlay" >
+            <div class="modal-content">
+        
+            <!-- Header -->
+            <div class="modal-header" >
+                <h1 class="font-bold text-xl">Crop Profile Image</h1>
+                <span id="closeCropBtn" class="close-btn" onclick="closeModal()" >&times;</span>
+            </div>
+        
+            <!-- Body -->
+            <div class="modal-body">
+        
+                <!-- Selected image preview area -->
+                <div class="crop-area">
+                <img id="cropImage" src="" alt="Preview for Cropping" >
+                </div>
+        
+                <!-- Crop instructions -->
+                <p class="modal-text">
+                Adjust the highlighted area to crop your profile photo.
+                </p>
+        
+            </div>
+        
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button id="cancelCropBtn" class="cancel-btn" onclick="closeModal()">Cancel</button>
+                <button id="cropSaveBtn" class="crop-btn" onclick="cropAndSaveImage()">Crop & Save</button>
+            </div>
+        
+            </div>
+        </div>
+</div>
+                <!-- Modal Background -->
+                
+  
+    
+    <script>
+        feather.replace();
+        const input = document.querySelector("#phoneNumber");
+    let iti = window.intlTelInput(input, {
+      utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js", // for formatting and validation
+      initialCountry: "auto", // or a specific country code like "us"
+      geoIpLookup: function(callback) { // optional: lookup user's country based on IP
+        fetch("https://ipapi.co/json")
+          .then(res => res.json())
+          .then(data => {
+            countryCode = data.country_calling_code
+          return callback(data.country_code)
+          })
+          .catch(() => callback("us")); // default to US on error
+      },
+    });
+        const serverMessage = document.getElementById("serverMessage").value 
+
+        if(serverMessage === "Oops! Something went wrong"){
+            iziToast.error({
+                title : "Error",
+                message : serverMessage,
+                position : "topRight"
+            })
+        }
+        
+        // Image preview for avatar upload
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('imagePreview').src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+                document.getElementById("cropBtn").hidden = false
+            }
+        });
+        
+        let cropper = null
+        let file = null
+        let imageUpload = document.getElementById("imageUpload")
+        function cropImage() {
+            let cropModal = document.getElementById("cropModal")
+            let displayImg = document.getElementById('cropImage')
+            cropModal.style.display = "block"
+             file = imageUpload.files[0]
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    displayImg.src = event.target.result
+                    if(cropper){
+                        cropper.destroy()
+                        cropper = null
+                    }
+                    cropper = new Cropper(displayImg,{ 
+                        aspectRatio : 1,
+                        viewMode : 1,
+                        guides : true,
+                        background : true,
+                        autoCropArea : 1,
+                        zoomable : true
+                    })
+                };
+                reader.readAsDataURL(imageUpload.files[0]);
+                
+            }
+        };
+        let closeCropBtn = document.getElementById('closeCropBtn')
+        let cancelCropBtn = document.getElementById('cancelCropBtn')
+
+        
+       function closeModal(){
+         document.getElementById("cropModal").style.display = "none"
+        if(cropper !== null){
+            cropper.destroy()
+            cropper = null
+        }
+       }
+       function cropAndSaveImage(){
+            if(cropper !== null){
+                let croppedCanvas = cropper.getCroppedCanvas()
+                    if(croppedCanvas){
+                        croppedCanvas.toBlob((blob) => {
+                            let fileName = file.name + Date.now()
+                                let croppedFile = new File([blob],fileName,{type : "image/jpeg"})
+                                const daraTransfer = new DataTransfer()
+
+                                daraTransfer.items.add(croppedFile)
+                               
+                                imageUpload.files = daraTransfer.files
+                            
+                        },"image/jpeg",1)
+                    }
+    
+            document.getElementById("imagePreview").src = croppedCanvas.toDataURL("image/jpeg")
+            closeModal()
+            }
+            
+        }
+        const firstName = document.getElementById("firstName").value.trim();
+const lastName = document.getElementById("lastName").value.trim();
+
+document.getElementById("edit-profile-form").addEventListener("submit", function(e) {
+
+    const newFirstName = document.getElementById("firstName").value.trim();
+    const newLastName = document.getElementById("lastName").value.trim();
+    const imageUpload = document.getElementById("imageUpload")
+
+    const nameRegex = /^[A-Za-z]+(?:[ '-][A-Za-z]+)*(?:\d{0,5})?$/
+    console.log()
+    const newIntlNumber = iti.getNumber();
+
+    // ❗ detect no change correctly
+    if (imageUpload.files.length === 0 &&
+        newFirstName === firstName &&
+        newLastName === lastName &&
+        newIntlNumber === ""
+    ) {
+        e.preventDefault();
+        iziToast.error({
+            title: "Error",
+            message: "No changes detected!",
+            position: "topRight"
+        });
+        return;
+    }
+    
+    // ❗ validation check
+    if (
+        newFirstName === "" || !nameRegex.test(newFirstName) 
+    ) {
+        e.preventDefault();
+        iziToast.error({
+            title: "Error",
+            message: "Invalid values entered!",
+            position: "topRight"
+        });
+        return;
+    }
+
+    if(newLastName === "" || !nameRegex.test(newLastName) ){
+        e.preventDefault();
+        iziToast.error({
+            title: "Error",
+            message: "Invalid values entered!",
+            position: "topRight"
+        });
+        return;
+    }
+   
+
+    input.value = newIntlNumber;
+});
+
+        
+    </script>
+    <%- include("../partials/user-side/footer.ejs")%>
