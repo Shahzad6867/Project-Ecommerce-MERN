@@ -131,9 +131,26 @@
                         <span class="text-gray-500 text-sm line-through ml-2">$<%= products[i].variants[j].price %></span>
                         <span class="text-green-600 text-xs font-medium ml-2">38% off</span>
                     </div>
-                    <button class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-medium text-sm flex items-center justify-center">
-                        <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> Add to Cart
-                    </button>
+                    <a href="/home/cart?productId=<%= products[i]._id %>&variant=<%= j %>&quantity=1">
+                        <button class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-medium text-sm flex items-center justify-center">
+                            <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> Add to Cart
+                        </button>
+                    </a>
+                    <!-- <div class="flex items-center justify-between h-[14%] ">
+                        <button class="w-half bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 mt-1 px-4 rounded-full font-medium text-sm flex items-center justify-center">
+                        <i data-feather="shopping-cart" class="w-6 h-6 "></i> 
+                        </button>
+                        <div class="flex items-center justify-between w-[68%] h-[78%] mt-1 border border-black rounded-lg">
+                            <button type="button" class="text-center rounded-lg px-2 py-1  mr-1 " onclick="decrementQuantity()">
+                                <i data-feather="minus"></i>
+                            </button> 
+                            <input type="text" id="quantity" value="1" class=" border border-black w-[3rem] bg-gray-200  px-2 text-xl  pt-[0.2rem] pb-[0.22rem] text-center" disabled>
+                            <button type="button" type="button" class="text-center rounded-lg px-2 py-1 ml-1  " onclick="incrementQuantity()">
+                                <i data-feather="plus"></i>
+                            </button>
+                        </div>
+                    </div> -->
+
                 </div>  
                             <% } %>  
                            <% } %>

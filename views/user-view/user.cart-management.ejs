@@ -1,0 +1,147 @@
+<%- include("../partials/user-side/navbar.ejs")%>
+<div class="main-content">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold">My Cart (3 items)</h1>
+        <a href="home.html" class="text-blue-600 hover:text-blue-800 flex items-center">
+            <i data-feather="arrow-left" class="w-4 h-4 mr-1"></i> Continue Shopping
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg border shadow-sm w-full min-h-[40%] flex justify-between mb-2 p-6 ">
+               <div class="max-w-[20%] h-[20%]  border-2 border-black rounded-lg ">
+                <img src="<%= productsFullList[2].variants[0].productImages[0] %>" alt="" class="w-full height-[100%] rounded">
+               </div>
+               <div class="w-[78%]">
+                <div class="w-full flex justify-between">
+                    <h1 class="font-bold text-2xl">iPhone 17 Pro - Cosmic Orange</h1>
+                    <button class="text-gray-700 font-bold hover:text-black flex rounded-xl  bg-red-400 hover:bg-red-500 px-4 py-2 items-center text-sm" >
+                        <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Remove
+                    </button>
+                </div>
+                <p>Color : <strong>Green</strong> | Size : <strong>256 GB</strong> | <span class="text-green-500">In Stock</span></p>
+                <p >Brand : <span class="text-blue-600">APPLE</span></p>
+                <div class="flex items-center gap-3 mt-1 mb-2">
+                    <p class="text-3xl font-bold text-black">$799</p>
+                      <p class="line-through text-gray-400 text-lg">$1099</p>
+                </div>
+                <div class="w-full mt-1 flex justify-between items-center">
+                    <div class="flex items-center">
+                        <button type="button" class="text-center rounded-full px-2 py-2 crop-btn mr-1 " onclick="decrementQuantity()">
+                            <i data-feather="minus"></i>
+                        </button> 
+                        <input type="text" id="quantity" value="1" class="border border-black bg-white w-[3rem] px-2 text-xl rounded-full py-2 text-center" disabled>
+                        <button type="button" type="button" class="text-center rounded-full px-2 py-2 ml-1 crop-btn " onclick="incrementQuantity()">
+                            <i data-feather="plus"></i>
+                        </button>
+                    </div>
+                    <button type="button" class="text-gray-700 bg-green-300 hover:bg-green-400 pl-2 pr-3 font-bold py-2 rounded-xl flex items-center text-sm" >
+                        <i data-feather="check" class="w-4 h-4 mr-1"></i> Update Item
+                    </button>
+                </div>
+               </div>
+            </div>
+            <div class="bg-white rounded-lg border shadow-sm w-full min-h-[40%]  p-6">
+                <div class="border-2 w-full h-[196px]  rounded-lg">
+                    <h1 class="text-2xl font-bold ml-[10rem] mt-[3.8rem]">Looks like you haven’t added anything yet !</h1>
+                    <a href="/shop"><button type="button"  class="btn-primary ml-[22rem] flex font-bold rounded-full px-4 py-2 mt-1 "><i data-feather="shopping-cart" class="mr-2"></i>Shop Now</button></a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-xl font-bold mb-4">Order Summary</h2>
+                <div class="flex items-center mb-3">
+                    <input type="text" placeholder="Coupon Code" class="w-[80%] px-4 py-2 border-2 border-blue-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <button type="button" class="offerBtn w-[20%] px-4 py-[0.6rem] font-bold  rounded-r-md hover:bg-gray-700">
+                        Apply
+                    </button>
+                </div>
+                <div class="w-full">
+                    <a href="" >
+                        <div  class="offerBtn w-full rounded-md flex  mb-3 ">
+                            <i data-feather="gift" class="w-5 h-5 ml-2 mt-[5px]"></i>
+                            <span class="font-bold ml-2 my-1">View Available Offers</span>
+                            <i data-feather="chevron-right" class="w-7 h-7 ml-[42%]  mt-[0.095rem]"></i>
+                        </div>
+                    </a> 
+                </div>
+                <div class="space-y-4">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Subtotal (3 items)</span>
+                        <span class="font-medium">$289.96</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Shipping</span>
+                        <span class="font-medium">Free</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Tax</span>
+                        <span class="font-medium">$5.80</span>
+                    </div>
+                    <div class="border-t border-gray-200 pt-4">
+                        <div class="flex justify-between">
+                            <span class="text-lg font-bold">Total</span>
+                            <span class="text-lg font-bold">$295.76</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="button" onclick="window.location.href='checkout.html'" class="w-full mt-6 py-3 px-4 btn-primary font-bold rounded-lg flex items-center justify-center">
+                    <span>Proceed to Checkout</span>
+                    <i data-feather="arrow-right" class="w-5 h-5 ml-2"></i>
+                </button>
+                
+                
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6 mt-6">
+                <h2 class="text-lg font-bold mb-4">Payment Methods</h2>
+                <div class="flex space-x-4">
+                    <img src="https://cdn-icons-png.flaticon.com/512/196/196578.png" class="h-8" alt="Visa">
+                    <img src="https://cdn-icons-png.flaticon.com/512/196/196561.png" class="h-8" alt="Mastercard">
+                    <img src="https://icons.iconarchive.com/icons/simpleicons-team/simple/128/american-express-icon.png" class="h-8" alt="American Express">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    feather.replace();
+    function incrementQuantity(){
+        let quantity = document.getElementById("quantity")
+        let counter = parseInt(quantity.value)
+        counter++
+        if(counter > 10){
+            iziToast.warning({
+                title: "Quantity Limit Reached",
+                message: "You can order up to a maximum of 10 items only.",
+                position : "topRight"
+            });
+        }else{
+            quantity.value = counter
+        }
+        
+    }
+    function decrementQuantity(){
+        let quantity = document.getElementById("quantity")
+        let counter = parseInt(quantity.value)
+        counter--
+        if(counter < 1){
+            iziToast.warning({
+                title: "Invalid Quantity",
+                message: "Quantity cannot be less than 1, Click Remove to delete the item.",
+                position : "topRight"
+            });
+        }else{
+            quantity.value = counter
+        }
+        
+    }
+</script>
+<%- include("../partials/user-side/footer.ejs")%>
