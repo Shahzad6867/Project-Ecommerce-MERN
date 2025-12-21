@@ -2,6 +2,7 @@ const Category = require("../../models/category.model.js");
 const Product = require("../../models/product.model.js");
 const User = require("../../models/user.model.js");
 const Brand = require("../../models/brand.model.js");
+const Cart = require("../../models/cart.model.js");
 require("dotenv").config()
 
 
@@ -12,7 +13,10 @@ const getHomepage = async(req,res) => {
     const products = await Product.find({}).populate("categoryId").populate("brandId")
     const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
     const user = req.session.user || req.user
-    res.render("user-view/user.homepage.ejs",{categories,products,productsFullList,user})
+    const cartItems = await Cart.find({userId : user._id}).populate("productId")
+    const cartItemsCount = await Cart.aggregate([{$match : {userId : user._id}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
+    
+    res.render("user-view/user.homepage.ejs",{message,categories,products,productsFullList,user,cartItems,cartItemsCount})
 }
 
 const getProductDetail = async(req,res) => {

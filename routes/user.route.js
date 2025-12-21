@@ -56,5 +56,6 @@ router.post("/otp-verification-for-new-email",otpManagementController.userOtpFor
 
 // Cart Management
 router.get("/cart",userAuth.checkSession,cartManagementController.getCart)
-router.post("/home/cart",cartManagementController.addToCartFromHome)
+router.get("/home/cart",cartManagementController.addToCartFromHome)
+router.get("/home/delete-cart-item",cartManagementController.deleteCartItemFromHome)
 module.exports = router

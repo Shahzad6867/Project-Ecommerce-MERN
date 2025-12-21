@@ -194,4 +194,7 @@
     background: linear-gradient(135deg, #013562 20%, #0057FF 100%);
 
   }
-  
+  .border-black-x-sides{
+    border-left: 1px solid black ;
+    border-right:1px solid black;
+  }

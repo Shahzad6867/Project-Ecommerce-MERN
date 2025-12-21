@@ -32,7 +32,7 @@
             <div class="flex items-center">
                 <a id="nav-logo" href="/" class="text-2xl font-bold text-black" >NovaMart</a>
             </div>
-            
+            <input type="hidden" id="serverMessage"  value="<%= typeof message !== 'undefined' ? message : '' %>">
             <!-- Search Bar -->
             <div class="flex-1 mx-8">
                 <div class="relative">
@@ -73,20 +73,138 @@
                     <span class="iconify" data-icon="ri:heart-line" style="width: 26;height: 26;"></span>
                     <span class="text-xs mt-1">Wishlist</span>
                 </a>
-                <a href="/cart" class="flex flex-col items-center relative">
-                    <span class="iconify" data-icon="solar-cart-linear" style="width: 26;height: 26;"></span>
-                    <span class="text-xs mt-1">Cart</span>
-                    <span class="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">4</span>
-                </a>
+                
 
                 <div class="relative inline-block text-left">
-                    <button id="accountBtn">
+                
+                    <button type="button" id="cartBtn">
+                        <span class="iconify" data-icon="solar-cart-linear" style="width: 26;height: 26;"></span>
+                        <span class="text-xs mt-1">Cart</span>
+                        <% if (cartItemsCount.length > 0 && cartItemsCount[0].totalQuantity > 0) { %>
+                            <span class="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"><%= cartItemsCount[0].totalQuantity %></span>
+                        <% } else { %>
+                            <span class="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                            <% } %>
+                        
+                    </button>
+                  
+                    <!-- Dropdown Menu -->
+                    <div id="cartDropdown" class="hidden absolute right-0 mt-2 w-[25rem] bg-white border border-gray-200 rounded-md shadow-lg">
+                        
+                        <% if (cartItemsCount.length > 0 && cartItemsCount[0].totalQuantity > 0) { %>
+                            <h1 class="text-xl text-black font-bold ml-3 mt-2">My Cart (<%= cartItemsCount[0].totalQuantity %>)</h1>
+                        <% } else { %>
+                            <h1 class="text-xl text-black font-bold ml-3 mt-2">My Cart (0)</h1>
+                            <% } %>
+                            <% let subTotal = 0 %>
+                         <% if (cartItems.length > 3) { %>
+                            <% for( let i = 0; i < cartItems.length ; i++ ) { %>
+                                <% subTotal = ((cartItems[i].productId.variants[cartItems[i].variant].price * 0.62) * cartItems[i].quantity)  + subTotal %>
+                                <% if (i < 3) { %>
+                                    <a href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>">
+                                        <div class="flex  border border-gray-400 w-[96%] text-left px-3 py-2 text-gray-700  rounded-lg m-2">
+                                            <div class="w-full">
+                                                <img src="<%= cartItems[i].productId.variants[cartItems[i].variant].productImages[0] %>" class="rounded-md mr-1 w-[6rem] border border-gray-400 "></img>
+                                               </div>
+                                           
+                                            <div class="w-[78%] ml-1">
+                                                <% if (cartItems[i].productId.productName.length > 29 ) { %>
+                                                   <% let productName = cartItems[i].productId.productName.slice(0,26)  %>
+                                                   <h1 class="font-bold text-black"><%= productName %>...</h1>
+                                                <% } else { %>
+                                                    <h1 class="font-bold text-black"><%= cartItems[i].productId.productName %></h1>
+                                                <% } %>
+                                                <p class="text-gray-600 text-xs">Color : <strong class="text-black"><%= cartItems[i].productId.variants[cartItems[i].variant].color %></strong><span class="ml-2">Size : <strong class="text-black"><%= cartItems[i].productId.variants[cartItems[i].variant].size %></strong></span></p>
+                                                <p class="text-sm text-gray-600 mt-[0.1rem]">Quantity : <strong class="text-black"><%= cartItems[i].quantity %></strong></p>
+                                                <div class="flex justify-between items-center mt-1">
+                                                    <h2 class="text-lg text-black font-bold ">$ <%= cartItems[i].productId.variants[cartItems[i].variant].price * 0.62 %></h2>
+                                                    <a href="/home/delete-cart-item?cartItemId=<%= cartItems[i]._id %>">
+                                                        <button class="text-sm flex items-center justify-center rounded-lg hover:text-red-500  px-1  text-black">
+                                                            <i data-feather="trash-2" class="w-5 h-5 mr-1"></i>
+                                                        </button>
+                                                   </a>
+                                                </div>
+                                            </div> 
+                                            
+                                        </div>
+                                    </a>
+                                <% } else if( i === 3){%>
+                                    <a href="/cart">
+                                        <div class=" border font-bold border-gray-400 w-[96%] text-center px-3 py-3 text-gray-700  rounded-lg m-2">
+                                           <h1>
+                                            You have more items in your cart. Go to cart to see all products.<span class="text-blue-800">Click here</span>
+                                           </h1>
+                                            
+                                        </div>
+                                    </a>
+                                    <% } %>
+                                
+                               <% } %>
+                         <% }else if(cartItems.length === 0){ %>
+                            <div class="flex  items-center justify-center border border-gray-400 w-[96%] text-left px-3 py-8 text-gray-700  rounded-lg m-2">
+                                  <h1 class="font-bold">
+                                    Your cart is empty. Start shopping!
+                                   </h1>
+                            </div>
+                         <% }else{ %>
+                            <% for( let i = 0; i < cartItems.length; i++ ) { %>
+                                <% subTotal = ((cartItems[i].productId.variants[cartItems[i].variant].price * 0.62) * cartItems[i].quantity)  + subTotal %>
+                                <a href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>">
+                                    <div class="flex  border border-gray-400 w-[96%] text-left px-3 py-2 text-gray-700  rounded-lg m-2">
+                                        <div class="w-full ">
+                                            <img src="<%= cartItems[i].productId.variants[cartItems[i].variant].productImages[0] %>" class="rounded-md w-[6rem] mr-1 border border-gray-400 "></img>
+                                        </div>
+                                       
+                                        <div class="w-[78%] ml-1">
+                                            <% if (cartItems[i].productId.productName.length > 29 ) { %>
+                                               <% let productName = cartItems[i].productId.productName.slice(0,26)  %>
+                                               <h1 class="font-bold text-black"><%= productName %>...</h1>
+                                            <% } else { %>
+                                                <h1 class="font-bold text-black"><%= cartItems[i].productId.productName %></h1>
+                                            <% } %>
+                                            <p class="text-gray-600 text-xs">Color : <strong class="text-black"><%= cartItems[i].productId.variants[cartItems[i].variant].color %></strong><span class="ml-2">Size : <strong class="text-black"><%= cartItems[i].productId.variants[cartItems[i].variant].size %></strong></span></p>
+                                            <p class="text-sm text-gray-600 mt-[0.1rem]">Quantity : <strong class="text-black"><%= cartItems[i].quantity %></strong></p>
+                                            <div class="flex justify-between items-center mt-1">
+                                                <h2 class="text-lg text-black font-bold ">$ <%= cartItems[i].productId.variants[cartItems[i].variant].price * 0.62 %></h2>
+                                               <a href="/home/delete-cart-item?cartItemId=<%= cartItems[i]._id %>">
+                                                    <button class="text-sm flex items-center justify-center rounded-lg hover:text-red-500  px-1  text-black">
+                                                        <i data-feather="trash-2" class="w-5 h-5 mr-1"></i>
+                                                    </button>
+                                               </a>
+                                            </div>
+                                        </div> 
+                                        
+                                    </div>
+                                </a>
+                               <% } %>
+                            <% } %>
+                       <div class="flex w-[96%] m-2 justify-between border border-gray-400 rounded-md px-1 py-1">
+                        <span class="font-bold  text-blue-900">Subtotal :</span>
+                        <span class=" font-bold">$ <%= subTotal.toFixed(2) || 0.00 %></span>
+                       </div>
+                       <div class="w-[96%] m-2 ">
+                            <a href="/cart">
+                                <button type="button" class="w-[38%] ml-[0.1rem] px-4 py-2 mb-2 font-bold rounded-lg bg-green-400">
+                                    Go to Cart
+                                </button>
+                            </a>
+                            <button type="button" class="w-[60%] crop-btn px-4 py-2 font-bold rounded-lg">
+                                Checkout
+                            </button>
+                       </div>
+                    </div>
+                   
+                </div>
+
+                <div class="relative inline-block text-left">
+                    <button type="button" id="accountBtn">
                         <span class="iconify" data-icon="qlementine-icons:user-16" style="width: 26;height: 26; margin-left: 10px;"></span>
                         <span class="text-xs mt-1">Account</span>
                     </button>
                   
                     <!-- Dropdown Menu -->
                     <div id="accountDropdown" class="hidden absolute right-0 mt-2 w-[200px] bg-white border border-gray-200 rounded-md shadow-lg">
+                        <h1 class="text-xl text-black font-bold ml-3 mt-2">My Account</h1>
                         <a href="/profile">
                             <div class="flex justify-between border border-gray-300 w-[92%] text-left px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg m-2">
                               
@@ -112,8 +230,8 @@
                             </div>
                         </a>
                         <a href="/logout">
-                            <button class=" border border-gray-300 w-[92%] text-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg m-2">
-                                <i class="fa-solid fa-right-from-bracket text-lg"></i>
+                            <button class=" border border-gray-300 w-[92%] font-bold flex items-center justify-center text-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg m-2">
+                                <i data-feather="log-out" class="mr-1"></i>
                                 Logout
                             </button>
                         </a>
@@ -162,6 +280,29 @@
        });
        })
 
+       let serverMessageNavbar = document.getElementById("serverMessageNavbar").value
+
+       if(serverMessageNavbar === "Product has been updated in Cart"){
+                iziToast.info({
+                    title : "Cart",
+                    message : serverMessageNavbar,
+                    position : "topRight"
+                })
+       }
+       if(serverMessageNavbar === "Product has been added to Cart"){
+                iziToast.info({
+                    title : "Cart",
+                    message : serverMessageNavbar,
+                    position : "topRight"
+                })
+       }
+       if(serverMessageNavbar === "Product has been removed from your Cart"){
+                iziToast.info({
+                    title : "Cart",
+                    message : serverMessageNavbar,
+                    position : "topRight"
+                })
+       }
 
 
     </script>
