@@ -124,7 +124,7 @@
                         <span class="font-regular text-xs">Brand : <a href="#" class="text-blue-700"><%= (products[i].brandId.brandName) %></a></span>
                     </div>
                     <div class="flex items-center mb-2">
-                        <span class="font-regular text-gray-400 text-xs">Size : <a href="#" ><%= (products[i].variants[j].size) %></a></span>
+                        <span class="font-regular text-gray-700 text-xs">Size : <a href="#" ><%= (products[i].variants[j].size) %></a></span>
                     </div>
                     <div class="flex items-center mb-2">
                         <span class="font-bold text-lg">$<%= (products[i].variants[j].price * 62/100).toFixed(2) %></span>
@@ -134,11 +134,14 @@
                     <% let isProductInCart = cartItems.find(item =>  String(products[i]._id) === String(item.productId._id) && item.variant === j ) || null %>
                     <% if (isProductInCart) { %>
                             <div class="flex  justify-between ">
-                                <a id="addToCartBtn<%= i %><%= j %>" href="/home/cart?productId=<%= products[i]._id %>&variant=<%= j %>&quantity=<%= isProductInCart.quantity %>">
-                                    <button class="w-half bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2  px-4 rounded-full font-medium text-sm flex items-center justify-center">
+                                <form id="addToCartBtn<%= i %><%= j %>" action="/home/cart" method="post">
+                                    <input type="text" name="productId" value="<%= products[i]._id %>" hidden>
+                                    <input type="text" name="variant" value="<%= j %>" hidden>
+                                    <input type="text" name="quantity" value="<%= isProductInCart.quantity %>" hidden>
+                                    <button type="submit" class="w-half bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2  px-4 rounded-full font-medium text-sm flex items-center justify-center">
                                         <i data-feather="shopping-cart" class="w-6 h-6 "></i> 
                                     </button>
-                                </a>
+                                </form>
                                 <div class="flex items-center justify-between w-[68%] h-[78%]  border border-black rounded-lg">
                                     <button id="incQtyBtn<%= i %><%= j %>" type="button" class="text-center rounded-lg px-2 py-1  mr-1 " onclick="decrementQuantity('<%= i %>','<%= j %>')">
                                         <i data-feather="minus"></i>
@@ -227,7 +230,7 @@
                                     <span class="font-regular text-xs">Brand : <a href="#" class="text-blue-700"><%= (products[i].brandId.brandName) %></a></span>
                                 </div>
                                 <div class="flex items-center mb-2">
-                                    <span class="font-regular text-gray-400 text-xs">Size : <a href="#" ><%= (products[i].variants[j].size) %></a></span>
+                                    <span class="font-regular text-gray-700 text-xs">Size : <a href="#" ><%= (products[i].variants[j].size) %></a></span>
                                 </div>
                                 <div class="flex items-center mb-2">
                                     <span class="font-bold text-lg">$<%= (products[i].variants[j].price * 62/100).toFixed(2) %></span>
@@ -276,11 +279,9 @@
     function decrementQuantity(productIndex,variantIndex){
         let quantity = document.getElementById(`quantity${productIndex}${variantIndex}`)
         let addToCartBtn = document.getElementById(`addToCartBtn${productIndex}${variantIndex}`)
-        let href = addToCartBtn.href.split("&")
         let counter = parseInt(quantity.value)
         counter--
-        let changeQuantity = href[2].slice(0,9) + counter
-        href[2] = changeQuantity
+       
         if(counter < 1){
             iziToast.warning({
                 title: "Invalid Quantity",

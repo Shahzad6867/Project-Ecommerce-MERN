@@ -2,6 +2,7 @@
   .main-content {
     width: 100%;
     padding: 30px;
+    height: auto;
 }
 .edit-profile-content {
     width: 100%;
