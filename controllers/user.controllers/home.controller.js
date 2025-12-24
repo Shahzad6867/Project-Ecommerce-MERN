@@ -14,7 +14,6 @@ const getHomepage = async(req,res) => {
     const products = await Product.find({}).populate("categoryId").populate("brandId")
     const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
     const user = req.session.user || req.user
-    console.log(user)
     const cartItems = await Cart.find({userId : user._id}).populate("productId")
     const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
     console.log(cartItemsCount)
@@ -25,6 +24,10 @@ const getProductDetail = async(req,res) => {
     try {
     const {id,variant} = req.query
     const product = await Product.findById({ _id : id})
+    if(product.isDeleted){
+      req.session.message = "Product Unavailable"
+      return res.redirect("/")
+    }
     const relatedProduct = await Product.find({ categoryId : product.categoryId}).limit(5).populate("categoryId").populate("brandId")
     const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
     const user = req.session.user || req.user
