@@ -129,7 +129,7 @@
                     myCartHead.innerText = Number(myCartHead.innerText) + 1
                     feather.replace()
                     
-                }else if(data.message === "Out of Stock"){
+                }else if(data.message === "Out of Stock" || data.message === "Product Unavailable"){
                     document.getElementById(`incDecQtyDiv${productId}${variantIndex}`).classList.add("hidden")
                     addToCartBtn.classList.remove(...addToCartBtn.classList)
                     addToCartBtn.classList.add("py-2")
@@ -137,10 +137,10 @@
                     addToCartBtn.classList.add("font-bold")
                     addToCartBtn.classList.add("w-full")
                     addToCartBtn.classList.add("rounded-lg")
-                    addToCartBtn.innerText = "Out of Stock"
+                    addToCartBtn.innerText = data.message
                     cartItemQtyToBeUpdated.classList.remove("text-black")
                     cartItemQtyToBeUpdated.classList.add("text-red-500")
-                    cartItemQtyToBeUpdated.innerText = "Out of Stock"
+                    cartItemQtyToBeUpdated.innerText = data.message
                     cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - 1
                     myCartHead.innerText = Number(myCartHead.innerText) - 1
                     addToCartBtn.disabled = true
@@ -239,11 +239,17 @@
         fetch(`/cart/delete-cart-item?cartItemId=${cartId}&productId=${productId}`,{method : "DELETE"})
                 .then(res => res.json())
                 .then(data => {
-                    addToCartBtn.classList.add("w-full")
-                addToCartBtn.classList.add("py-2")
-                addToCartBtn.innerHTML = '<i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> Add to Cart'
-                addToCartBtn.classList.remove("w-[0%]")
-                document.getElementById(`incDecQtyDiv${productId}${variantIndex}`).classList.add("hidden")
+                    if(document.getElementById("isInProductPage").value === "Yes"){
+                        addToCartBtn.classList.remove("hidden")
+                        document.getElementById(`incDecQtyDiv`).classList.add("hidden")
+                    }else{
+                        addToCartBtn.classList.add("w-full")
+                        addToCartBtn.classList.add("py-2")
+                        addToCartBtn.innerHTML = '<i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> Add to Cart'
+                        addToCartBtn.classList.remove("w-[0%]")
+                        document.getElementById(`incDecQtyDiv${productId}${variantIndex}`).classList.add("hidden")
+                    }
+                    
                 myCartHead.innerText = Number(myCartHead.innerText) - Number(quantity.value)
                 cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - Number(quantity.value)
                 quantity.value = 1
@@ -266,7 +272,7 @@
     }
 
     function deleteItemInCartFromCart(cartId,productId,variantIndex) {
-        let quantity = document.getElementById(`quantity${productId}${variantIndex}`)
+        let quantity = document.getElementById(`quantity${cartId}`)
         let myCartHead = document.getElementById("cartHeadItemCount")
         let myCartHeadInCart = document.getElementById("cartHeadItemCountInCart")
         let cartItemQtyNotifier = document.getElementById("cartItemQty")

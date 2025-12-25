@@ -16,7 +16,6 @@ const getHomepage = async(req,res) => {
     const user = req.session.user || req.user
     const cartItems = await Cart.find({userId : user._id}).populate("productId")
     const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
-    console.log(cartItemsCount)
     res.render("user-view/user.homepage.ejs",{message,categories,products,productsFullList,user,cartItems,cartItemsCount})
 }
 
@@ -32,8 +31,8 @@ const getProductDetail = async(req,res) => {
     const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
     const user = req.session.user || req.user
     const cartItems = await Cart.find({userId : user._id}).populate("productId")
-    const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
-    res.render("user-view/user.product-detail-page.ejs",{product,relatedProduct,productsFullList,variant,user,cartItems,cartItemsCount})
+    const isProductInCart = await Cart.findOne({productId : id,variant : variant})
+    res.render("user-view/user.product-detail-page.ejs",{product,relatedProduct,productsFullList,variant,user,cartItems,isProductInCart})
     } catch (error) {
         console.log(error.message)
     }

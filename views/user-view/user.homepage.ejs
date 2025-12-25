@@ -90,7 +90,7 @@
         <!-- Featured Products -->
         <section class="mb-12">
             <h2 class="text-2xl font-bold mb-6">Featured Products</h2>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div class="scroll-x-div">
                 <!-- Product Card 1 -->
                  <% for( let i = 0; i < products.length; i++ ) { %>
                     <% if (!products[i].categoryId.isDeleted && !products[i].brandId.isDeleted) { %>
@@ -100,7 +100,7 @@
                             <% if ( products[i].variants[j].stockQuantity !== 0 && products[i].variants[j].stockStatus !== "Out of Stock" ) { %>
                              
                             
-                <div class="product-card bg-white rounded-lg shadow-sm p-4 transition-all">
+                <div class="product-card mr-2 bg-white rounded-lg shadow-sm p-4 transition-all w-[240px] flex-shrink-0">
                     <div class="h-40 mb-3 relative">
                         <img src="<%= products[i].variants[j].productImages[0] %>" alt="Product" class="w-full h-full object-contain">
                         <button class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
@@ -199,17 +199,17 @@
         <section class="mb-12">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold">Today's Deals</h2>
-                <a href="#" class="text-blue-600 hover:underline">See All</a>
+                <a href="/shop" class="text-gray-800 font-bold bg-yellow-400 hover:bg-yellow-300 px-4 py-2 rounded-full ">Shop Now</a>
             </div>
             <div class="relative">
-                <div class="deals-carousel flex overflow-x-auto space-x-4 pb-4 hide-scrollbar">
+                <div class="deals-carousel scroll-x-div">
                     <% for( let i = 0; i < products.length; i++ ) { %>
                         <% if (!products[i].categoryId.isDeleted && !products[i].brandId.isDeleted) { %>
                         <% if (!products[i].isDeleted) { %>
                          <% if (!products[i].isFeatured) { %>
                         <% for( let j = 0; j < products[i].variants.length; j++ ) { %>
                         <% if ( products[i].variants[j].stockQuantity !== 0 && products[i].variants[j].stockStatus !== "Out of Stock" ) { %>
-                            <div class="product-card bg-white rounded-lg shadow-sm p-4 transition-all">
+                            <div class="product-card mr-2 bg-white rounded-lg shadow-sm p-4 transition-all w-[240px] flex-shrink-0">
                                 <div class="h-40 mb-3 relative">
                                     <img src="<%= products[i].variants[j].productImages[0] %>" alt="Product" class="w-full h-full object-contain">
                                     <button class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
@@ -275,48 +275,6 @@
                                         </button>
                                 <% } %>
                             </div>
-                            <% } else { %>
-                                <div class="product-card bg-white rounded-lg shadow-sm p-4 transition-all">
-                                    <div class="h-40 mb-3 relative">
-                                        <img src="<%= products[i].variants[j].productImages[0] %>" alt="Product" class="w-full h-full object-contain">
-                                        <button class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
-                                            <i data-feather="heart" class="w-4 h-4"></i>
-                                        </button>
-                                        <a href="/product?id=<%= products[i]._id %>&variant=<%= j%>">
-                                            <button class="absolute top-12 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
-                                                <i data-feather="eye" class="w-4 h-4"></i>
-                                            </button>
-                                        </a>
-                                    </div>
-                                    <h3 class="font-medium text-sm mb-1 truncate"><%= products[i].productName  %></h3>
-                                    <div class="flex items-center mb-1">
-                                        <div class="text-yellow-400 flex">
-                                            <i data-feather="star" class="w-4 h-4 fill-current"></i>
-                                            <i data-feather="star" class="w-4 h-4 fill-current"></i>
-                                            <i data-feather="star" class="w-4 h-4 fill-current"></i>
-                                            <i data-feather="star" class="w-4 h-4 fill-current"></i>
-                                            <i data-feather="star" class="w-4 h-4 fill-current"></i>
-                                        </div>
-                                        <span class="text-gray-500 text-xs ml-1">(4,567)</span>
-                                    </div>
-                                    <div class="flex items-center mb-2">
-                                        <span class="font-regular text-xs">Brand : <a href="#" class="text-blue-700"><%= (products[i].brandId.brandName) %></a></span>
-                                    </div>
-                                    <div class="flex items-center mb-2">
-                                        <span class="font-regular text-gray-700 text-xs">Size : <a href="#" ><%= (products[i].variants[j].size) %></a></span>
-                                    </div>
-                                    <div class="flex items-center mb-2">
-                                        <span class="font-bold text-lg">$<%= (products[i].variants[j].price ).toFixed(2) %></span>
-                                      <!-- <span class="text-gray-500 text-sm line-through ml-2">$</span>
-                                        <span class="text-green-600 text-xs font-medium ml-2">38% off</span> -->
-                                    </div>
-                                         <div class="flex  justify-between ">
-                                            <button type="button" id="addToCartBtn<%= products[i]._id %><%= j %>" class="w-full bg-red-500 text-black  rounded-md font-medium text-sm flex items-center justify-center" disabled>
-                                                Out of Stock
-                                            </button>        
-                                        </div>
-                                    
-                                </div>
                             <% } %>
                            <% } %>
                           <% } %>

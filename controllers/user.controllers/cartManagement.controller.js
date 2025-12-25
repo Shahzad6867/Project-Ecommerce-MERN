@@ -19,7 +19,7 @@ const addToCart = async (req,res) => {
     const product = await Product.findById(productId)
     let stock = product.variants[variant].stockQuantity 
     if(!product.isDeleted){
-        if(stock === 0){
+        if(stock === 0 || product.variants[variant].stockStatus === "Out of Stock"){
             product.variants[variant].stockStatus = "Out of Stock"
             await product.save()
           return   res.status(409).json({

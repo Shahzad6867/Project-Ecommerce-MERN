@@ -69,13 +69,13 @@
       </div>
 
       <!-- Products Grid -->
-      <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div id="productGrid" class="flex flex-wrap gap-4">
         <% for( let i = 0; i < products.length; i++ ) { %>
           <% if (!products[i].categoryId.isDeleted && !products[i].brandId.isDeleted) { %>
             <% if (!products[i].isDeleted) { %>
                 <% for( let j = 0; j < products[i].variants.length; j++ ) { %>
                   <% if ( products[i].variants[j].stockQuantity !== 0 && products[i].variants[j].stockStatus !== "Out of Stock" ) { %>
-                  <div class="product-card bg-white rounded-lg shadow-sm p-4 transition-all">
+                  <div class="product-card bg-white rounded-lg shadow-sm p-4 transition-all w-[214px]">
                     <div class="h-40 mb-3 relative">
                         <img src="<%= products[i].variants[j].productImages[0] %>" alt="Product" class="w-full h-full object-contain">
                         <button class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100">

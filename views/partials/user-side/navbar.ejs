@@ -188,8 +188,9 @@
                                     </div>
                                     <% } %>
                               <% } %>
-                              <input id="itemsWithStock" type="text" value="<%= itemsWithStock %>" hidden>
+                              
                             </div>
+                            <input id="itemsWithStock" type="text" value="<%= itemsWithStock %>" hidden>
                          <% if(cartItems.length === 0){ %>
                             <div id="nothingInCartCard" class="flex  items-center justify-center border border-gray-400 w-[96%] text-left px-3 py-8 text-gray-700  rounded-lg m-2">
                                   <h1 class="font-bold">
@@ -314,13 +315,7 @@
        })
 
        let serverMessageNavbar = document.getElementById("serverMessageNavbar").value
-       if(serverMessageNavbar){
-                iziToast.info({
-                    title : "Cart",
-                    message : serverMessageNavbar,
-                    position : "topRight"
-                })
-       }
+       
 
        if(serverMessageNavbar === "Product Unavailable"){
                 iziToast.info({
