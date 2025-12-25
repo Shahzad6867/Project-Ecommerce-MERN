@@ -1,0 +1,172 @@
+<%- include("../partials/user-side/navbar.ejs")%>
+    <div class="checkout-container">
+        <!-- Checkout Form (visible by default) -->
+        <div id="checkoutForm">
+            <h1 class="text-3xl font-bold mb-8 text-start">Checkout</h1>
+            
+            <div class="flex gap-8">
+                 <!-- Left Column - Order Summary -->
+                 <div class="w-[65%]">
+                    <!-- Address Selection -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold">Shipping Address</h2>
+                            <button onclick="openAddAddressModal()" class="text-blue-600 hover:text-blue-800 flex items-center">
+                                <i data-feather="plus" class="w-4 h-4 mr-1"></i> Add New
+                            </button>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-4" id="addressList">
+                            <!-- Address 1 (Default) -->
+                            <div class="address-card w-[30%] selected p-4 relative">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h3 class="font-medium">Home Address</h3>
+                                    <span class="default-badge text-xs px-2 py-1 rounded-full">Default</span>
+                                </div>
+                                <div class="text-sm text-gray-600">
+                                    <p>John Doe</p>
+                                    <p>123 Main Street, Apt 4B</p>
+                                    <p>New York, NY 10001</p>
+                                    <p>United States</p>
+                                    <p class="mt-2"><strong>Phone:</strong> +1 (555) 123-4567</p>
+                                </div>
+                                <div class="flex justify-end space-x-2 mt-3">
+                                    <button onclick="editAddress(this.closest('.address-card'))" class="text-blue-600 hover:text-blue-800 text-sm">
+                                        <i data-feather="edit" class="w-4 h-4"></i>
+                                    </button>
+                                    <button class="text-gray-600 hover:text-gray-800 text-sm">
+                                        <i data-feather="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Address 2 -->
+                            
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-sm p-6 sticky top-4">
+                        <h2 class="text-xl font-bold mb-4">Items in Your Cart</h2>
+                        
+                        <!-- Products List -->
+                        <div class="flex flex-wrap mb-4">
+                            <!-- Product 1 -->
+                           
+                            <div class="py-4 px-2 mr-2 mb-2 border border-black rounded-md w-[49%] flex items-center">
+                                <img src="http://static.photos/electronics/200x200/1" class="product-image rounded" alt="Product">
+                                <div class="ml-4 flex-1">
+                                    <h3 class="text-lg font-bold">Wireless Headphones</h3>
+                                    <p class="text-md font-bold text-gray-500">Color: <span class="text-black font-bold">Black</span></p>
+                                    <p class="text-md font-bold text-gray-500">Size: <span class="text-black font-bold">256GB</span></p>
+                                    <div class="flex items-center mt-1">
+                                        <span class="text-md text-gray-600">Quantity: <span class="text-black font-bold">3</span></span>
+                                    </div>
+                                    <div class="text-xl font-bold">$<span >500</span></div>
+                                </div>
+                                
+                            </div>
+                            
+                            
+                            <!-- Product 2 -->
+                           
+                            
+                            <!-- Product 3 -->
+                            
+                        </div>
+                        
+                        
+                    </div>
+                </div>
+                <!-- Right Column - Shipping and Payment -->
+                <div class="w-[35%]">
+                    
+                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                        <!-- Order Summary -->
+                        <h2 class="text-xl font-bold mb-4">Order Summary</h2>
+                        <div class="space-y-3 border-gray-200 pt-4">
+                            
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Subtotal (3 items)</span>
+                                <span class="font-medium">$289.96</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Shipping</span>
+                                <span class="font-medium">Free</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Tax</span>
+                                <span class="font-medium">$5.80</span>
+                            </div>
+                           
+                            <div class="flex justify-between text-lg font-bold pt-2">
+                                <span>Total</span>
+                                <span>$285.76</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Terms and Place Order -->
+                        
+                    </div>
+                    <!-- Payment Method -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                        
+                        <h2 class="text-xl font-bold mb-4">Payment Method</h2>
+                        <div class="space-y-4">
+                           
+                            <div class="flex items-center p-4 border border-gray-300 rounded-lg cursor-not-allowed">
+                                <input type="radio" name="payment" id="card" disabled class="h-4 w-4 text-gray-400 focus:ring-gray-500 border-gray-300">
+                                <label for="card" class="ml-3 block text-sm font-medium text-gray-400">
+                                    Credit/Debit Card (Currently Unavailable)
+                                </label>
+                            </div>
+                            <div class="flex items-center p-4 border border-gray-300 rounded-lg cursor-not-allowed">
+                                <input type="radio" name="payment" id="wallet" disabled class="h-4 w-4 text-gray-400 focus:ring-gray-500 border-gray-300">
+                                <label for="wallet" class="ml-3 block text-sm font-medium text-gray-400">
+                                    <i data-feather=""></i>
+                                    Nova Wallet (Currently Unavailable)
+                                </label>
+                            </div>
+                            <div class="flex items-center p-4 border border-gray-300 rounded-lg bg-gray-50">
+                                <input type="radio" name="payment" id="cod" checked class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300">
+                                <label for="cod" class="ml-3 block text-sm font-medium text-gray-700">
+                                    Cash on Delivery (COD)
+                                </label>
+                            </div>
+
+                            <div class="mt-6">
+                                <label class="flex items-start">
+                                    <input type="checkbox" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1">
+                                    <span class="ml-2 block text-sm text-gray-700">
+                                        I agree to the <a href="#" class="text-blue-600 hover:text-blue-800">Terms and Conditions</a> and <a href="#" class="text-blue-600 hover:text-blue-800">Privacy Policy</a>
+                                    </span>
+                                </label>
+                                
+                                <button onclick="placeOrder()" class="w-full mt-4 py-3 px-4 btn-primary  font-bold rounded-md transition duration-300 flex items-center justify-center">
+                                    <span>Place Order</span>
+                                    <i data-feather="package" class="w-5 h-5 ml-2"></i>
+                                </button>
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+
+                   
+                    
+                </div>
+
+                
+                
+               
+            </div>
+        </div>
+        
+        
+    </div>
+    
+    
+    <script>
+        feather.replace();
+       
+    </script>
+<%- include("../partials/user-side/footer.ejs")%>

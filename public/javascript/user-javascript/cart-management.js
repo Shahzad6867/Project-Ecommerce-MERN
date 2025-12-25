@@ -239,7 +239,7 @@
         fetch(`/cart/delete-cart-item?cartItemId=${cartId}&productId=${productId}`,{method : "DELETE"})
                 .then(res => res.json())
                 .then(data => {
-                    if(document.getElementById("isInProductPage").value === "Yes"){
+                    if(document.getElementById("isInProductPage")?.value === "Yes"){
                         addToCartBtn.classList.remove("hidden")
                         document.getElementById(`incDecQtyDiv`).classList.add("hidden")
                     }else{
