@@ -1,60 +1,112 @@
 <%- include("../partials/user-side/navbar.ejs")%>
 <div class="main-content">
     <div class="flex justify-between items-center mb-8">
-        <% if (cartItemsCount.length > 0 && cartItemsCount[0]?.totalQuantity) { %>
-            <h1 class="text-3xl font-bold">My Cart (<%= cartItemsCount[0]?.totalQuantity  || 0 %>)</h1>
-        <% } else { %>
-            <h1 class="text-3xl font-bold">My Cart (0)</h1>
-            <% } %>
-       
+     <h1 class="text-3xl font-bold">My Cart (<span id="cartHeadItemCountInCart" ><%= cartItemsCount[0]?.totalQuantity  || 0 %></span>)</h1>
     </div>
 
     <div class="w-full flex justify-between">
         
-        <div class="w-[65%] mr-2">
+        <div id="cartItemsList" class="w-[65%] mr-2">
             <% let subTotal = 0 %>
+            <% let itemsWithStock = 0 %>
             <% if (cartItems.length > 0) { %>
                
              <% for( let i = 0; i < cartItems.length; i++ ) { %>
-                <% subTotal += (cartItems[i].productId.variants[cartItems[i].variant].price * cartItems[i].quantity * 0.62) %>
-                <div class="bg-white rounded-lg border shadow-sm w-full  flex justify-between mb-2 p-6 ">
+                <% if (!cartItems[i].productId.isDeleted) { %>
+                <% if (cartItems[i].productId.variants[cartItems[i].variant].stockQuantity !== 0 && cartItems[i].productId.variants[cartItems[i].variant].stockStatus !== "Out of Stock") { %>
+                <% subTotal += (cartItems[i].productId.variants[cartItems[i].variant].price * cartItems[i].quantity ) %>
+                <% itemsWithStock += cartItems[i].quantity %>
+                <div id="cartItemInCart<%= cartItems[i]._id %>" class="bg-white rounded-lg border shadow-sm w-full  flex justify-between mb-2 p-6 ">
                     <div class="max-w-[20%] h-[20%]  border-2 border-black rounded-lg ">
                       <img src="<%= cartItems[i].productId.variants[cartItems[i].variant].productImages[0] %>" alt="" class="w-full height-[100%] rounded">
                     </div>
                     <div class="w-[78%]">
                      <div class="w-full flex justify-between">
                          <h1 class="font-bold text-2xl"><%= cartItems[i].productId.productName%></h1>
-                         <a href="/cart/delete-cart-item?cartItemId=<%= cartItems[i]._id %>">
-                            <button type="button" class="text-gray-700 font-bold hover:text-black flex rounded-xl  bg-red-400 hover:bg-red-500 px-4 py-2 items-center text-sm" >
+                        
+                            <button type="button" class="text-gray-700 font-bold hover:text-black flex rounded-xl  bg-red-400 hover:bg-red-500 px-4 py-2 items-center text-sm" onclick="deleteItemInCartFromCart('<%- cartItems[i]._id%>','<%- cartItems[i].productId._id %>','<%- cartItems[i].variant %>')">
                                 <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Remove
                             </button>
-                         </a>
+                    
                      </div>
-                     <p>Color : <strong><%= cartItems[i].productId.variants[cartItems[i].variant].color %></strong> | Size : <strong><%= cartItems[i].productId.variants[cartItems[i].variant].size %></strong> | <% if (cartItems[i].productId.variants[cartItems[i].variant].stockStatus === "In Stock" || cartItems[i].productId.variants[cartItems[i].variant].stockStatus === "Pre Order") { %>
-                      <span class="text-green-600"><%= cartItems[i].productId.variants[cartItems[i].variant].stockStatus %></span>
-                     <% } else { %> <span class="text-red-500"><%= cartItems[i].productId.variants[cartItems[i].variant].stockStatus %></span> <% } %></p>
+                     <p>Color : <strong><%= cartItems[i].productId.variants[cartItems[i].variant].color %></strong> | Size : <strong><%= cartItems[i].productId.variants[cartItems[i].variant].size %></strong> | <span class="text-green-600"><%= cartItems[i].productId.variants[cartItems[i].variant].stockStatus %></span></p>
                      <div class="flex items-center gap-3 mt-1 mb-2">
-                         <p class="text-3xl font-bold text-black">$ <%= cartItems[i].productId.variants[cartItems[i].variant].price * 0.62 %></p>
-                           <p class="line-through text-gray-400 text-lg">$<%= cartItems[i].productId.variants[cartItems[i].variant].price %></p>
+                         <p class="text-3xl font-bold text-black">$ <%= cartItems[i].productId.variants[cartItems[i].variant].price %></p>
+                           <!-- <p class="line-through text-gray-400 text-lg"></p> -->
                      </div>
                      <div class="w-full mt-1 flex justify-between items-center">
-                         <div class="flex items-center mt-2">
-                             <button id="decQtyBtn<%= i %>" type="button" class="text-center rounded-full px-2 py-2 crop-btn mr-1 " onclick="decrementQuantity('<%= i %>')">
+                         <div id="incDecQtyDiv<%= cartItems[i]._id  %>" class="flex items-center mt-2">
+                             <button id="decQtyBtn<%= i %>" type="button" class="text-center rounded-full px-2 py-2 crop-btn mr-1 " onclick="decrementQuantity('<%= cartItems[i]._id %>','<%- cartItems[i].productId._id %>','<%- cartItems[i].variant %>')">
                                  <i data-feather="minus"></i>
                              </button> 
-                             <input type="text" id="quantity<%= i %>" value="<%= cartItems[i].quantity %>" class="border border-black bg-white w-[3rem] px-2 text-xl rounded-full py-2 text-center" disabled>
-                             <button id="incQtyBtn<%= i %>" type="button" type="button" class="text-center rounded-full px-2 py-2 ml-1 crop-btn " onclick="incrementQuantity('<%= i %>')">
+                             <input type="text" id="quantity<%= cartItems[i]._id %>" value="<%= cartItems[i].quantity %>" class="border border-black bg-white w-[3rem] px-2 text-xl rounded-full py-2 text-center" disabled>
+                             <button id="incQtyBtn<%= i %>" type="button" type="button" class="text-center rounded-full px-2 py-2 ml-1 crop-btn " onclick="incrementQuantity('<%= cartItems[i]._id %>','<%- cartItems[i].productId._id %>','<%- cartItems[i].variant %>')">
                                  <i data-feather="plus"></i>
                              </button>
                          </div>
-                         <a id="updateCartItemBtn<%= i %>" href="/cart/update-cart-item?productId=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>&quantity=<%= cartItems[i].quantity %>">
-                            <button type="button" class="text-gray-700 bg-green-300 hover:bg-green-400 pl-2 pr-3 font-bold py-2 rounded-xl flex items-center text-sm" >
-                                <i data-feather="check" class="w-4 h-4 mr-1"></i> Update Item
-                            </button>
-                         </a>
                      </div>
                     </div>
                  </div>
+             <% } else {%>
+                <div id="cartItemInCart<%= cartItems[i]._id %>" class="bg-white rounded-lg border shadow-sm w-full  flex justify-between mb-2 p-6 ">
+                    <div class="max-w-[20%] h-[20%]  border-2 border-black rounded-lg ">
+                      <img src="<%= cartItems[i].productId.variants[cartItems[i].variant].productImages[0] %>" alt="" class="w-full height-[100%] rounded">
+                    </div>
+                    <div class="w-[78%]">
+                     <div class="w-full flex justify-between">
+                         <h1 class="font-bold text-2xl"><%= cartItems[i].productId.productName%></h1>
+                        
+                            <button type="button" class="text-gray-700 font-bold hover:text-black flex rounded-xl  bg-red-400 hover:bg-red-500 px-4 py-2 items-center text-sm" onclick="deleteItemInCartFromCart('<%- cartItems[i]._id%>','<%- cartItems[i].productId._id %>','<%- cartItems[i].variant %>')">
+                                <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Remove
+                            </button>
+                    
+                     </div>
+                     <p>Color : <strong><%= cartItems[i].productId.variants[cartItems[i].variant].color %></strong> | Size : <strong><%= cartItems[i].productId.variants[cartItems[i].variant].size %></strong> </p>
+                     <div class="flex items-center gap-3 mt-1 mb-2">
+                        
+                           <!-- <p class="line-through text-gray-400 text-lg"></p> -->
+                     </div>
+                     <div class="w-full mt-1 flex justify-between items-center">
+                         <div id="incDecQtyDiv<%= cartItems[i]._id %>" class="flex items-center mt-2">
+                             <button  type="button" class="text-center w-full rounded-lg px-2 py-2 bg-red-400 font-bold text-black mr-1 " >
+                                 Out of Stock
+                             </button> 
+                             
+                         </div>
+                     </div>
+                    </div>
+                 </div>
+                <% } %>
+             <% } else {%>
+                <div id="cartItemInCart<%= cartItems[i]._id %>" class="bg-white rounded-lg border shadow-sm w-full  flex justify-between mb-2 p-6 ">
+                    <div class="max-w-[20%] h-[20%]  border-2 border-black rounded-lg ">
+                      <img src="<%= cartItems[i].productId.variants[cartItems[i].variant].productImages[0] %>" alt="" class="w-full height-[100%] rounded">
+                    </div>
+                    <div class="w-[78%]">
+                     <div class="w-full flex justify-between">
+                         <h1 class="font-bold text-2xl"><%= cartItems[i].productId.productName%></h1>
+                        
+                            <button type="button" class="text-gray-700 font-bold hover:text-black flex rounded-xl  bg-red-400 hover:bg-red-500 px-4 py-2 items-center text-sm" onclick="deleteItemInCartFromCart('<%- cartItems[i]._id%>','<%- cartItems[i].productId._id %>','<%- cartItems[i].variant %>')">
+                                <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Remove
+                            </button>
+                    
+                     </div>
+                     <p>Color : <strong><%= cartItems[i].productId.variants[cartItems[i].variant].color %></strong> | Size : <strong><%= cartItems[i].productId.variants[cartItems[i].variant].size %></strong> </p>
+                     <div class="flex items-center gap-3 mt-1 mb-2">
+                        
+                           <!-- <p class="line-through text-gray-400 text-lg"></p> -->
+                     </div>
+                     <div class="w-full mt-1 flex justify-between items-center">
+                         <div id="incDecQtyDiv<%= cartItems[i]._id %>" class="flex items-center mt-2">
+                             <button  type="button" class="text-center w-full rounded-lg px-2 py-2 bg-red-400 font-bold text-black mr-1 " >
+                                 Product Unavailable
+                             </button> 
+                             
+                         </div>
+                     </div>
+                    </div>
+                 </div>
+                <% } %>
              <% } %>
             <% } else { %>
                 <div class="bg-white rounded-lg border shadow-sm w-full min-h-[40%]  p-6">
@@ -87,8 +139,8 @@
                 </div>
                 <div class="space-y-4">
                     <div class="flex justify-between">
-                        <span class="text-gray-600 font-bold">Subtotal (<%= cartItemsCount[0]?.totalQuantity || 0%> items)</span>
-                        <span class="font-bold">$ <%= subTotal.toFixed(2) %></span>
+                        <span class="text-gray-600 font-bold">Subtotal (<span id="subTotalItemsInCart"><%= itemsWithStock || 0%></span> items)</span>
+                        <span  class="font-bold">$ <span id="subTotalInCart"><%= subTotal.toFixed(2) %></span></span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600 font-bold">Shipping</span>
@@ -97,17 +149,17 @@
                     <div class="flex justify-between">
                         <span class="text-gray-600 font-bold">Tax</span>
                         <% let tax = (subTotal * 0.05).toFixed(2) %>
-                        <span class="font-bold">$ <%= tax %></span>
+                        <span  class="font-bold">$ <span id="tax"><%= tax %></span></span>
                     </div>
                     <div class="border-t border-gray-200 pt-4">
                         <div class="flex justify-between">
                             <span class="text-lg font-bold">Total</span>
-                            <span class="text-lg font-bold">$ <%= Number(subTotal.toFixed(2)) + Number(tax) %></span>
+                            <span class="text-lg font-bold">$ <span id="grandTotal" ><%= Number(subTotal.toFixed(2)) + Number(tax) %></span></span>
                         </div>
                     </div>
                 </div>
                 
-                <button type="button" onclick="window.location.href='checkout.html'" class="w-full mt-6 py-3 px-4 btn-primary font-bold rounded-lg flex items-center justify-center">
+                <button id="checkoutBtnInCart" type="button" class="w-full mt-6 py-3 px-4 btn-primary font-bold rounded-lg flex items-center justify-center">
                     <span>Proceed to Checkout</span>
                     <i data-feather="arrow-right" class="w-5 h-5 ml-2"></i>
                 </button>
@@ -130,14 +182,21 @@
 
 <script>
     feather.replace();
-    function incrementQuantity(cartIndex){
-        let quantity = document.getElementById(`quantity${cartIndex}`)
-        let updateCartItemBtn = document.getElementById(`updateCartItemBtn${cartIndex}`)
-        let href = updateCartItemBtn.href.split("&")
+    function incrementQuantity(cartId,productId,variantIndex){
+        let quantity = document.getElementById(`quantity${cartId}`)
+        let cartItemQtyToBeUpdated = document.getElementById(`cartItemQty${productId}${variantIndex}`)
+        let myCartHead = document.getElementById("cartHeadItemCount")
+        let myCartHeadInCart = document.getElementById("cartHeadItemCountInCart")
+        let cartItemQtyNotifier = document.getElementById("cartItemQty")
+        let subTotal = document.getElementById("subTotal")
+        let subTotalInCart = document.getElementById("subTotalInCart")
+        let subTotalItemsInCart = document.getElementById("subTotalItemsInCart")
+        let tax = document.getElementById("tax")
+        let grandTotal = document.getElementById("grandTotal")
+        console.log(subTotal.innerText)
         let counter = parseInt(quantity.value)
         counter++
-        let changeQuantity = href[2].slice(0,9) + counter
-        href[2] = changeQuantity
+        
         if(counter > 10){
             iziToast.warning({
                 title: "Quantity Limit Reached",
@@ -145,19 +204,73 @@
                 position : "topRight"
             });
         }else{
-            quantity.value = counter
-            updateCartItemBtn.href = href.join("&")
+            
+            fetch(`/cart/update-cart-item?productId=${productId}&variant=${variantIndex}&quantity=${counter}`,{method : "PATCH"})
+            .then(res => res.json())
+            .then(data => {
+                if (data.message === "Quantity has been updated in Cart") {
+                    subTotal.innerText = (Number(subTotal.innerText) + ((counter * data.product.variants[variantIndex].price) - (Number(quantity.value) * data.product.variants[variantIndex].price))).toFixed(2)
+                    subTotalInCart.innerText = (Number(subTotalInCart.innerText) + ((counter * data.product.variants[variantIndex].price) - (Number(quantity.value) * data.product.variants[variantIndex].price))).toFixed(2)
+                    tax.innerText = (Number(subTotalInCart.innerText) * 0.05).toFixed(2)
+                    quantity.value = counter
+                    cartItemQtyToBeUpdated.innerText = Number(cartItemQtyToBeUpdated.innerText) + 1
+                    cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) + 1
+                    myCartHead.innerText = Number(myCartHead.innerText) + 1
+                    myCartHeadInCart.innerText = Number(myCartHeadInCart.innerText) + 1
+                    subTotalItemsInCart.innerText = Number(subTotalItemsInCart.innerText) + 1
+                    grandTotal.innerText = Number(subTotalInCart.innerText) + Number(tax.innerText)
+                    feather.replace()
+                    
+                }else if(data.message === "Out of Stock" || data.message === "Product Unavailable"){
+                    document.getElementById(`incDecQtyDiv${cartId}`).innerHTML = `
+                     <button  type="button" class="text-center w-full rounded-lg px-2 py-2 bg-red-400 font-bold text-black mr-1 " >
+                                 ${data.message}
+                             </button> `
+                    cartItemQtyToBeUpdated.classList.remove("text-black")
+                    cartItemQtyToBeUpdated.classList.add("text-red-500")
+                    cartItemQtyToBeUpdated.innerText = data.message
+                    cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - Number(quantity.value)
+                    myCartHead.innerText = Number(myCartHead.innerText) - Number(quantity.value)
+                    myCartHeadInCart.innerText = Number(myCartHeadInCart.innerText) - Number(quantity.value)
+                    subTotalItemsInCart.innerText = Number(subTotalItemsInCart.innerText) - Number(quantity.value)
+                    subTotal.innerText = (Number(subTotal.innerText) - (Number(quantity.value) * data.product.variants[variantIndex].price) ).toFixed(2)
+                    subTotalInCart.innerText = (Number(subTotalInCart.innerText) -  (Number(quantity.value) * data.product.variants[variantIndex].price) ).toFixed(2)
+                    tax.innerText = (Number(subTotalInCart.innerText) * 0.05).toFixed(2)
+                    grandTotal.innerText = Number(subTotalInCart.innerText) + Number(tax.innerText)
+                    iziToast.error({
+                        title : "Cart",
+                        message : data.specMessage,
+                        position : "topRight"
+                    })
+                   
+                   
+                }else{
+                    iziToast.info({
+                        title : "Cart",
+                        message : data.message,
+                        position : "topRight"
+                    })
+                    
+                }
+            })
+           
         }
         
     }
-    function decrementQuantity(cartIndex){
-        let quantity = document.getElementById(`quantity${cartIndex}`)
-        let updateCartItemBtn = document.getElementById(`updateCartItemBtn${cartIndex}`)
-        let href = updateCartItemBtn.href.split("&")
+    function decrementQuantity(cartId,productId,variantIndex){
+        let quantity = document.getElementById(`quantity${cartId}`)
+        let cartItemQtyToBeUpdated = document.getElementById(`cartItemQty${productId}${variantIndex}`)
+        let myCartHead = document.getElementById("cartHeadItemCount")
+        let myCartHeadInCart = document.getElementById("cartHeadItemCountInCart")
+        let cartItemQtyNotifier = document.getElementById("cartItemQty")
+        let subTotal = document.getElementById("subTotal")
+        let subTotalInCart = document.getElementById("subTotalInCart")
+        let subTotalItemsInCart = document.getElementById("subTotalItemsInCart")
+        let tax = document.getElementById("tax")
+        let grandTotal = document.getElementById("grandTotal")
         let counter = parseInt(quantity.value)
         counter--
-        let changeQuantity = href[2].slice(0,9) + counter
-        href[2] = changeQuantity
+       
         if(counter < 1){
             iziToast.warning({
                 title: "Invalid Quantity",
@@ -165,10 +278,72 @@
                 position : "topRight"
             });
         }else{
-            quantity.value = counter
-            updateCartItemBtn.href = href.join("&")
+            fetch(`/cart/update-cart-item?productId=${productId}&variant=${variantIndex}&quantity=${counter}`,{method : "PATCH"})
+            .then(res => res.json())
+            .then(data => {
+                if (data.message === "Quantity has been updated in Cart") {
+                    subTotal.innerText = (Number(subTotal.innerText) - ( (Number(quantity.value) * data.product.variants[variantIndex].price) - (counter * data.product.variants[variantIndex].price))).toFixed(2)
+                    subTotalInCart.innerText = (Number(subTotalInCart.innerText) - ( (Number(quantity.value) * data.product.variants[variantIndex].price) - (counter * data.product.variants[variantIndex].price))).toFixed(2)
+                    tax.innerText = (Number(subTotalInCart.innerText) * 0.05).toFixed(2)
+                    quantity.value = counter
+                    cartItemQtyToBeUpdated.innerText = Number(cartItemQtyToBeUpdated.innerText) - 1
+                    cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - 1
+                    subTotalItemsInCart.innerText = Number(subTotalItemsInCart.innerText) - 1
+                    myCartHead.innerText = Number(myCartHead.innerText) - 1
+                    myCartHeadInCart.innerText = Number(myCartHeadInCart.innerText) - 1
+                    grandTotal.innerText = Number(subTotalInCart.innerText) + Number(tax.innerText)
+                    feather.replace()
+                    
+                }else if(data.message === "Out of Stock" || data.message === "Product Unavailable"){
+                    document.getElementById(`incDecQtyDiv${cartId}`).innerHTML = `
+                     <button  type="button" class="text-center w-full rounded-lg px-2 py-2 bg-red-400 font-bold text-black mr-1 " >
+                                 ${data.message}
+                             </button> `
+                    cartItemQtyToBeUpdated.classList.remove("text-black")
+                    cartItemQtyToBeUpdated.classList.add("text-red-500")
+                    cartItemQtyToBeUpdated.innerText = data.message
+                    cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - Number(quantity.value)
+                    myCartHead.innerText = Number(myCartHead.innerText) - Number(quantity.value)
+                    myCartHeadInCart.innerText = Number(myCartHeadInCart.innerText) - Number(quantity.value)
+                    subTotalItemsInCart.innerText = Number(subTotalItemsInCart.innerText) - Number(quantity.value)
+                    subTotal.innerText = (Number(subTotal.innerText) - (Number(quantity.value) * data.product.variants[variantIndex].price) ).toFixed(2)
+                    subTotalInCart.innerText = (Number(subTotalInCart.innerText) -  (Number(quantity.value) * data.product.variants[variantIndex].price) ).toFixed(2)
+                    tax.innerText = (Number(subTotalInCart.innerText) * 0.05).toFixed(2)
+                    grandTotal.innerText = Number(subTotalInCart.innerText) + Number(tax.innerText)
+                    iziToast.error({
+                        title : "Cart",
+                        message : data.specMessage,
+                        position : "topRight"
+                    })
+                   
+                }else{
+                    iziToast.info({
+                        title : "Cart",
+                        message : data.message,
+                        position : "topRight"
+                    })
+                    
+                }
+            })
         }
         
     }
+    const grandTotal = document.getElementById("grandTotal")
+    console.log(grandTotal)
+    if(grandTotal && Number(grandTotal.innerText) === 0){
+     console.log( document.getElementById("checkoutBtnInCart"))
+     document.getElementById("checkoutBtnInCart").onclick = function(){
+         iziToast.info({
+             title : "Cart",
+             message : "Please add items to Cart",
+             position : "topRight"
+         })
+     }
+    }else if(grandTotal && Number(grandTotal.innerText) > 0){
+     document.getElementById("checkoutBtnInCart").onclick = function(){
+         window.location.href = "/checkout"
+     }
+    }
+    document.getElementById("cartHeadItemCountInCart").innerText = Number(document.getElementById("subTotalItemsInCart").innerText)
 </script>
 <%- include("../partials/user-side/footer.ejs")%>

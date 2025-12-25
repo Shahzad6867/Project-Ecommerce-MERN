@@ -74,6 +74,7 @@
           <% if (!products[i].categoryId.isDeleted && !products[i].brandId.isDeleted) { %>
             <% if (!products[i].isDeleted) { %>
                 <% for( let j = 0; j < products[i].variants.length; j++ ) { %>
+                  <% if ( products[i].variants[j].stockQuantity !== 0 && products[i].variants[j].stockStatus !== "Out of Stock" ) { %>
                   <div class="product-card bg-white rounded-lg shadow-sm p-4 transition-all">
                     <div class="h-40 mb-3 relative">
                         <img src="<%= products[i].variants[j].productImages[0] %>" alt="Product" class="w-full h-full object-contain">
@@ -140,6 +141,7 @@
                             </button>
                     <% } %>
                 </div> 
+                  <% } %>
                 <% } %>
                <% } %>
             <% } %>

@@ -81,57 +81,114 @@
                     <button type="button" id="cartBtn">
                         <span class="iconify" data-icon="solar-cart-linear" style="width: 26;height: 26;"></span>
                         <span class="text-xs mt-1">Cart</span>
-                        <% if (cartItemsCount.length > 0 && cartItemsCount[0].totalQuantity > 0) { %>
-                            <span id="cartItemQty" class="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"><%= cartItemsCount[0].totalQuantity %></span>
-                        <% } else { %>
+                       
                             <span id="cartItemQty" class="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
-                            <% } %>
+                        
                         
                     </button>
                   
                     <!-- Dropdown Menu -->
                     <div id="cartDropdown" class="hidden overflow-hidden absolute right-0 mt-2 w-[25rem] bg-white border border-gray-200 rounded-md shadow-lg">
                         
-                        <% if (cartItemsCount.length > 0 && cartItemsCount[0].totalQuantity > 0) { %>
-                            <h1 class="text-xl text-black font-bold ml-3 mt-2">My Cart (<span id="cartHeadItemCount"><%= cartItemsCount[0].totalQuantity %></span>)</h1>
-                        <% } else { %>
-                            <h1  class="text-xl text-black font-bold ml-3 mt-2">My Cart (<span id="cartHeadItemCount">0</span>)</h1>
-                            <% } %>
+                       
+                            <h1 class="text-xl text-black font-bold ml-3 mt-2">My Cart (<span id="cartHeadItemCount">0</span>)</h1>
+                       
                             <div id="cartItemsDiv" class="w-[100%] max-h-[26rem]   overflow-scroll">
                                 <% let subTotal =  0 %>
+                                <% let itemsWithStock = 0 %>
                               <% for( let i = 0; i < cartItems.length; i++ ) { %>
-                                <% subTotal =  (cartItems[i].productId.variants[cartItems[i].variant].price  * cartItems[i].quantity) + subTotal %>
-
-                                <div  id="cartItem<%= cartItems[i].productId._id %><%= cartItems[i].variant %>" href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>">
-                                    <input type="text" value="<%= cartItems[i]._id %>" hidden>
-                                   
-                                    <div class="flex  border border-gray-400 w-[96%] text-left px-3 py-2 text-gray-700  rounded-lg m-2">
-                                        <a  href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>" >
-                                           <div class="w-[6rem]">
-                                            <img src="<%= cartItems[i].productId.variants[cartItems[i].variant].productImages[0] %>" class="rounded-md mr-1 w-full border border-gray-400 "></img>
-                                           </div>
-                                        </a>
-                                        <div class="w-[78%] ml-1">
-                                              <a href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>">
-                                                <h1 class="font-bold text-black"><%= cartItems[i].productId.productName %></h1>
-                                                <p class="text-gray-600 text-xs">Color : <strong class="text-black"><%= cartItems[i].productId.variants[cartItems[i].variant].color %></strong><span class="ml-2">Size : <strong class="text-black"><%= cartItems[i].productId.variants[cartItems[i].variant].size %></strong></span></p>
-                                                <p class="text-sm text-gray-600 mt-[0.1rem]">Quantity : <strong class="text-black" id="cartItemQty<%= cartItems[i].productId._id %><%= cartItems[i].variant %>"><%= cartItems[i].quantity %></strong></p>
-                                              </a>
-                                            <div class="flex justify-between items-center mt-1">
-                                                <h2 class="text-lg text-black font-bold ">$ <%= cartItems[i].productId.variants[cartItems[i].variant].price %></h2>
-                                               
-                                                <button type="button" class="text-sm flex items-center justify-center rounded-lg hover:text-red-500  px-1 z-50  text-black" onclick="deleteItemFromCart('<%- cartItems[i]._id %>','<%- cartItems[i].productId._id %>','<%= cartItems[i].variant %>')">
-                                                    <i data-feather="trash-2" class="w-5 h-5 mr-1"></i>
-                                                </button>
-                                              
-                                            </div>
-                                        </div> 
+                                <% if (!cartItems[i].productId.isDeleted ) { %>
+                                  <% if (cartItems[i].productId.variants[cartItems[i].variant].stockQuantity !== 0 && cartItems[i].productId.variants[cartItems[i].variant].stockStatus !== "Out of Stock") { %>
+                                    <% subTotal =  (cartItems[i].productId.variants[cartItems[i].variant].price  * cartItems[i].quantity) + subTotal %>
+                                    <% itemsWithStock += cartItems[i].quantity %>
+                                    <div  id="cartItem<%= cartItems[i].productId._id %><%= cartItems[i].variant %>" href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>">
+                                        <input type="text" value="<%= cartItems[i]._id %>" hidden>
                                         
+
+                                        <div class="flex  border border-gray-400 w-[96%] text-left px-3 py-2 text-gray-700  rounded-lg m-2">
+                                            <a  href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>" >
+                                               <div class="w-[6rem]">
+                                                <img src="<%= cartItems[i].productId.variants[cartItems[i].variant].productImages[0] %>" class="rounded-md mr-1 w-full border border-gray-400 "></img>
+                                               </div>
+                                            </a>
+                                            <div class="w-[78%] ml-1">
+                                                  <a href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>">
+                                                    <h1 class="font-bold text-black"><%= cartItems[i].productId.productName %></h1>
+                                                    <p class="text-gray-600 text-xs">Color : <strong class="text-black"><%= cartItems[i].productId.variants[cartItems[i].variant].color %></strong><span class="ml-2">Size : <strong class="text-black"><%= cartItems[i].productId.variants[cartItems[i].variant].size %></strong></span></p>
+                                                    <p class="text-sm text-gray-600 mt-[0.1rem]">Quantity : <strong class="text-black" id="cartItemQty<%= cartItems[i].productId._id %><%= cartItems[i].variant %>"><%= cartItems[i].quantity %></strong></p>
+                                                  </a>
+                                                <div class="flex justify-between items-center mt-1">
+                                                    <h2 class="text-lg text-black font-bold ">$ <%= cartItems[i].productId.variants[cartItems[i].variant].price %></h2>
+                                                   
+                                                    <button type="button" class="text-sm flex items-center justify-center rounded-lg hover:text-red-500  px-1 z-50  text-black" onclick="deleteItemFromCart('<%- cartItems[i]._id %>','<%- cartItems[i].productId._id %>','<%= cartItems[i].variant %>')">
+                                                        <i data-feather="trash-2" class="w-5 h-5 mr-1"></i>
+                                                    </button>
+                                                  
+                                                </div>
+                                            </div> 
+                                            
+                                        </div>
                                     </div>
-                                </div>
-                                
+                                  <% } else { %>
+                                    <div  id="cartItem<%= cartItems[i].productId._id %><%= cartItems[i].variant %>" href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>">
+                                        <input type="text" value="<%= cartItems[i]._id %>" hidden>
+                                       
+                                        <div class="flex  border border-gray-400 w-[96%] text-left px-3 py-2 text-gray-700  rounded-lg m-2">
+                                            <a  href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>" >
+                                               <div class="w-[6rem]">
+                                                <img src="<%= cartItems[i].productId.variants[cartItems[i].variant].productImages[0] %>" class="rounded-md mr-1 w-full border border-gray-400 "></img>
+                                               </div>
+                                            </a>
+                                            <div class="w-[78%] ml-1">
+                                                  <a href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>">
+                                                    <h1 class="font-bold text-black"><%= cartItems[i].productId.productName %></h1>
+                                                    <p class="text-gray-600 text-xs">Color : <strong class="text-black"><%= cartItems[i].productId.variants[cartItems[i].variant].color %></strong><span class="ml-2">Size : <strong class="text-black"><%= cartItems[i].productId.variants[cartItems[i].variant].size %></strong></span></p>
+                                                    <p class="text-sm text-gray-600 mt-[0.1rem]">Quantity : <strong class="text-red-500" >Out of Stock</strong></p>
+                                                  </a>
+                                                <div class="flex justify-end items-center mt-1">
+                                                   
+                                                   
+                                                    <button type="button" class="text-sm flex items-center justify-center rounded-lg hover:text-red-500  px-1 z-50  text-black" onclick="deleteItemFromCart('<%- cartItems[i]._id %>','<%- cartItems[i].productId._id %>','<%= cartItems[i].variant %>')">
+                                                        <i data-feather="trash-2" class="w-5 h-5 mr-1"></i>
+                                                    </button>
+                                                  
+                                                </div>
+                                            </div> 
+                                            
+                                        </div>
+                                    </div>
+                                    <% } %>
+                                <% } else {%>
+                                    <div  id="cartItem<%= cartItems[i].productId._id %><%= cartItems[i].variant %>" href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>">
+                                        <input type="text" value="<%= cartItems[i]._id %>" hidden>
+                                       
+                                        <div class="flex  border border-gray-400 w-[96%] text-left px-3 py-2 text-gray-700  rounded-lg m-2">
+                                            <a  href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>" >
+                                               <div class="w-[6rem]">
+                                                <img src="<%= cartItems[i].productId.variants[cartItems[i].variant].productImages[0] %>" class="rounded-md mr-1 w-full border border-gray-400 "></img>
+                                               </div>
+                                            </a>
+                                            <div class="w-[78%] ml-1">
+                                                  <a href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>">
+                                                    <h1 class="font-bold text-black"><%= cartItems[i].productId.productName %></h1>
+                                                    <p class="text-gray-600 text-xs">Color : <strong class="text-black"><%= cartItems[i].productId.variants[cartItems[i].variant].color %></strong><span class="ml-2">Size : <strong class="text-black"><%= cartItems[i].productId.variants[cartItems[i].variant].size %></strong></span></p>
+                                                    <p class="text-sm text-gray-600 mt-[0.1rem]">Quantity : <strong class="text-red-500" >Product Unavailable</strong></p>
+                                                  </a>
+                                                <div class="flex justify-end items-center mt-1">
+                                                   
+                                                   
+                                                    <button type="button" class="text-sm flex items-center justify-center rounded-lg hover:text-red-500  px-1 z-50  text-black" onclick="deleteItemFromCart('<%- cartItems[i]._id %>','<%- cartItems[i].productId._id %>','<%= cartItems[i].variant %>')">
+                                                        <i data-feather="trash-2" class="w-5 h-5 mr-1"></i>
+                                                    </button>
+                                                  
+                                                </div>
+                                            </div> 
+                                            
+                                        </div>
+                                    </div>
+                                    <% } %>
                               <% } %>
-                               
+                              <input id="itemsWithStock" type="text" value="<%= itemsWithStock %>" hidden>
                             </div>
                          <% if(cartItems.length === 0){ %>
                             <div id="nothingInCartCard" class="flex  items-center justify-center border border-gray-400 w-[96%] text-left px-3 py-8 text-gray-700  rounded-lg m-2">
@@ -144,7 +201,7 @@
                             
                        <div class="flex w-[96%] m-2  justify-between border border-gray-400 rounded-md px-1 py-1">
                         <span class="font-bold  text-blue-900">Subtotal ($) :</span>
-                        <span id="subTotal" class=" font-bold"><%= subTotal.toFixed(2) %></span>
+                        <span id="subTotal" class="font-bold"><%= subTotal.toFixed(2) %></span>
                        </div>
                        <div class="w-[96%] m-2 ">
                             <a href="/cart">
@@ -152,9 +209,15 @@
                                     Go to Cart
                                 </button>
                             </a>
-                            <button type="button" class="w-[60%] crop-btn px-4 py-2 font-bold rounded-lg">
+                          <% if (cartItems.length === 0) { %>
+                            <button id="checkoutBtn" type="button" class="w-[60%] crop-btn px-4 py-2 font-bold rounded-lg" disabled>
                                 Checkout
                             </button>
+                          <% }else{ %>
+                            <button id="checkoutBtn" type="button" class="w-[60%] crop-btn px-4 py-2 font-bold rounded-lg" onclick="window.location.href='/checkout'">
+                                Checkout
+                            </button>
+                            <% } %>
                        </div>
                     </div>
                    
@@ -251,6 +314,13 @@
        })
 
        let serverMessageNavbar = document.getElementById("serverMessageNavbar").value
+       if(serverMessageNavbar){
+                iziToast.info({
+                    title : "Cart",
+                    message : serverMessageNavbar,
+                    position : "topRight"
+                })
+       }
 
        if(serverMessageNavbar === "Product Unavailable"){
                 iziToast.info({

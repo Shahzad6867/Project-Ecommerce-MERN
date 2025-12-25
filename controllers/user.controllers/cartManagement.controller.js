@@ -34,9 +34,6 @@ const addToCart = async (req,res) => {
             message : "Product Unavailable"
         })
     }
-    
-    product.variants[variant].stockQuantity  = stock - parseInt(quantity)
-    await product.save()
     const cartItem = new Cart({
         userId : cartUser._id,
         productId : productId,
@@ -68,7 +65,7 @@ const updateCartItem = async (req,res) => {
      let product = await Product.findById(productId)
      let availableStock = product.variants[variant].stockQuantity
      if(!product.isDeleted){
-        if(availableStock === 0){
+        if(availableStock === 0 || product.variants[variant].stockStatus === "Out of Stock"){
             return res.status(409).json({
                 success : false,
                 message : "Out of Stock",
@@ -84,7 +81,14 @@ const updateCartItem = async (req,res) => {
                 cart : cartItem
             })
          }
-     }
+     }else{
+        return res.status(410).json({
+            success : false,
+            message : "Product Unavailable",
+            product,
+            cart : cartItem
+        })
+    }
      cartItem.quantity = quantity
      await cartItem.save()
      return res.status(200).json({
