@@ -1,5 +1,7 @@
 const Product = require("../../models/product.model");
 const Address = require("../../models/address.model");
+const Cart = require("../../models/cart.model.js");
+const mongoose = require("mongoose")
 const cloudinary = require("../../config/cloudinaryConfig.js")
 const {extractPublicId} = require("cloudinary-build-url")
 const fs = require("fs")
@@ -10,6 +12,8 @@ const getProfile = async (req, res) => {
     {},
     { productName: 1, variants: 1, categoryId: 1 }
   ).populate("categoryId", "categoryName");
+  const cartItems = await Cart.find({userId : theUser._id}).populate("productId")
+  const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(theUser._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
   const address = await Address.findOne({
     userId: theUser._id,
     isDefault: false,
@@ -27,6 +31,8 @@ const getProfile = async (req, res) => {
     user,
     address,
     defaultAddress,
+    cartItems,
+    cartItemsCount
   });
 };
 
@@ -37,12 +43,16 @@ const getEditProfile = async (req, res) => {
     {},
     { productName: 1, variants: 1, categoryId: 1 }
   ).populate("categoryId", "categoryName");
+  const cartItems = await Cart.find({userId : userId._id}).populate("productId")
+  const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
   let message = req.session.message || null;
   delete req.session.message;
   res.render("user-view/user.edit-profile.ejs", {
     user,
     productsFullList,
     message,
+    cartItems,
+    cartItemsCount
   });
 };
 const editProfile = async (req, res) => {
@@ -97,10 +107,13 @@ const editProfile = async (req, res) => {
 };
 
 const getAddress = async (req, res) => {
+  const user = req.session.user || req.user;
   const productsFullList = await Product.find(
     {},
     { productName: 1, variants: 1, categoryId: 1 }
   ).populate("categoryId", "categoryName");
+  const cartItems = await Cart.find({userId : user._id}).populate("productId")
+  const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
   let id = req.session.user?._id || req.user?._id;
   const addressList = await Address.find({ userId: id, isDefault: false });
   let defaultAddress = await Address.find({ userId: id, isDefault: true });
@@ -110,7 +123,6 @@ const getAddress = async (req, res) => {
     defaultAddress = null;
   }
 
-  const user = req.session.user || req.user;
 
   const message = req.session.message || null;
   delete req.session.message;
@@ -120,6 +132,8 @@ const getAddress = async (req, res) => {
     addressList,
     defaultAddress,
     message,
+    cartItems,
+    cartItemsCount
   });
 };
 

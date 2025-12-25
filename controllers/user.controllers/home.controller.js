@@ -2,6 +2,8 @@ const Category = require("../../models/category.model.js");
 const Product = require("../../models/product.model.js");
 const User = require("../../models/user.model.js");
 const Brand = require("../../models/brand.model.js");
+const Cart = require("../../models/cart.model.js");
+const mongoose = require("mongoose")
 require("dotenv").config()
 
 
@@ -12,17 +14,25 @@ const getHomepage = async(req,res) => {
     const products = await Product.find({}).populate("categoryId").populate("brandId")
     const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
     const user = req.session.user || req.user
-    res.render("user-view/user.homepage.ejs",{categories,products,productsFullList,user})
+    const cartItems = await Cart.find({userId : user._id}).populate("productId")
+    const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
+    res.render("user-view/user.homepage.ejs",{message,categories,products,productsFullList,user,cartItems,cartItemsCount})
 }
 
 const getProductDetail = async(req,res) => {
     try {
     const {id,variant} = req.query
     const product = await Product.findById({ _id : id})
+    if(product.isDeleted){
+      req.session.message = "Product Unavailable"
+      return res.redirect("/")
+    }
     const relatedProduct = await Product.find({ categoryId : product.categoryId}).limit(5).populate("categoryId").populate("brandId")
     const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
     const user = req.session.user || req.user
-    res.render("user-view/user.product-detail-page.ejs",{product,relatedProduct,productsFullList,variant,user})
+    const cartItems = await Cart.find({userId : user._id}).populate("productId")
+    const isProductInCart = await Cart.findOne({productId : id,variant : variant})
+    res.render("user-view/user.product-detail-page.ejs",{product,relatedProduct,productsFullList,variant,user,cartItems,isProductInCart})
     } catch (error) {
         console.log(error.message)
     }
@@ -37,7 +47,9 @@ try {
     const products = await Product.find({}).populate("categoryId").populate("brandId")
     const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
     const user = req.session.user || req.user
-    res.render("user-view/user.shop.ejs",{categories,products,brands,productsFullList,user})
+    const cartItems = await Cart.find({userId : user._id}).populate("productId")
+    const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
+    res.render("user-view/user.shop.ejs",{categories,products,brands,productsFullList,user,cartItemsCount,cartItems})
     
 } catch (error) {
     console.log(error)
@@ -74,6 +86,7 @@ const shopFiltered = async (req,res) => {
     }
 
     // Fetch filtered products
+    const user = req.session.user || req.user
     const filteredProducts = await Product.find(query)
       .populate("categoryId")
       .populate("brandId");
@@ -81,7 +94,8 @@ const shopFiltered = async (req,res) => {
       const categories = await Category.find({})
       const brands = await Brand.find({})
       const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
-
+      const cartItems = await Cart.find({userId : user._id}).populate("productId")
+      const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
       if(Array.isArray(req.body.category)){
        req.body.category = req.body.category.map(value => String(value))
       }else{
@@ -99,7 +113,8 @@ const shopFiltered = async (req,res) => {
       filters: req.body, 
       categories,
       brands,
-      productsFullList
+      productsFullList,
+      cartItems,cartItemsCount
     });
 
   } catch (error) {

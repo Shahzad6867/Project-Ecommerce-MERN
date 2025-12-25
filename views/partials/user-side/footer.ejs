@@ -90,8 +90,15 @@
 <script>
     feather.replace();
     
+ document.getElementById("cartHeadItemCount").innerText = document.getElementById("itemsWithStock").value
+ document.getElementById("cartItemQty").innerText = document.getElementById("itemsWithStock").value
+    
+
 const accountBtn = document.getElementById('accountBtn');
 const accountDropdown = document.getElementById('accountDropdown');
+
+const cartBtn = document.getElementById('cartBtn');
+const cartDropdown = document.getElementById('cartDropdown');
 
 accountBtn.addEventListener('click', () => {
 accountDropdown.classList.toggle('hidden');
@@ -101,6 +108,17 @@ accountDropdown.classList.toggle('hidden');
 window.addEventListener('click', (e) => {
 if (!accountBtn.contains(e.target) && !accountDropdown.contains(e.target)) {
   accountDropdown.classList.add('hidden');
+}
+});
+
+cartBtn.addEventListener('click', () => {
+cartDropdown.classList.toggle('hidden');
+});
+
+// Optional: hide dropdown if clicked outside
+window.addEventListener('click', (e) => {
+if (!cartBtn.contains(e.target) && !cartDropdown.contains(e.target)) {
+  cartDropdown.classList.add('hidden');
 }
 });
 

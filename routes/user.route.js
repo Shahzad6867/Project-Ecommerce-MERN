@@ -9,7 +9,8 @@ const otpManagementController = require("../controllers/user.controllers/otpMana
 const emailAuthController = require("../controllers/user.controllers/emailAuthForNewPass.controller.js")
 const resetPassController = require("../controllers/user.controllers/resetPassword.controller.js")
 const homeController = require("../controllers/user.controllers/home.controller.js")
-const profileManagementController = require("../controllers/user.controllers/userProfileManagment.controller.js")
+const profileManagementController = require("../controllers/user.controllers/userProfileManagement.controller.js")
+const cartManagementController = require("../controllers/user.controllers/cartManagement.controller.js")
 
 
 
@@ -39,17 +40,24 @@ router.get("/reset-password",userAuth.otpSession,resetPassController.getResetPas
 router.post("/reset-password",resetPassController.resetPassword)
 router.get("/logout",userAuth.checkSession,userLoginController.logoutUser)
 
+// Profile Management
 router.get("/profile",userAuth.checkSession,profileManagementController.getProfile)
 router.get("/edit-profile",userAuth.checkSession,profileManagementController.getEditProfile)
 router.post("/edit-profile",upload.any(),profileManagementController.editProfile)
 router.get("/address",userAuth.checkSession,profileManagementController.getAddress)
 router.post("/address",profileManagementController.addAddress)
 router.post("/address/edit-address",profileManagementController.editAddress)
-router.get("/address/delete-address",profileManagementController.deleteAddress)
-router.get("/address/reset-default-address",profileManagementController.resetDefaultAddress)
-
+router.delete("/address/delete-address",profileManagementController.deleteAddress)
+router.patch("/address/reset-default-address",profileManagementController.resetDefaultAddress)
 router.get("/email-auth-for-new-email",userAuth.checkSession,emailAuthController.getEmailAuthForNewEmail)
 router.post("/email-auth-for-new-email",emailAuthController.emailAuthForNewEmail)
 router.get("/otp-verification-for-new-email",userAuth.checkSession,otpManagementController.getUserOtpForNewEmail)
 router.post("/otp-verification-for-new-email",otpManagementController.userOtpForNewEmail)
+
+// Cart Management
+router.get("/cart",userAuth.checkSession,cartManagementController.getCart)
+router.post("/cart",cartManagementController.addToCart)
+router.patch("/cart/update-cart-item",cartManagementController.updateCartItem)
+router.get("/home/delete-cart-item",cartManagementController.deleteCartItemFromHome)
+router.delete("/cart/delete-cart-item",cartManagementController.deleteCartItem)
 module.exports = router

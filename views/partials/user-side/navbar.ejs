@@ -21,8 +21,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.css">
     <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/validator/13.15.15/validator.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
+<script src="/javascript/user-javascript/cart-management.js"></script>
 </head>
 <body class="bg-gray-100">
     <!-- Navigation Bar -->
@@ -32,7 +33,7 @@
             <div class="flex items-center">
                 <a id="nav-logo" href="/" class="text-2xl font-bold text-black" >NovaMart</a>
             </div>
-            
+            <input type="hidden" id="serverMessageNavbar"  value="<%= typeof message !== 'undefined' ? message : '' %>">
             <!-- Search Bar -->
             <div class="flex-1 mx-8">
                 <div class="relative">
@@ -73,30 +74,175 @@
                     <span class="iconify" data-icon="ri:heart-line" style="width: 26;height: 26;"></span>
                     <span class="text-xs mt-1">Wishlist</span>
                 </a>
-                <a href="#" class="flex flex-col items-center relative">
-                    <span class="iconify" data-icon="solar-cart-linear" style="width: 26;height: 26;"></span>
-                    <span class="text-xs mt-1">Cart</span>
-                    <span class="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">4</span>
-                </a>
+                
 
                 <div class="relative inline-block text-left">
-                    <button id="accountBtn">
+                
+                    <button type="button" id="cartBtn">
+                        <span class="iconify" data-icon="solar-cart-linear" style="width: 26;height: 26;"></span>
+                        <span class="text-xs mt-1">Cart</span>
+                       
+                            <span id="cartItemQty" class="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                        
+                        
+                    </button>
+                  
+                    <!-- Dropdown Menu -->
+                    <div id="cartDropdown" class="hidden overflow-hidden absolute right-0 mt-2 w-[25rem] bg-white border border-gray-200 rounded-md shadow-lg">
+                        
+                       
+                            <h1 class="text-xl text-black font-bold ml-3 mt-2">My Cart (<span id="cartHeadItemCount">0</span>)</h1>
+                       
+                            <div id="cartItemsDiv" class="w-[100%] max-h-[26rem]   overflow-scroll">
+                                <% let subTotal =  0 %>
+                                <% let itemsWithStock = 0 %>
+                              <% for( let i = 0; i < cartItems.length; i++ ) { %>
+                                <% if (!cartItems[i].productId.isDeleted ) { %>
+                                  <% if (cartItems[i].productId.variants[cartItems[i].variant].stockQuantity !== 0 && cartItems[i].productId.variants[cartItems[i].variant].stockStatus !== "Out of Stock") { %>
+                                    <% subTotal =  (cartItems[i].productId.variants[cartItems[i].variant].price  * cartItems[i].quantity) + subTotal %>
+                                    <% itemsWithStock += cartItems[i].quantity %>
+                                    <div  id="cartItem<%= cartItems[i].productId._id %><%= cartItems[i].variant %>" href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>">
+                                        <input type="text" value="<%= cartItems[i]._id %>" hidden>
+                                        
+
+                                        <div class="flex  border border-gray-400 w-[96%] text-left px-3 py-2 text-gray-700  rounded-lg m-2">
+                                            <a  href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>" >
+                                               <div class="w-[6rem]">
+                                                <img src="<%= cartItems[i].productId.variants[cartItems[i].variant].productImages[0] %>" class="rounded-md mr-1 w-full border border-gray-400 "></img>
+                                               </div>
+                                            </a>
+                                            <div class="w-[78%] ml-1">
+                                                  <a href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>">
+                                                    <h1 class="font-bold text-black"><%= cartItems[i].productId.productName %></h1>
+                                                    <p class="text-gray-600 text-xs">Color : <strong class="text-black"><%= cartItems[i].productId.variants[cartItems[i].variant].color %></strong><span class="ml-2">Size : <strong class="text-black"><%= cartItems[i].productId.variants[cartItems[i].variant].size %></strong></span></p>
+                                                    <p class="text-sm text-gray-600 mt-[0.1rem]">Quantity : <strong class="text-black" id="cartItemQty<%= cartItems[i].productId._id %><%= cartItems[i].variant %>"><%= cartItems[i].quantity %></strong></p>
+                                                  </a>
+                                                <div class="flex justify-between items-center mt-1">
+                                                    <h2 class="text-lg text-black font-bold ">$ <%= cartItems[i].productId.variants[cartItems[i].variant].price %></h2>
+                                                   
+                                                    <button type="button" class="text-sm flex items-center justify-center rounded-lg hover:text-red-500  px-1 z-50  text-black" onclick="deleteItemFromCart('<%- cartItems[i]._id %>','<%- cartItems[i].productId._id %>','<%= cartItems[i].variant %>')">
+                                                        <i data-feather="trash-2" class="w-5 h-5 mr-1"></i>
+                                                    </button>
+                                                  
+                                                </div>
+                                            </div> 
+                                            
+                                        </div>
+                                    </div>
+                                  <% } else { %>
+                                    <div  id="cartItem<%= cartItems[i].productId._id %><%= cartItems[i].variant %>" href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>">
+                                        <input type="text" value="<%= cartItems[i]._id %>" hidden>
+                                       
+                                        <div class="flex  border border-gray-400 w-[96%] text-left px-3 py-2 text-gray-700  rounded-lg m-2">
+                                            <a  href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>" >
+                                               <div class="w-[6rem]">
+                                                <img src="<%= cartItems[i].productId.variants[cartItems[i].variant].productImages[0] %>" class="rounded-md mr-1 w-full border border-gray-400 "></img>
+                                               </div>
+                                            </a>
+                                            <div class="w-[78%] ml-1">
+                                                  <a href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>">
+                                                    <h1 class="font-bold text-black"><%= cartItems[i].productId.productName %></h1>
+                                                    <p class="text-gray-600 text-xs">Color : <strong class="text-black"><%= cartItems[i].productId.variants[cartItems[i].variant].color %></strong><span class="ml-2">Size : <strong class="text-black"><%= cartItems[i].productId.variants[cartItems[i].variant].size %></strong></span></p>
+                                                    <p class="text-sm text-gray-600 mt-[0.1rem]">Quantity : <strong class="text-red-500" >Out of Stock</strong></p>
+                                                  </a>
+                                                <div class="flex justify-end items-center mt-1">
+                                                   
+                                                   
+                                                    <button type="button" class="text-sm flex items-center justify-center rounded-lg hover:text-red-500  px-1 z-50  text-black" onclick="deleteItemFromCart('<%- cartItems[i]._id %>','<%- cartItems[i].productId._id %>','<%= cartItems[i].variant %>')">
+                                                        <i data-feather="trash-2" class="w-5 h-5 mr-1"></i>
+                                                    </button>
+                                                  
+                                                </div>
+                                            </div> 
+                                            
+                                        </div>
+                                    </div>
+                                    <% } %>
+                                <% } else {%>
+                                    <div  id="cartItem<%= cartItems[i].productId._id %><%= cartItems[i].variant %>" href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>">
+                                        <input type="text" value="<%= cartItems[i]._id %>" hidden>
+                                       
+                                        <div class="flex  border border-gray-400 w-[96%] text-left px-3 py-2 text-gray-700  rounded-lg m-2">
+                                            <a  href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>" >
+                                               <div class="w-[6rem]">
+                                                <img src="<%= cartItems[i].productId.variants[cartItems[i].variant].productImages[0] %>" class="rounded-md mr-1 w-full border border-gray-400 "></img>
+                                               </div>
+                                            </a>
+                                            <div class="w-[78%] ml-1">
+                                                  <a href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>">
+                                                    <h1 class="font-bold text-black"><%= cartItems[i].productId.productName %></h1>
+                                                    <p class="text-gray-600 text-xs">Color : <strong class="text-black"><%= cartItems[i].productId.variants[cartItems[i].variant].color %></strong><span class="ml-2">Size : <strong class="text-black"><%= cartItems[i].productId.variants[cartItems[i].variant].size %></strong></span></p>
+                                                    <p class="text-sm text-gray-600 mt-[0.1rem]">Quantity : <strong class="text-red-500" >Product Unavailable</strong></p>
+                                                  </a>
+                                                <div class="flex justify-end items-center mt-1">
+                                                   
+                                                   
+                                                    <button type="button" class="text-sm flex items-center justify-center rounded-lg hover:text-red-500  px-1 z-50  text-black" onclick="deleteItemFromCart('<%- cartItems[i]._id %>','<%- cartItems[i].productId._id %>','<%= cartItems[i].variant %>')">
+                                                        <i data-feather="trash-2" class="w-5 h-5 mr-1"></i>
+                                                    </button>
+                                                  
+                                                </div>
+                                            </div> 
+                                            
+                                        </div>
+                                    </div>
+                                    <% } %>
+                              <% } %>
+                              
+                            </div>
+                            <input id="itemsWithStock" type="text" value="<%= itemsWithStock %>" hidden>
+                         <% if(cartItems.length === 0){ %>
+                            <div id="nothingInCartCard" class="flex  items-center justify-center border border-gray-400 w-[96%] text-left px-3 py-8 text-gray-700  rounded-lg m-2">
+                                  <h1 class="font-bold">
+                                    Your cart is empty. Start shopping!
+                                   </h1>
+                            </div>
+                         <% } %>
+                            
+                            
+                       <div class="flex w-[96%] m-2  justify-between border border-gray-400 rounded-md px-1 py-1">
+                        <span class="font-bold  text-blue-900">Subtotal ($) :</span>
+                        <span id="subTotal" class="font-bold"><%= subTotal.toFixed(2) %></span>
+                       </div>
+                       <div class="w-[96%] m-2 ">
+                            <a href="/cart">
+                                <button type="button" class="w-[38%] ml-[0.1rem] px-4 py-2 mb-2 font-bold rounded-lg bg-green-400">
+                                    Go to Cart
+                                </button>
+                            </a>
+                          <% if (cartItems.length === 0) { %>
+                            <button id="checkoutBtn" type="button" class="w-[60%] crop-btn px-4 py-2 font-bold rounded-lg" disabled>
+                                Checkout
+                            </button>
+                          <% }else{ %>
+                            <button id="checkoutBtn" type="button" class="w-[60%] crop-btn px-4 py-2 font-bold rounded-lg" onclick="window.location.href='/checkout'">
+                                Checkout
+                            </button>
+                            <% } %>
+                       </div>
+                    </div>
+                   
+                </div>
+
+                <div class="relative inline-block text-left">
+                    <button type="button" id="accountBtn">
                         <span class="iconify" data-icon="qlementine-icons:user-16" style="width: 26;height: 26; margin-left: 10px;"></span>
                         <span class="text-xs mt-1">Account</span>
                     </button>
                   
                     <!-- Dropdown Menu -->
                     <div id="accountDropdown" class="hidden absolute right-0 mt-2 w-[200px] bg-white border border-gray-200 rounded-md shadow-lg">
+                        <h1 class="text-xl text-black font-bold ml-3 mt-2">My Account</h1>
                         <a href="/profile">
-                            <div class="flex justify-between border border-gray-300 w-[92%] text-left px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg m-2">
+                            <div class="flex justify-between border border-gray-400 w-[92%] text-left px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg m-2">
                               
                                <% if (user.profileImage) { %>
                                 <div class="pt-1 mr-1">
-                                    <img src="<%- user.profileImage %>" class="rounded-full w-8 border border-gray-300 "></img>
+                                    <img src="<%- user.profileImage %>" class="rounded-full w-8 border border-gray-400 "></img>
                                    </div>
                                <% } else {%>
                                 <div class="pt-1 mr-1">
-                                    <img src="/images/user.jpg" class="rounded-full w-8 border border-gray-300 "></img>
+                                    <img src="/images/user.jpg" class="rounded-full w-8 border border-gray-400 "></img>
                                    </div>
                                 <% } %>
                                
@@ -111,9 +257,15 @@
                                    <p class="text-gray-300"></p>
                             </div>
                         </a>
+                        <a href="#">
+                            <button class=" border border-gray-400 w-[92%] font-bold flex items-center justify-center text-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg m-2">
+                                <i data-feather="package" class="mr-1"></i>
+                                Orders
+                            </button>
+                        </a>
                         <a href="/logout">
-                            <button class=" border border-gray-300 w-[92%] text-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg m-2">
-                                <i class="fa-solid fa-right-from-bracket text-lg"></i>
+                            <button class="btn-primary  w-[92%] font-bold flex items-center justify-center text-center px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg m-2">
+                                <i data-feather="log-out" class="mr-1"></i>
                                 Logout
                             </button>
                         </a>
@@ -162,6 +314,30 @@
        });
        })
 
+       let serverMessageNavbar = document.getElementById("serverMessageNavbar").value
+       
+
+       if(serverMessageNavbar === "Product Unavailable"){
+                iziToast.info({
+                    title : "Cart",
+                    message : serverMessageNavbar,
+                    position : "topRight"
+                })
+       }
+       if(serverMessageNavbar === "Product has been added to Cart"){
+                iziToast.info({
+                    title : "Cart",
+                    message : serverMessageNavbar,
+                    position : "topRight"
+                })
+       }
+       if(serverMessageNavbar === "Product has been removed from your Cart"){
+                iziToast.info({
+                    title : "Cart",
+                    message : serverMessageNavbar,
+                    position : "topRight"
+                })
+       }
 
 
     </script>
