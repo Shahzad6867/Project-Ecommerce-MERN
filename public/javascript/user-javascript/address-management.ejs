@@ -1,0 +1,327 @@
+<script>
+const input = document.querySelector("#phoneNumber");
+let iti = window.intlTelInput(input, {
+  utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js", // for formatting and validation
+  initialCountry: "auto", // or a specific country code like "us"
+  geoIpLookup: function(callback) { // optional: lookup user's country based on IP
+    fetch("https://ipapi.co/json")
+      .then(res => res.json())
+      .then(data => {
+        countryCode = data.country_calling_code
+      return callback(data.country_code)
+      })
+      .catch(() => callback("us")); // default to US on error
+  },
+});
+
+
+
+feather.replace();
+
+function doesTheCountryHavePincode(country){
+    console.log(country)
+    const noPostalCodeCountries = ["AE", "HK", "MO", "QA", "OM", "SA"];
+    const pincode = document.getElementById("pincode")
+    if(noPostalCodeCountries.includes(country)){
+       pincode.value = "Not Applicable"
+        pincode.disabled = true
+        iti.setCountry(country)
+    }else{
+        pincode.disabled = false
+       pincode.value = ""
+       iti.setCountry(country)
+    }
+
+}
+
+function openAddAddressModal() {
+   document.getElementById('addAddressModal').classList.remove('hidden');
+   document.getElementById("accountName").classList.remove("hidden")
+   document.getElementById("forAccountName").classList.remove("hidden")
+   document.getElementById("defaultAddress").classList.remove("hidden")
+   document.getElementById("forDefaultAddress").classList.remove("hidden")
+   document.getElementById(`firstName`).value = ""
+   document.getElementById(`lastName`).value = ""
+   document.getElementById(`countryList`).value = ""
+   document.getElementById(`state`).value = ""
+   document.getElementById(`address`).value = ""
+   document.getElementById(`pincode`).value = ""
+   document.getElementById(`pincode`).disabled = false
+   document.getElementById(`city`).value = ""
+   document.getElementById(`phoneNumber`).value = ""
+   
+   document.getElementById("addressFormHeading").innerText = "Add New Address"
+   document.querySelector('#addAddressModal form').action = "/address"
+}
+
+function closeAddAddressModal() {
+    document.getElementById('addAddressModal').classList.add('hidden');
+}
+
+function editAddress(index,id){
+    document.querySelector('#addAddressModal form').action = `/address/edit-address?id=${id}`
+    const noPostalCodeCountries = ["AE", "HK", "MO", "QA", "OM", "SA"];
+
+   let editFirstName = document.getElementById(`firstName${index}`).innerText.trim()
+   let editLastName = document.getElementById(`lastName${index}`).innerText.trim()
+   let editCountry = document.getElementById(`country${index}`).innerText.trim()
+   let editState = document.getElementById(`state${index}`).innerText.trim()
+   let editAddress = document.getElementById(`address${index}`).innerText.trim()
+   let editPincode = document.getElementById(`pincode${index}`).innerText.trim()
+   let editMobileNo = document.getElementById(`mobileNo${index}`).innerText.trim()
+   let editCity = document.getElementById(`city${index}`).innerText.trim()
+   
+
+   document.getElementById("accountName").classList.add("hidden")
+   document.getElementById("forAccountName").classList.add("hidden")
+   document.getElementById("defaultAddress").classList.add("hidden")
+   document.getElementById("forDefaultAddress").classList.add("hidden")
+   document.getElementById("addressFormHeading").innerText = "Edit Address"
+   let editAddressModal = document.getElementById("addAddressModal")
+   editAddressModal.classList.remove("hidden")
+   iti.setNumber(editMobileNo)
+
+
+   document.getElementById(`firstName`).value = editFirstName
+   document.getElementById(`lastName`).value = editLastName
+   document.getElementById(`countryList`).value = editCountry 
+   document.getElementById(`state`).value = editState
+   document.getElementById(`address`).value = editAddress
+   document.getElementById(`pincode`).value = editPincode
+   document.getElementById(`phoneNumber`).value = editMobileNo
+   document.getElementById(`city`).value = editCity
+   if (noPostalCodeCountries.includes(editCountry)) {
+    document.getElementById('pincode').disabled = true
+   }
+}
+
+function deleteAddress(addressId,userId){
+    iziToast.question({
+        theme : "light",
+        title : "Delete Address",
+        message : "Are you sure you want to delete the Address ?",
+        position : "topCenter",
+        overlay : true,
+        close : false,
+        id : "deleteAddress",
+        zindex : 9999,
+        timeout : 30000,
+        backgroundColor : "white", 
+        buttons : [
+            ["<button>OK</button>",function(instance,toast){
+                instance.hide({transitionOut : "fadeOut"},toast,'button')
+
+                fetch(`/address/delete-address?id=${addressId}&userId=${userId}`,{method : "DELETE"})
+                .then(res => window.location.href = "/address" )
+                .catch(error => iziToast.error({
+                    title : error.name ,
+                    message : error.message,
+                    position : "topRight"
+                }))
+
+            }],
+            ["<button>Cancel</button>",function(instance,toast){
+                instance.hide({transitionOut : "fadeOut"},toast,'button')
+                console.log("Deletion Cancelled")
+            }]
+        ]
+    })
+}
+function changeDefaultAddress(addressId,redirect){
+    if(redirect === "/checkout"){
+        iziToast.question({
+        theme : "light",
+        title : "Delete Address",
+        message : "Are you sure you want to set this address as your Default Address?",
+        position : "topCenter",
+        overlay : true,
+        close : false,
+        id : "deleteAddress",
+        zindex : 9999,
+        timeout : 30000,
+        backgroundColor : "white", 
+        buttons : [
+            ["<button>OK</button>",function(instance,toast){
+                instance.hide({transitionOut : "fadeOut"},toast,'button')
+
+                fetch(`/address/reset-default-address?id=${addressId}`,{method : "PATCH"})
+                .then(res => window.location.href = "/checkout" )
+                .catch(error => iziToast.error({
+                    title : error.name ,
+                    message : error.message,
+                    position : "topRight"
+                }))
+
+            }],
+            ["<button>Cancel</button>",function(instance,toast){
+                instance.hide({transitionOut : "fadeOut"},toast,'button')
+                console.log("Deletion Cancelled")
+            }]
+        ]
+    })
+    }else{
+    iziToast.question({
+        theme : "light",
+        title : "Delete Address",
+        message : "Are you sure you want to set this address as your Default Address?",
+        position : "topCenter",
+        overlay : true,
+        close : false,
+        id : "deleteAddress",
+        zindex : 9999,
+        timeout : 30000,
+        backgroundColor : "white", 
+        buttons : [
+            ["<button>OK</button>",function(instance,toast){
+                instance.hide({transitionOut : "fadeOut"},toast,'button')
+
+                fetch(`/address/reset-default-address?id=${addressId}`,{method : "PATCH"})
+                .then(res => window.location.href = "/address" )
+                .catch(error => iziToast.error({
+                    title : error.name ,
+                    message : error.message,
+                    position : "topRight"
+                }))
+
+            }],
+            ["<button>Cancel</button>",function(instance,toast){
+                instance.hide({transitionOut : "fadeOut"},toast,'button')
+                console.log("Deletion Cancelled")
+            }]
+        ]
+    })
+ }
+}
+
+document.getElementById("accountName").addEventListener("click", function() {
+    let useSameName = document.getElementById("accountName")
+    let firstName = '<%- user.firstName %>'
+    let lastName = '<%- user.lastName %>'
+    if(useSameName.checked === true){
+        document.getElementById("firstName").value = firstName
+        document.getElementById("lastName").value = lastName
+        console.log(iti.getNumber())
+    }else{
+        document.getElementById("firstName").value = ""
+        document.getElementById("lastName").value = ""
+    }
+})
+
+// Form submission would go here
+document.querySelector('#addAddressModal form').addEventListener('submit',function (e){
+const firstName = document.getElementById("firstName").value.trim()
+const lastName = document.getElementById("lastName").value.trim()
+const city = document.getElementById("city").value.trim()
+const state = document.getElementById("state").value.trim()
+const country = document.getElementById("countryList").value
+const pincode = document.getElementById("pincode").value.trim()
+const mobileNo = document.getElementById("phoneNumber")
+const address = document.getElementById("address").value.trim()
+const defaultAddress = document.getElementById("defaultAddress")
+
+
+    const nameRegex =/^[A-Za-z]+(?:[ '-][A-Za-z]+)*(?:\d{0,5})?$/
+    const addressRegex = /^[A-Za-z0-9 ,./-]{5,}$/
+    const noPostalCodeCountries = ["AE", "HK", "MO", "QA", "OM", "SA"];
+
+    if(!nameRegex.test(firstName)){
+        iziToast.error({
+            title : "Error",
+            message : "Please enter a valid First Name",
+            position : "topRight"
+        })
+        e.preventDefault()
+        return 
+    }
+
+    if(!nameRegex.test(lastName)){
+        iziToast.error({
+            title : "Error",
+            message : "Please enter a valid Last Name",
+            position : "topRight"
+        })
+        e.preventDefault()
+        return 
+    }
+
+    if(!nameRegex.test(city)){
+        iziToast.error({
+            title : "Error",
+            message : "Please enter a valid City Name",
+            position : "topRight"
+        })
+        e.preventDefault()
+        return 
+    }
+
+    if(!nameRegex.test(state)){
+        iziToast.error({
+            title : "Error",
+            message : "Please enter a valid State",
+            position : "topRight"
+        })
+        e.preventDefault()
+        return 
+    }
+    if(country === ""){
+        iziToast.error({
+            title : "Error",
+            message : "Please select a Country",
+            position : "topRight"
+        })
+        e.preventDefault()
+        return 
+    }
+
+    if(!noPostalCodeCountries.includes(country)){
+        if(pincode === ""){
+            iziToast.error({
+            title : "Error",
+            message : "Please enter a valid Pincode",
+            position : "topRight"
+        })
+        e.preventDefault()
+        return 
+        }else if(!validator.isPostalCode(pincode,country)){
+            iziToast.error({
+            title : "Error",
+            message : "Invalid Pincode for the selected Country",
+            position : "topRight"
+        })
+        e.preventDefault()
+        return 
+        }
+    }
+
+    
+    if(!addressRegex.test(address)){
+        iziToast.error({
+            title : "Error",
+            message : "Please enter a valid Address",
+            position : "topRight"
+        })
+        e.preventDefault()
+        return 
+    }
+
+    if(defaultAddress.checked){
+        defaultAddress.value = true
+    }else{
+        defaultAddress.checked
+        defaultAddress.value = false
+    }
+
+    if(mobileNo.value === ""){
+        e.preventDefault()
+        iziToast.error({
+            title : "Error",
+            message : "Please enter a Mobile Number",
+            position : "topRight"
+        })
+        return
+    }
+    
+    mobileNo.value = iti.getNumber()
+    document.getElementById("pincode").disabled = false
+});
+</script>

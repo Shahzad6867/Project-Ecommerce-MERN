@@ -1,0 +1,164 @@
+<%- include("../partials/user-side/navbar.ejs")%>
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-lg p-8 max-w-2xl w-full divide-y divide-gray-200">
+            <div class="text-center mb-8 mt-8">
+                <div class="checkmark-circle text-green-500 mb-4">
+                    <i data-feather="check" class="w-12 h-12"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Order Confirmed!</h1>
+                <p class="text-lg text-gray-600">Thank you for your purchase. Your order has been placed successfully.</p>
+            </div>
+
+            <div class="bg-gray-50 rounded-lg p-6 mb-8 mt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800">Order <%= confirmedOrder.orderId %></h2>
+                        <p class="text-gray-600">Placed on <span id="date"></span></p>
+                    </div>
+                    
+                </div>
+            </div>
+
+            
+
+            <div class="mb-2 ">
+                <h3 class="text-lg font-semibold mb-4 mt-4">Order Summary</h3>
+                <div class="divide-y divide-gray-200 mt-4">
+                    <% for( let i = 0; i < confirmedOrder.items.length; i++ ) { %>
+                        <div class="py-4 flex items-center">
+                            <img src="<%= confirmedOrder.items[i].productImage %>" class="w-16 h-16 rounded object-cover" alt="Product">
+                            <div class="ml-4 flex-1">
+                                <h4 class="font-medium"><%= confirmedOrder.items[i].productName %></h4>
+                                <p class="text-sm text-gray-500">Color: <%= confirmedOrder.items[i].color %></p>
+                                <p class="text-sm text-gray-500">Size: <%= confirmedOrder.items[i].size %></p>
+                                <p class="text-sm text-gray-600 mt-1">Qty: <%= confirmedOrder.items[i].quantity %></p>
+                            </div>
+                            <div class="font-medium">$<%= confirmedOrder.items[i].price %></div>
+                        </div>
+                    <% } %>
+                    <!-- More items would go here -->
+                </div>
+                <div class="border-t border-gray-200 pt-4 mt-4">
+                    <div class="flex justify-between py-2">
+                        <span class="text-gray-600">Subtotal</span>
+                        <span class="font-medium">$<%= confirmedOrder.subTotal %></span>
+                    </div>
+                    <div class="flex justify-between py-2">
+                        <span class="text-gray-600">Shipping</span>
+                        <span class="font-medium">Free</span>
+                    </div>
+                    <div class="flex justify-between py-2">
+                        <span class="text-gray-600">Tax</span>
+                        <span class="font-medium">$<%= confirmedOrder.tax %></span>
+                    </div>
+                    <div class="flex justify-between py-2 font-bold text-lg">
+                        <span>Total</span>
+                        <span>$<%= confirmedOrder.grandTotal %></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-gray-50 p-6 border rounded-lg mt-4">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i data-feather="truck" class="mr-2"></i> Shipping Information
+                    </h3>
+                    <p class="text-gray-800"><%= confirmedOrder.addressId.firstName %> <%= confirmedOrder.addressId.lastName %></p>
+                    <p class="text-gray-600"><%= confirmedOrder.addressId.address %></p>
+                    <p class="text-gray-600"><%= confirmedOrder.addressId.state %>, <%= confirmedOrder.addressId.pincode %></p>
+                    <p class="text-gray-600"><%= confirmedOrder.addressId.country %></p>
+                    <p class="text-gray-600 mt-2"><%= confirmedOrder.addressId.mobileNo %></p>
+                </div>
+
+                <div class="bg-gray-50 border p-6 rounded-lg mt-4">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i data-feather="credit-card" class="mr-2"></i> Payment Method
+                    </h3>
+                    <div class="flex items-center">
+                        <i data-feather="truck" class="mr-2"></i>
+                        <div>
+                            <p class="text-gray-800">Cash on Delivery</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+                <a href="/orders" class="px-6 py-3 bg-green-800 hover:bg-green-700 text-white rounded-lg font-medium flex items-center justify-center mt-4">
+                    <i data-feather="list" class="mr-2"></i> View All Orders
+                </a>
+                <a href="/shop" class="px-6 py-3 border border-gray-300 hover:bg-green-100 text-gray-800 rounded-lg font-medium flex items-center justify-center mt-4">
+                    <i data-feather="shopping-cart" class="mr-2"></i> Continue Shopping
+                </a>
+            </div>
+
+            
+        </div>
+    </div>
+
+    <script>
+        feather.replace();
+        // 1. Function to get the ordinal suffix for a number (day of the month)
+            const getOrdinalSuffix = (day) => {
+                if (day > 3 && day < 21) return 'th'; // accounts for 11th, 12th, 13th
+                switch (day % 10) {
+                    case 1: return 'st';
+                    case 2: return 'nd';
+                    case 3: return 'rd';
+                    default: return 'th';
+                }
+            };
+
+            // 2. Function to format the date
+            const formatMongoDate = (dateString) => {
+                // Create a JavaScript Date object from the MongoDB date string
+                const date = new Date(dateString);
+
+                // Get date components
+                const day = date.getDate();
+                const monthNames = [
+                    "January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"
+                ];
+                const month = monthNames[date.getMonth()]; // getMonth() is zero-indexed
+                const year = date.getFullYear();
+
+                // Combine components with the ordinal suffix
+                return `${day}${getOrdinalSuffix(day)} ${month} ${year}`;
+            };
+
+            document.getElementById("date").innerText = formatMongoDate('<%- confirmedOrder.createdAt %>')
+
+
+        // Confetti effect
+        function createConfetti() {
+            const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = -10 + 'px';
+                confetti.style.transform = 'rotate(' + Math.random() * 360 + 'deg)';
+                document.body.appendChild(confetti);
+                
+                const animationDuration = Math.random() * 3 + 2;
+                
+                confetti.animate([
+                    { top: '-10px', opacity: 1, transform: 'rotate(0deg)' },
+                    { top: '100vh', opacity: 0, transform: 'rotate(' + Math.random() * 360 + 'deg)' }
+                ], {
+                    duration: animationDuration * 1000,
+                    easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)',
+                    delay: Math.random() * 5 * 1000
+                });
+                
+                setTimeout(() => {
+                    confetti.remove();
+                }, animationDuration * 1000);
+            }
+        }
+        createConfetti()
+    </script>
+<%- include("../partials/user-side/footer.ejs")%>

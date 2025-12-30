@@ -11,7 +11,7 @@ const resetPassController = require("../controllers/user.controllers/resetPasswo
 const homeController = require("../controllers/user.controllers/home.controller.js")
 const profileManagementController = require("../controllers/user.controllers/userProfileManagement.controller.js")
 const cartManagementController = require("../controllers/user.controllers/cartManagement.controller.js")
-
+const orderManagementController = require("../controllers/user.controllers/orderManagement.controller.js")
 
 
 
@@ -60,4 +60,12 @@ router.post("/cart",cartManagementController.addToCart)
 router.patch("/cart/update-cart-item",cartManagementController.updateCartItem)
 router.get("/home/delete-cart-item",cartManagementController.deleteCartItemFromHome)
 router.delete("/cart/delete-cart-item",cartManagementController.deleteCartItem)
+
+// Order Management
+router.get("/checkout",userAuth.checkSession,orderManagementController.getCheckout)
+router.post("/checkout",orderManagementController.placeOrder)
+router.get("/orders",userAuth.checkSession,orderManagementController.getOrders)
+router.get("/orders/:id",userAuth.checkSession,orderManagementController.getOrderDetailPage)
+router.patch("/orders/:id/cancel-item",orderManagementController.cancelItem)
+router.post("/cart/reorder",orderManagementController.reorder)
 module.exports = router

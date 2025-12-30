@@ -6,10 +6,12 @@ const mongoose = require("mongoose")
 
 const getCart = async (req,res) => {
     let user = req.session.user || req.user
+    let message = req.session.message || null
+    delete req.session.message
     const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
     const cartItems = await Cart.find({userId : user._id}).populate("productId")
     const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
-    res.render("user-view/user.cart-management.ejs",{user,productsFullList,cartItems,cartItemsCount})
+    res.render("user-view/user.cart-management.ejs",{message,user,productsFullList,cartItems,cartItemsCount})
 }
 
 const addToCart = async (req,res) => {

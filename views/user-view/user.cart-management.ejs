@@ -5,7 +5,7 @@
     </div>
 
     <div class="w-full flex justify-between">
-        
+        <input type="text" id="serverMessage" value="<%= message ? message : null %>" hidden>
         <div id="cartItemsList" class="w-[65%] mr-2">
             <% let subTotal = 0 %>
             <% let itemsWithStock = 0 %>
@@ -345,5 +345,32 @@
      }
     }
     document.getElementById("cartHeadItemCountInCart").innerText = Number(document.getElementById("subTotalItemsInCart").innerText)
+
+
+    let serverMessage = document.getElementById("serverMessage").value
+      if(serverMessage !== ""){
+        
+        serverMessage = serverMessage.split("_,")
+       
+      }
+       if(Array.isArray(serverMessage)){
+        for (let i = 0; i < serverMessage.length; i++) {
+            if(i === serverMessage.length - 1){
+                let stringLen = serverMessage[i].length - 1
+                iziToast.error({
+                title : "Stock Availability",
+                message : serverMessage[i].slice(0,stringLen),
+                position : "topRight"
+            })
+            }else{
+                iziToast.error({
+                title : "Stock Availability",
+                message : serverMessage[i],
+                position : "topRight"
+              })
+            }
+            
+        }
+       }
 </script>
 <%- include("../partials/user-side/footer.ejs")%>

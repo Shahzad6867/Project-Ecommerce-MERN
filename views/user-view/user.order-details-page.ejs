@@ -1,0 +1,404 @@
+<%- include("../partials/user-side/navbar.ejs")%>
+    <div class="main-content">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold">Order Details</h1>
+                <p class="text-gray-600">Order <%= order.orderId %> • Placed on <%= new Date(order.createdAt).toLocaleDateString("en-IN", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric"
+                            })%></p>
+            </div>
+            <div class="flex">
+                <button type="button" class="px-4 py-2 bg-white border text-black rounded-md hover:bg-gray-100 flex items-center" onclick="reorder('<%= order._id %>')" >
+                    <i data-feather="repeat" class="w-4 h-4 mr-2"></i> Reorder
+                </button>
+                <% if (order.status.includes("Shipped")) { %>
+                    <button type="button" id="downloadInvoiceBtn" class="px-4 py-2 ml-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center">
+                        <i data-feather="download" class="w-4 h-4 mr-2"></i> Download Invoice
+                    </button>
+                <% } %>
+                <% if (order.status[order.status.length - 1] === "Pending") { %>
+                    <button type="button" class="px-4 py-2 ml-2 bg-red-400 font-bold text-black rounded-md hover:bg-red-600 flex items-center">
+                        Cancel Order
+                    </button>
+                <% } %>
+                <% if (order.status[order.status.length - 1] === "Delivered") { %>
+                    <button type="button" class="px-4 py-2 ml-2 btn-primary font-bold text-black rounded-md hover:bg-red-600 flex items-center">
+                        <i data-feather="rotate-ccw" class="w-4 h-4 mr-2"></i>
+                        Return Order
+                    </button>
+                <% } %>
+                
+                
+            </div>
+            
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="lg:col-span-3 ">
+                <div class="order-card p-6 mb-6 border">
+                    <h2 class="text-xl font-bold mb-4">Order Tracking</h2>
+                    <div class="flex justify-between">
+                        <% if (!order.isCancelled) { %>
+                            <div class="tracking-step active">
+                                <div class="tracking-dot "></div>
+                                <div class="mt-5 text-center">
+                                    <h3 class="font-medium">Placed</h3>
+                                    <p class="tracking-date"><%= new Date(order.statusTimeline.orderedAt).toLocaleDateString("en-IN", {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric"
+                                }) %> • <%= new Date(order.statusTimeline.orderedAt).toLocaleTimeString('en-US', { 
+                                        hour: '2-digit', 
+                                        minute: '2-digit', 
+                                        hour12: true 
+                                    }) %></p>
+                                    <p class="text-sm text-gray-600 mt-1">Your order has been received</p>
+                                </div>
+                            </div>
+                        <% } else {%>
+                            <div class="tracking-step-cancelled cancelled">
+                                <div class="tracking-dot"></div>
+                                <div class="mt-5 text-center">
+                                    <h3 class="font-medium">Placed</h3>
+                                    <p class="tracking-date"><%= new Date(order.statusTimeline.orderedAt).toLocaleDateString("en-IN", {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric"
+                                }) %> • <%= new Date(order.statusTimeline.orderedAt).toLocaleTimeString('en-US', { 
+                                        hour: '2-digit', 
+                                        minute: '2-digit', 
+                                        hour12: true 
+                                    }) %></p>
+                                    <p class="text-sm text-gray-600 mt-1">Your order has been received</p>
+                                </div>
+                            </div>
+                            
+                       <% } %>
+                       
+                        <% if (!order.isCancelled) { %>
+                            <div class="tracking-step <%= (order.statusTimeline.processedAt !== null) ? 'active' : '' %>">
+                                <div class="tracking-dot"></div>
+                                <div class="mt-5 text-center pl-3 w-[183.17px]">
+                                    <h3 class="font-medium">Processed</h3>
+                                    <% if (order.statusTimeline.processedAt !== null) { %>
+                                        <p class="tracking-date"><%= new Date(order.statusTimeline.processedAt).toLocaleDateString("en-IN", {
+                                            day: "numeric",
+                                            month: "short",
+                                            year: "numeric"
+                                        }) %> • <%= new Date(order.statusTimeline.processedAt).toLocaleTimeString('en-US', { 
+                                                hour: '2-digit', 
+                                                minute: '2-digit', 
+                                                hour12: true 
+                                            }) %></p>
+                                        <p class="text-sm text-gray-600 mt-1">We're preparing your order</p>
+                                    <% } %>
+                                   
+                                </div>
+                            </div>
+                            <div class="tracking-step <%= (order.statusTimeline.shippedAt !== null) ? 'active' : '' %>">
+                                <div class="tracking-dot"></div>
+                                <div class="mt-5 text-center pl-2 w-[183.17px]">
+                                    <h3 class="font-medium">Shipped</h3>
+                                    <% if (order.statusTimeline.shippedAt !== null) { %>
+                                        <p class="tracking-date"><%= new Date(order.statusTimeline.shippedAt).toLocaleDateString("en-IN", {
+                                            day: "numeric",
+                                            month: "short",
+                                            year: "numeric"
+                                        }) %> • <%= new Date(order.statusTimeline.shippedAt).toLocaleTimeString('en-US', { 
+                                                hour: '2-digit', 
+                                                minute: '2-digit', 
+                                                hour12: true 
+                                            }) %></p>
+                                        <p class="text-sm text-gray-600 mt-1">We're preparing your order</p>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <div class="tracking-step <%= (order.statusTimeline.outForDeliveryAt !== null) ? 'active' : '' %>">
+                                <div class="tracking-dot"></div>
+                                <div class="mt-5 text-center pl-5 w-[186px]">
+                                    <h3 class="font-medium">Out for Delivery</h3>
+                                    <% if (order.statusTimeline.outForDeliveryAt !== null) { %>
+                                        <p class="tracking-date"><%= new Date(order.statusTimeline.outForDeliveryAt).toLocaleDateString("en-IN", {
+                                            day: "numeric",
+                                            month: "short",
+                                            year: "numeric"
+                                        }) %> • <%= new Date(order.statusTimeline.outForDeliveryAt).toLocaleTimeString('en-US', { 
+                                                hour: '2-digit', 
+                                                minute: '2-digit', 
+                                                hour12: true 
+                                            }) %></p>
+                                        <p class="text-sm text-gray-600 mt-1">We're preparing your order</p>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <div class="tracking-step <%= (order.statusTimeline.deliveredAt !== null) ? 'active' : '' %>">
+                                <div class="tracking-dot"></div>
+                                <div class="mt-5 text-center w-[190px]">
+                                    <h3 class="font-medium">Delivered</h3>
+                                    <% if (order.statusTimeline.deliveredAt !== null) { %>
+                                        <p class="tracking-date"><%= new Date(order.statusTimeline.deliveredAt).toLocaleDateString("en-IN", {
+                                            day: "numeric",
+                                            month: "short",
+                                            year: "numeric"
+                                        }) %> • <%= new Date(order.statusTimeline.deliveredAt).toLocaleTimeString('en-US', { 
+                                                hour: '2-digit', 
+                                                minute: '2-digit', 
+                                                hour12: true 
+                                            }) %></p>
+                                        <p class="text-sm text-gray-600 mt-1">We're preparing your order</p>
+                                    <% } %>
+                                </div>
+                            </div>
+                        <% }else { %>
+                            <div class="tracking-step-cancelled <%= (order.statusTimeline.cancelledAt !== null) ? 'cancelled' : '' %>">
+                                <div class="tracking-dot"></div>
+                                <div class="mt-5 text-center w-[190px]">
+                                    <h3 class="font-medium">Cancelled</h3>
+                                    <% if (order.statusTimeline.cancelledAt !== null) { %>
+                                        <p class="tracking-date"><%= new Date(order.statusTimeline.cancelledAt).toLocaleDateString("en-IN", {
+                                            day: "numeric",
+                                            month: "short",
+                                            year: "numeric"
+                                        }) %> • <%= new Date(order.statusTimeline.cancelledAt).toLocaleTimeString('en-US', { 
+                                                hour: '2-digit', 
+                                                minute: '2-digit', 
+                                                hour12: true 
+                                            }) %></p>
+                                        <p class="text-sm text-gray-600 mt-1">Order has been Cancelled</p>
+                                    <% } %>
+                                </div>
+                            </div>
+                         <% } %>
+                    </div>
+                </div>
+
+               
+            </div>
+            <div class="lg:col-span-2">
+                <div class="order-card p-6 mb-6 border">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold ">Order Summary</h2>
+                        <div class="flex items-center">
+                           
+                            <span class="px-3 py-1 rounded-full text-sm font-bold
+                            <%= order.status[order.status.length - 1] === 'Pending' ? 'bg-gray-100 text-gray-700' :
+                           order.status[order.status.length - 1] === 'Processed' ? 'bg-yellow-100 text-yellow-700' : 
+                           order.status[order.status.length - 1] === 'Shipped' ? 'bg-blue-100 text-blue-700' : 
+                            order.status[order.status.length - 1] === 'Delivered' ? 'bg-green-100 text-green-700' : 
+                          order.status[order.status.length - 1] === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                           'bg-gray-100 text-gray-700' %>">
+                            <%= order.status[order.status.length - 1] %>
+                          </span>
+                           
+                        </div>
+                        
+                    </div>
+
+                   
+                    <div class="divide-y divide-gray-200">
+                        <% for( let i = 0; i < order.items.length; i++ ) { %>
+                            <div class="py-4 flex items-center">
+                                <% if (!order.items[i].isCancelled && !order.isCancelled) { %>
+                                    <img src="<%= order.items[i].productImage %>" class="product-image border rounded" alt="Product">
+                                    <div class="py-4 flex flex-wrap items-center w-[50%]">
+                                       
+                                        <div class="ml-4 flex-1 ">
+                                            <h4 class="font-medium"><%= order.items[i].productName %></h4>
+                                            <p class="text-sm text-black">Color: <%= order.items[i].color %></p>
+                                            <p class="text-sm text-black">Size: <%= order.items[i].size %></p>
+                                            <p class="text-sm text-black mt-1">Qty: <%= order.items[i].quantity %></p>
+                                            <p class="font-medium text-black">Price : $<%= order.items[0].price %></p>
+                                        </div>
+                                        
+                                    </div>
+                                <% } else {%>
+                                    <img src="<%= order.items[i].productImage %>" class="product-image border rounded opacity-50" alt="Product">
+                                    <div class="py-4 flex flex-wrap items-center w-[50%]">
+                                       
+                                        <div class="ml-4 flex-1 ">
+                                            <h4 class="font-medium text-gray-400"><%= order.items[i].productName %></h4>
+                                            <p class="text-sm text-gray-400">Color: <%= order.items[i].color %></p>
+                                            <p class="text-sm text-gray-400">Size: <%= order.items[i].size %></p>
+                                            <p class="text-sm text-gray-400 mt-1">Qty: <%= order.items[i].quantity %></p>
+                                            <p class="font-medium text-gray-400">Price : $<%= order.items[0].price %></p>
+                                        </div>
+                                       
+                                    </div>
+                                <% } %>
+                                <% if (order.status[order.status.length - 1] === "Pending" && !order.items[i].isCancelled ) { %>
+                                    <div class="flex justify-end w-[50%] items-center ">
+                                        <button type="button" class="bg-red-400 hover:bg-red-500 p-2 font-bold rounded-xl" onclick="cancelItem('<%= order._id %>','<%= order.items[i]._id %>')" >Cancel Item</button>
+                                    </div>
+                                <% }else if(order.isCancelled || order.items[i].isCancelled) {%>
+                                    <div class="flex justify-end w-[50%] items-center ">
+                                        <button type="button" class="bg-red-100 text-red-500 p-2 font-bold rounded-xl" disabled>Cancelled</button>
+                                    </div>
+                                <% } %>    
+                            </div>
+                        <% } %>
+                        
+                        <!-- More items would go here -->
+                    </div>
+                    <div class="border-t border-gray-200 pt-4">
+                        <div class="flex justify-end">
+                            <div class="w-full ">
+                                <div class="flex justify-between py-2">
+                                    <% let sumOfQuantity = 0 %>
+                                    <% for( let i = 0; i < order.items.length; i++ ) { %>
+                                        <% if (!order.items[i].isCancelled) { %>
+                                            <% sumOfQuantity += order.items[i].quantity %>
+                                        <% } %>
+                                        
+                                    <% } %>
+                                    <span class="text-gray-600">Subtotal (<%= sumOfQuantity %> items)</span>
+                                    <span class="font-medium">$<%= order.subTotal %></span>
+                                </div>
+                                <div class="flex justify-between py-2">
+                                    <span class="text-gray-600">Shipping</span>
+                                    <span class="font-medium">Free</span>
+                                </div>
+                                <div class="flex justify-between py-2">
+                                    <span class="text-gray-600">Tax</span>
+                                    <span class="font-medium">$<%= order.tax %></span>
+                                </div>
+                                <div class="flex justify-between py-2 font-bold text-lg border-t border-gray-200 mt-2">
+                                    <span>Total</span>
+                                    <span>$<%= order.grandTotal %></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+               
+                
+                <div class="order-card p-6 border">
+                    <h2 class="text-xl font-bold mb-4">Need Help?</h2>
+                    <div class="flex ">
+                        <div class="flex items-start mr-6">
+                            <div class="p-2 rounded-full bg-gray-100 text-gray-600 mr-3">
+                                <i data-feather="help-circle" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium">Order Questions</h3>
+                                <p class="text-sm text-gray-600">Have questions about your order?</p>
+                                <a href="#" class="text-blue-600 hover:text-blue-800 text-sm">Contact Support</a>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="p-2 rounded-full bg-gray-100 text-gray-600 mr-3">
+                                <i data-feather="rotate-ccw" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium">Returns & Refunds</h3>
+                                <p class="text-sm text-gray-600">Need to return an item?</p>
+                                <a href="#" class="text-blue-600 hover:text-blue-800 text-sm">Start a Return</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6 ">
+                <div class="order-card p-6 border">
+                    <h3 class="text-lg font-semibold mb-3 flex items-center">
+                        <i data-feather="truck" class="mr-2"></i> Shipping Information
+                    </h3>
+                    <div class="space-y-2 text-gray-700">
+                        <p><%= order.addressId.firstName %> <%= order.addressId.lastName %></p>
+                        <p><%= order.addressId.address %></p>
+                        <p><%= order.addressId.state %>, <%= order.addressId.pincode %></p>
+                        <p><%= order.addressId.country %></p>
+                        <p ><strong>Phone:</strong> <%= order.addressId.mobileNo %></p>
+                        <p><strong>Shipping Method:</strong> Standard Shipping (Free)</p>
+                    </div>
+                </div>
+                <div class="order-card p-6 border">
+                    <h3 class="text-lg font-semibold mb-3 flex items-center">
+                        <i data-feather="credit-card" class="mr-2"></i> Payment Information
+                    </h3>
+                    <div class="space-y-2 text-gray-700">
+                        <p><strong>Payment Method:</strong> <%= order.paymentId.paymentMethod %></p>
+                        <p><strong>Payment Status:</strong> <%= order.paymentId.status %></p>
+                        <% if(order.paymentId.paymentDate === null){ %>
+                            <p><strong>Payment Date:</strong> Not Paid Yet</p>
+                        <% }else{ %>
+                            <p><strong>Payment Date:</strong> <%= new Date(order.paymentId.paymentDate ).toLocaleDateString("en-IN", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric"
+                            })%></p>
+                         <% } %>
+                        <p><strong>Total Amount to be Paid:</strong> $<%= order.paymentId.amountToBePaid %></p>
+                        <p><strong>Total Paid:</strong> $<%= order.paymentId.amountPaid %></p>
+                    </div>
+                </div>
+            </div>
+            
+            
+        </div>
+        
+
+        <a href="user-orders.html" class="inline-flex items-center text-blue-600 hover:text-blue-800">
+            <i data-feather="arrow-left" class="w-4 h-4 mr-2"></i> Back to Orders
+        </a>
+    </div>
+
+    <!-- Hidden invoice content for PDF generation -->
+    
+
+    <script>
+        feather.replace();
+        function cancelItem(orderId,itemId){
+            iziToast.question({
+        theme : "light",
+        title : "Delete Address",
+        message : "Are you sure you want to cancel this item ?",
+        position : "topCenter",
+        overlay : true,
+        close : false,
+        id : "cancelItem",
+        zindex : 9999,
+        timeout : 30000,
+        backgroundColor : "white", 
+        buttons : [
+            ["<button>OK</button>",function(instance,toast){
+                instance.hide({transitionOut : "fadeOut"},toast,'button')
+
+                fetch(`/orders/${orderId}/cancel-item?item=${itemId}`,{method : "PATCH"})
+                .then(res => window.location.href = `/orders/${orderId}` )
+                .catch(error => iziToast.error({
+                    title : error.name ,
+                    message : error.message,
+                    position : "topRight"
+                }))
+
+            }],
+            ["<button>Cancel</button>",function(instance,toast){
+                instance.hide({transitionOut : "fadeOut"},toast,'button')
+                console.log("Deletion Cancelled")
+            }]
+        ]
+    })
+        }
+
+
+        function reorder(cartId){
+            
+                    fetch(`/cart/reorder?orderId=${cartId}`,{method : "POST"})
+                .then(res => window.location.href = "/cart")
+                .catch(error => {
+                    iziToast({
+                        title : "Error",
+                        message : error.message,
+                        position : "topRight"
+                    })
+                    
+                })
+                
+        }
+        
+    </script>
+<%- include("../partials/user-side/footer.ejs")%>

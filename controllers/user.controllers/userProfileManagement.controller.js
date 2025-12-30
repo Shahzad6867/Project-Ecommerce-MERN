@@ -151,6 +151,7 @@ const addAddress = async (req, res) => {
       isDefault,
     } = req.body;
     let isDefaultToSave = null;
+    console.log(isDefault)
     if (isDefault === undefined) {
       let id = req.session.user?._id || req.user?._id;
       let isThereDefaultAddress = await Address.findOne({
@@ -186,10 +187,12 @@ const addAddress = async (req, res) => {
       userId,
       isDefault: isDefaultToSave,
     });
-
     await addressToBeSaved.save();
+    if(req.body.redirect === "/checkout"){
+      return res.redirect("/checkout");
+    }
     req.session.message = "Address added successfully!";
-    res.redirect("/address");
+    return res.redirect("/address");
   } catch (error) {
     console.log(error);
     req.session.message = "Oops! some error has occured";
@@ -212,6 +215,27 @@ const editAddress = async (req, res) => {
       isDefault,
     } = req.body;
     const addressToBeUpdated = await Address.findOne({ _id: id });
+    if(req.body.redirect === "/checkout"){
+      await Address.findOneAndUpdate({userId : addressToBeUpdated.userId, isDefault : true},{$set : {isDefault : false}})
+      await Address.findByIdAndUpdate(
+        { _id: id },
+        {
+          $set: {
+            firstName,
+            lastName,
+            country,
+            state,
+            city,
+            address,
+            pincode,
+            mobileNo,
+            userId: addressToBeUpdated.userId,
+            isDefault : true
+          },
+        }
+      );
+      return res.redirect("/checkout");
+    }
     await Address.findByIdAndUpdate(
       { _id: id },
       {
@@ -229,8 +253,9 @@ const editAddress = async (req, res) => {
         },
       }
     );
+    
     req.session.message = "Address updated Successfully";
-    res.redirect("/address");
+    return res.redirect("/address");
   } catch (error) {
     console.log(error);
     req.session.message = "Oops! some error has occured";
@@ -250,6 +275,9 @@ const deleteAddress = async (req, res) => {
       { $set: { isDefault: true } }
     );
   }
+  if(req.body.redirect === "/checkout"){
+    return res.redirect("/checkout");
+  }
   req.session.message = "Address deleted Successfully";
   res.redirect("/address");
 };
@@ -262,9 +290,14 @@ const resetDefaultAddress = async (req, res) => {
     { userId: idOfUser, isDefault: true },
     { $set: { isDefault: false } }
   );
+  
   await Address.findByIdAndUpdate({ _id: id }, { $set: { isDefault: true } });
+
+  if(req.query.redirect && req.query.redirect === "checkout"){
+    return res.redirect("/checkout")
+  }
   req.session.message = "Your Default address has been Updated";
-  res.redirect("/address");
+  return res.redirect("/address");
 };
 
 module.exports = {
