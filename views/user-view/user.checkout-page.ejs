@@ -160,9 +160,9 @@
                         <div class="space-y-3 border-gray-200 pt-4">
                             
                             <div class="flex justify-between">
-                                <input type="number" name="subTotal" value="<%= Number(subTotal) %>" hidden>
+                                <input type="number" name="subTotal" value="<%= Number(subTotal).toFixed(2) %>" hidden>
                                 <span class="text-gray-600">Subtotal (<%= itemsWithStock %> items)</span>
-                                <span class="font-medium">$<%= subTotal %></span>
+                                <span class="font-medium">$<%= subTotal.toFixed(2) %></span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Shipping</span>
@@ -174,14 +174,14 @@
                                 <span class="text-gray-600">Tax</span>
                                 <% let tax = (subTotal * 0.05).toFixed(2)%>
                                 <input type="number" name="tax" value="<%= Number(tax) %>" hidden>
-                                <span class="font-medium"><%= tax %></span>
+                                <span class="font-medium">$<%= tax %></span>
                             </div>
                            
                             <div class="flex justify-between text-lg font-bold pt-2">
                                 <span>Total</span>
-                                <% let grandTotal = Number(subTotal) + Number(tax)%>
+                                <% let grandTotal = (Number(subTotal) + Number(tax)).toFixed(2) %>
                                 <input type="text" name="grandTotal" value="<%= grandTotal %>" hidden>
-                                <span><%= grandTotal  %></span>
+                                <span>$<%= grandTotal  %></span>
                             </div>
                         </div>
                         

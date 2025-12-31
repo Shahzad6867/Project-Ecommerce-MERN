@@ -6,7 +6,8 @@ const Address = require("../../models/address.model.js");
 const Cart = require("../../models/cart.model.js");
 const Order = require("../../models/order.model.js");
 const Payment = require("../../models/payment.model.js");
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
+const cloudinary = require("../../config/cloudinaryConfig.js")
 require("dotenv").config()
 
 const getCheckout = async (req,res) => {
@@ -149,35 +150,82 @@ const cancelItem = async (req,res) => {
     let payment = await Payment.findOne({_id : order.paymentId})
     console.log(order)
     let everyItemCancelled = 0
-    for(let i = 0 ; i < order.items.length ; i++){
-        if(String(order.items[i]._id) === String(itemId)){
+    if(order.status[order.status.length - 1] === "Pending"){
+        for(let i = 0 ; i < order.items.length ; i++){
+            if(String(order.items[i]._id) === String(itemId)){
+                let product = await Product.findOne({_id : order.items[i].productId })
+                product.variants[order.items[i].variant].stockQuantity += order.items[i].quantity
+                await product.save()
+                order.items[i].isCancelled = true
+                order.subTotal = (order.subTotal -  (order.items[i].price * order.items[i].quantity)).toFixed(2)
+                order.tax = (order.subTotal * 0.05).toFixed(2)
+                order.grandTotal = (order.subTotal + order.tax).toFixed(2)
+                payment.amountToBePaid = order.grandTotal
+                await order.save()
+                await payment.save()
+            }
+            if(order.items[i].isCancelled === true){
+                everyItemCancelled++
+            }
+        }
+        if(everyItemCancelled === order.items.length){
+            order.isCancelled = true
+            order.status.push("Cancelled")
+            order.statusTimeline.cancelledAt = new Date()
+            payment.amountToBePaid = 0
+            await order.save()
+            await payment.save()
+        }
+        req.session.message = "This item has been successfully cancelled.<br>Any applicable refund will be processed according to our refund policy."
+        return res.status(200).json({
+            success : true
+        })
+    }else{
+        return res.status(409).json({
+            success : false,
+            message : `Cannot cancel the Order, Current Status : ${order.status[order.status.length-1]}`
+        })
+    }
+    
+    
+    
+}
+
+const cancelOrder = async (req,res) => {
+    let orderId = req.params.id
+    let order = await Order.findOne({_id : orderId})
+    let payment = await Payment.findOne({_id : order.paymentId})
+    if(order.status[order.status.length - 1] === "Pending"){
+        for(let i = 0 ; i < order.items.length ; i++){
+       
             let product = await Product.findOne({_id : order.items[i].productId })
             product.variants[order.items[i].variant].stockQuantity += order.items[i].quantity
             await product.save()
             order.items[i].isCancelled = true
-            order.subTotal = (order.subTotal -  (order.items[i].price * order.items[i].quantity)).toFixed(2)
-            order.tax = order.subTotal * 0.05
-            order.grandTotal = order.subTotal + order.tax
+            order.subTotal = 0
+            order.tax = 0
+            order.grandTotal = 0
             payment.amountToBePaid = order.grandTotal
-            await order.save()
-            await payment.save()
-        }
-        if(order.items[i].isCancelled === true){
-            everyItemCancelled++
-        }
+           
+               
+            }
+                order.isCancelled = true
+                order.status.push("Cancelled")
+                order.statusTimeline.cancelledAt = new Date()
+                await order.save()
+                await payment.save()
+            
+            req.session.message = "This Order has been successfully cancelled.<br>Any applicable refund will be processed according to our refund policy."
+            return res.status(200).json({
+                success : true
+            })
+    }else{
+        return res.status(409).json({
+            success : false,
+            message : `Cannot cancel the Order, Current Status : ${order.status[order.status.length-1]}`
+        })
     }
-    if(everyItemCancelled === order.items.length){
-        order.isCancelled = true
-        order.status.push("Cancelled")
-        order.statusTimeline.cancelledAt = new Date()
-        payment.amountToBePaid = 0
-        await order.save()
-        await payment.save()
-    }
-    req.session.message = "This item has been successfully cancelled.<br>Any applicable refund will be processed according to our refund policy."
-    return res.status(200).json({
-        success : true
-    })
+    
 }
 
 const reorder = async (req,res) => {
@@ -235,11 +283,41 @@ const reorder = async (req,res) => {
         }
 
 }
+
+const getInvoice = async (req,res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+       const downloadUrl = cloudinary.utils.private_download_url(order.invoicePublicId,"pdf",{
+        resource_type: "raw",
+        expires_at: Math.floor(Date.now() / 1000) + 300
+      })
+       res.status(200).json({
+        downloadUrl
+       })
+    }catch(error){
+        console.log(error)
+        res.redirect("/orders")
+    }
+}
+
+const returnOrder = async(req,res) => {
+    const {id} = req.params
+    let order = await Order.findById(id)
+    order.return.isRequested = true
+    order.return.reason = req.body.returnReason
+    order.return.requestedAt = new Date()
+    order.status.push("Return Requested")
+    order.save()
+    res.redirect(`/orders/${id}`)
+}
 module.exports = {
     getCheckout,
     placeOrder,
     getOrders,
     getOrderDetailPage,
     cancelItem,
-    reorder
+    cancelOrder,
+    reorder,
+    getInvoice,
+    returnOrder
 }

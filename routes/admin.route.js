@@ -8,6 +8,7 @@ const brandManagmentController = require("../controllers/admin.controllers/brand
 const productManagmentController = require("../controllers/admin.controllers/productManagmentController.js")
 const adminLogoutController = require("../controllers/admin.controllers/adminLogoutController.js")
 const searchController = require("../controllers/admin.controllers/searchController.js")
+const orderManagementController = require("../controllers/admin.controllers/ordersManagementController.js")
 const adminAuth = require("../middlewares/admin.auth.js")
 const upload = require("../config/multerConfig.js")
 
@@ -37,6 +38,14 @@ router.post("/add-brand",upload.single("brandImage"),brandManagmentController.ad
 router.post("/edit-brand",upload.single("brandImage"),brandManagmentController.editBrand)
 router.get("/delete-brand",brandManagmentController.deleteBrand)
 router.get("/restore-brand",brandManagmentController.restoreBrand)
+
+// Orders Management
+router.get("/orders",orderManagementController.getOrders)
+router.get("/orders/:id",orderManagementController.getOrderDetailPage)
+router.patch("/orders/:id/update-status",orderManagementController.updateStatus)
+
+
+//Logout Admin
 router.get("/logout",adminLogoutController.logoutAdmin)
 
 module.exports = router

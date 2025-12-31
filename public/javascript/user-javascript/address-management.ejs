@@ -320,6 +320,15 @@ const defaultAddress = document.getElementById("defaultAddress")
         })
         return
     }
+    if(!iti.isValidNumber(mobileNo.value)){
+        e.preventDefault()
+        iziToast.error({
+            title : "Error",
+            message : "Please enter a Valid Mobile Number",
+            position : "topRight"
+        })
+        return
+    }
     
     mobileNo.value = iti.getNumber()
     document.getElementById("pincode").disabled = false

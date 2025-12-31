@@ -319,6 +319,15 @@ document.getElementById("edit-profile-form").addEventListener("submit", function
         return;
     }
    
+    if(!iti.isValidNumber(newIntlNumber)){
+        e.preventDefault();
+        iziToast.error({
+            title: "Error",
+            message: "Enter a Valid Mobile Number",
+            position: "topRight"
+        });
+        return;
+    }
 
     input.value = newIntlNumber;
 });

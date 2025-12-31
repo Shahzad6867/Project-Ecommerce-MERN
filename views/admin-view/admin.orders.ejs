@@ -5,12 +5,12 @@
 <!-- Sidebar -->
 <%- include("../partials/admin-side/sidebar.ejs",{customerBtn : "",categoriesBtn : "",brandsBtn : "",productsBtn : "", ordersBtn : "active disabled"}) %>
   <!-- Main Content -->
-  <div class="main-content">
+  <div class="main-content-for-orders">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold text-gray-800">Products</h1>
+      <h1 class="text-2xl font-bold text-gray-800">Orders</h1>
       <div class="relative">
-        <form autocomplete="off" action="/admin/products" method="post">
-            <input type="search" placeholder="Whom are you looking for ?" name="search" 
+        <form autocomplete="off" action="/admin/orders" method="post">
+            <input type="search" placeholder="Which order are you looking for ?" name="search" 
                class="productSearchBar border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" data-search>
              <div id="productSearchResultBox" data-product-container>  
              </div>
@@ -24,12 +24,7 @@
       </template>  
 
 
-         <a href="/admin/add-product">
-            <button class="addBtn-primary  font-medium text-gray-700 py-2 px-3  rounded-md transition duration-300 ">
-                <i class="fa fa-plus text-gray-700"></i>
-                Add Product
-              </button>
-         </a>
+        
     </div>
     
   
@@ -58,48 +53,38 @@
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-green-50">
           <tr>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">No</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">Product</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Category</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Brand</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Price</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Stock Qty</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Status</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Actions</th>
+            <th scope="col" class="px-3 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">No</th>
+            <th scope="col" class="px-2 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">Order ID</th>
+            <th scope="col" class="px-2 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Customer</th>
+            <th scope="col" class="px-2 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Date</th>
+            <th scope="col" class="px-2 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Items</th>
+            <th scope="col" class="px-2 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Amount</th>
+            <th scope="col" class="px-2 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Payment Method</th>
+            <th scope="col" class="px-2 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Payment Status</th>
+            <th scope="col" class="px-2 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Order Status</th>
+            <th scope="col" class="px-2 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-            <% for(let i = 0; i < products.length; i++ ) { %>
-              
-              <% for(let j = 0; j < products[i].variants.length; j++ ) { %>
+            <% for(let i = 0; i < orders.length; i++ ) { %>
+              <% let sumOfQuantity = 0 %>
+             
                 <tr>
-                  <% if (products[i].variants.length > 1) { %>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
-                      <%= i + 1 %>.<%= j + 1 %>
-                    </td>
-                  <% }else{ %>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
+                 
+                  <td class="px-2 py-4 whitespace-nowrap text-sm text-center text-gray-500">
                     <%= i + 1 %>
                   </td>
-                  <% } %>
+               
                   <!-- Product info (image + name) only for first variant -->
-                  <td class="px-6 py-4 whitespace-wrap text-center">
+                  <td class="px-2 py-4 whitespace-wrap text-center">
                     <div class="flex items-center justify-center">
-                      <div class="flex-shrink-0 h-14 w-14">
-                        <img class="h-14 w-14 border-2 border-green-700 rounded-full" src="<%= products[i].variants[j].productImages[0] %>" alt="">
-                      </div>
-                      <div class="ml-4 ">
+                      
+                      <div>
+                      
+                          <div class="text-sm font-medium uppercase text-gray-900">
+                         <%= orders[i].orderId %>
+                          </div>
                         
-                        <% if (products[i].productName.length > 25) { %>
-                          <% let productName = products[i].productName.slice(0,19) %>
-                          <div class="text-sm font-medium uppercase text-gray-900">
-                         <%=  productName %><span class="text-lg font-semibold"> . . .</span>
-                          </div>
-                        <% } else { %>
-                          <div class="text-sm font-medium uppercase text-gray-900">
-                         <%= products[i].productName %>
-                          </div>
-                          <% } %>
 
                         
                       </div>
@@ -108,51 +93,78 @@
                   
           
                 
-                  <td class="px-6 py-4 whitespace-nowrap  text-sm text-center text-gray-500">
-                    <%= products[i].categoryId.categoryName %>
+                  <td class="px-2 py-4 whitespace-nowrap  text-sm text-center text-gray-500">
+                    <%= orders[i].userId.firstName %> <%= orders[i].userId.lastName %>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap  text-sm text-center text-gray-500">
-                    <%= products[i].brandId.brandName %>
+                  <td class="px-2 py-4 whitespace-nowrap  text-sm text-center text-gray-500">
+                    <%= new Date(orders[i].statusTimeline.orderedAt).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric"
+                  }) %> • <%= new Date(orders[i].statusTimeline.orderedAt).toLocaleTimeString('en-US', { 
+                          hour: '2-digit', 
+                          minute: '2-digit', 
+                          hour12: true 
+                      }) %>
                   </td>
           
                   <!-- Variant-specific details -->
-                  <td class="px-6 py-2 whitespace-nowrap text-sm text-center font-large text-gray-500">
-                    <%= products[i].variants[j].price %> $
+                  <td class="px-2 py-2 text-center whitespace-nowrap text-sm font-large text-gray-500">
+                   
+                    <% for( let j = 0; j < orders[i].items.length; j++ ) { %>
+                      <% if (!orders[i].items[j].isCancelled) { %>
+                        <% sumOfQuantity += orders[i].items[j].quantity %>
+                     <% } %>
+                    <% } %>
+                       
+                         
+                 
+                    <%= sumOfQuantity %>
                   </td>
-                  <td class="px-6 py-2 text-center whitespace-nowrap text-sm font-large text-gray-500">
-                    <%= products[i].variants[j].stockQuantity %>
+                  <td class="px-2 py-2 whitespace-nowrap text-sm text-center font-large text-gray-500">
+                    $ <%= orders[i].grandTotal %> 
+                  </td>
+                  <td class="px-2 py-2 whitespace-nowrap text-sm text-center font-large text-gray-500">
+                     <%= orders[i].paymentId.paymentMethod %> 
+                  </td>
+                  <td class="px-2 py-6  flex items-center justify-center flex-wrap text-sm text-center  font-large  text-gray-500">
+                    <span class="px-3 py-1 rounded-full text-sm font-bold 
+                          <%= orders[i].paymentId.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+                        orders[i].paymentId.status === 'Paid Successfully' ? 'bg-green-100 text-green-700' :
+                        orders[i].paymentId.status === 'Payment Failed' ? 'bg-red-100 text-red-700' : 
+                        'bg-gray-100 text-gray-700' %>">
+                          <%= orders[i].paymentId.status %>
+                     </span>
                   </td>
           
                   <!-- Status (only once for product) -->
-                  <td class="px-6 py-2 whitespace-nowrap text-center text-sm font-large text-gray-500">
+                  <td class="px-1 py-2 whitespace-nowrap text-center text-sm font-large text-gray-500">
                     
-                      <% if (!products[i].isDeleted) { %>
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
-                      <% } else { %>
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactive</span> 
-                      <% } %>
+                      
+                      <span class="px-3 py-1 rounded-full text-sm font-bold
+                                <%= orders[i].status[orders[i].status.length - 1] === 'Pending' ? 'bg-gray-100 text-gray-700' :
+                               orders[i].status[orders[i].status.length - 1] === 'Processed' ? 'bg-yellow-100 text-yellow-700' : 
+                               orders[i].status[orders[i].status.length - 1] === 'Shipped' ? 'bg-blue-100 text-blue-700' : 
+                                orders[i].status[orders[i].status.length - 1] === 'Delivered' ? 'bg-green-100 text-green-700' : 
+                              orders[i].status[orders[i].status.length - 1] === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                               'bg-gray-100 text-gray-700' %>">
+                                <%= orders[i].status[orders[i].status.length - 1] %>
+                      </span>
                   
                   </td>
           
                   <!-- Actions only once -->
-                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                      <a href="/admin/edit-product?id=<%= products[i]._id %>">
-                        <button title="Edit" class="text-cyan-500 hover:text-cyan-700 mr-3 unblock-user-btn" >
-                          <i class="fas fa-edit"></i>
+                  <td class="px-1  py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                      <a href="/admin/orders/<%= orders[i]._id %>">
+                        <button title="View" class="text-black flex items-center border shadow-md px-2 py-2 mr-2 rounded-lg" >
+                          <i data-feather="eye" class="w-4 h-4 mr-1"></i> View 
                         </button>
                       </a>
-                      <button title="Restore" onclick="restoreProduct('<%= products[i]._id %>')" 
-                          class="text-green-600 hover:text-green-900 mr-3 unblock-user-btn" >
-                        <i class="fas fa-check-circle"></i>
-                      </button>
-                      <button title="Delete" onclick="areYouSure('<%= products[i]._id %>')" 
-                          class="text-red-600 hover:text-red-900 delete-user-btn">
-                        <i class="fas fa-trash"></i>
-                      </button>
+                      
                   </td>
                 </tr>
-              <% } %>
-            <% } %>
+             <% } %>
+           
           </tbody>
       </table>
     </div>
@@ -162,11 +174,11 @@
     <!-- Pagination -->
     <div class="flex items-center justify-between mt-4">
       <div class="text-sm text-gray-500">
-        Showing <span class="font-medium">1</span> to <span class="font-medium"><%= products.length %></span> of <span class="font-medium"><%= count %></span> results
+        Showing <span class="font-medium">1</span> to <span class="font-medium"><%= orders.length %></span> of <span class="font-medium"><%= count %></span> results
       </div>
       <div class="flex space-x-2">
         
-        <a href="/admin/products?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %>">
+        <a href="/admin/orders?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %>">
           <% if (Number(page) === 1) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Previous
@@ -180,13 +192,13 @@
        </a>
         <% let i = Number(page) > 4 ? Number(page) - 3 : 1 %>
         <% for(;i <= pages; i++ ) { %>
-        <a href="/admin/products?page=<%= i %>">
+        <a href="/admin/orders?page=<%= i %>">
           <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
             <%= i %>
           </button>
         </a>
         <% } %>
-        <a href="/admin/products?page=<%= Number(page) < pages ? Number(page) + 1 : pages %>">
+        <a href="/admin/orders?page=<%= Number(page) < pages ? Number(page) + 1 : pages %>">
           <% if (Number(page) === pages) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Next

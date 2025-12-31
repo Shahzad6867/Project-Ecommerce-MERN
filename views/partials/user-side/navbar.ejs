@@ -36,7 +36,7 @@
             <input type="hidden" id="serverMessageNavbar"  value="<%= typeof message !== 'undefined' ? message : '' %>">
             <!-- Search Bar -->
             <div class="flex-1 mx-8">
-                <div class="relative">
+                <!-- <div class="relative">
                    <form autocomplete="off" action="/search-product" method="post">
                     <input type="search" placeholder="Search for Products..." 
                     class="w-full py-2 px-4 pr-10 rounded-md search-bar border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-00 focus:border-transparent" data-search>
@@ -46,7 +46,7 @@
                         <i  data-feather="search" class=""></i>
                     </button>
                    </form>
-                </div>
+                </div> -->
                 <template data-product-template>
                     <div id="product-list-item" onclick="setInputForSearch()" >
                      <div class="flex-shrink-0 h-16 w-16 border-2 border-black px-1 py-1">

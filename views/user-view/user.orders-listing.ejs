@@ -51,6 +51,7 @@
                                order.status[order.status.length - 1] === 'Shipped' ? 'bg-blue-100 text-blue-700' : 
                                 order.status[order.status.length - 1] === 'Delivered' ? 'bg-green-100 text-green-700' : 
                               order.status[order.status.length - 1] === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                              order.status[order.status.length - 1] === 'Return Order Requested' ? 'bg-yellow-400 text-black' :
                                'bg-gray-100 text-gray-700' %>">
                                 <%= order.status[order.status.length - 1] %>
                               </span>
@@ -98,15 +99,15 @@
                                 View Details
                               </a>
                         
-                              <% if(order.status.includes("Shipped")) { %>
-                                <a href="/orders/<%= order._id %>/invoice"
-                                  class="px-4 py-2 bg-blue-600 text-white flex items-center font-bold rounded-md hover:bg-blue-700">
+                              <% if(order.status.includes("Shipped") && !order.status.includes("Return Order Requested")) { %>
+                                <a href="<%= order.invoiceUrl %>"
+                                  class="px-4 py-2 bg-blue-600 text-white flex items-center font-bold rounded-md hover:bg-blue-700" download>
                                   <i data-feather="download" class="w-4 h-4 mr-2"></i>
                                   Download Invoice
                                 </a>
                                 
                               <% } %>
-                              <% if (order.status[order.status.length - 1] === "Delivered") { %>
+                              <% if (!order.status.includes("Return Order Requested") && order.status.includes("Delivered")) { %>
                                 <a href="/orders/<%= order._id %>"
                                     class="px-4 py-2 border btn-primary rounded-md font-bold flex items-center">
                                     <i data-feather="rotate-ccw" class="w-4 h-4 mr-2"></i>

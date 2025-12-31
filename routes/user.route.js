@@ -67,5 +67,8 @@ router.post("/checkout",orderManagementController.placeOrder)
 router.get("/orders",userAuth.checkSession,orderManagementController.getOrders)
 router.get("/orders/:id",userAuth.checkSession,orderManagementController.getOrderDetailPage)
 router.patch("/orders/:id/cancel-item",orderManagementController.cancelItem)
+router.patch("/orders/:id/cancel-order",orderManagementController.cancelOrder)
+router.get("/orders/:id/invoice",orderManagementController.getInvoice)
 router.post("/cart/reorder",orderManagementController.reorder)
+router.post("/orders/:id/return-order",orderManagementController.returnOrder)
 module.exports = router

@@ -30,7 +30,14 @@ const itemSchema = Schema({
     isCancelled : {
         type : Boolean,
         default : false
-    }
+    },
+    return: {
+        isRequested: { type: Boolean, default: false },
+        reason: { type: String, default : null },
+        requestedAt: {type: Date, default : null },
+        approvedAt: {type: Date, default : null },
+        refundedAt: {type: Date, default : null }
+      }
 })
 
 const statusTimelineSchema = Schema({
@@ -97,7 +104,22 @@ const orderSchema = Schema({
         type : Boolean,
         default : false
     },
-    statusTimeline : statusTimelineSchema
+    statusTimeline : statusTimelineSchema,
+    invoiceUrl : {
+        type : String,
+        default : null
+    },
+    invoiceCreatedAt : {
+        type : Date,
+        default : null
+    },
+    return: {
+        isRequested: { type: Boolean, default: false },
+        reason: { type: String, default : null },
+        requestedAt: {type: Date, default : null },
+        approvedAt: {type: Date, default : null },
+        refundedAt: {type: Date, default : null }
+      }
 },{timestamps : true})
 
 module.exports = mongoose.model("Order",orderSchema)
