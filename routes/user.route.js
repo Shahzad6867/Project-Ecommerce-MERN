@@ -62,7 +62,7 @@ router.get("/home/delete-cart-item",cartManagementController.deleteCartItemFromH
 router.delete("/cart/delete-cart-item",cartManagementController.deleteCartItem)
 
 // Order Management
-router.get("/checkout",userAuth.checkSession,orderManagementController.getCheckout)
+router.get("/checkout",userAuth.checkSession,userAuth.isCartHavingItems,orderManagementController.getCheckout)
 router.post("/checkout",orderManagementController.placeOrder)
 router.get("/orders",userAuth.checkSession,orderManagementController.getOrders)
 router.get("/orders/:id",userAuth.checkSession,orderManagementController.getOrderDetailPage)
@@ -71,4 +71,9 @@ router.patch("/orders/:id/cancel-order",orderManagementController.cancelOrder)
 router.get("/orders/:id/invoice",orderManagementController.getInvoice)
 router.post("/cart/reorder",orderManagementController.reorder)
 router.post("/orders/:id/return-order",orderManagementController.returnOrder)
+// router.post("/create-checkout-session",userAuth.checkSession,orderManagementController.createCheckoutSession)
+router.get("/checkout/payment-processing/:id",userAuth.checkSession,orderManagementController.getPaymentProcessingPage)
+router.get("/order-confirmation/:id",userAuth.checkSession,orderManagementController.getOrderConfirmationPage)
+router.get("/order-status/:id",userAuth.checkSession,orderManagementController.getOrderStatus)
+router.get("/orders/:id/pending-payment",userAuth.checkSession,orderManagementController.retryPayment)
 module.exports = router

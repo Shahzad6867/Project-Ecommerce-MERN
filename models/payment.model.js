@@ -26,11 +26,15 @@ const paymentSchema = new Schema({
     },
     paymentMethod : {
         type : String,
-        enum : ["Cash on Delivery","Credit/Debit Card","Google Pay"]
+        enum : ["Cash on Delivery","Pay with Stripe","Pay with NovaWallet"]
     },
     status : {
         type : String,
-        enum : ["Pending","Paid Successfully","Payment Failed"]
+        enum : ["Pending","Paid Successfully","Payment Failed","Order Cancelled"]
+    },
+    orderWillBeCancelledAt : {
+        type : Date,
+        default : null
     }
 })
 

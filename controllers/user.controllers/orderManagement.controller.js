@@ -8,6 +8,7 @@ const Order = require("../../models/order.model.js");
 const Payment = require("../../models/payment.model.js");
 const mongoose = require("mongoose");
 const cloudinary = require("../../config/cloudinaryConfig.js")
+const stripe = require("../../config/stripeConfig.js")
 require("dotenv").config()
 
 const getCheckout = async (req,res) => {
@@ -27,15 +28,34 @@ function orderIdGenerator() {
   
 
 const placeOrder = async (req,res) => {
-    const items = []
-    const stockUnavailable = []
+    let tax = await stripe.taxRates.create({
+        display_name : "VAT",
+        percentage : 5,
+        inclusive : false
+    })
 
+    const items = []
+    const lineItems = []
+    const stockUnavailable = []
 
     let user = req.session.user || req.user
     if(Array.isArray(req.body.productId)){
         for(let i = 0 ; i < req.body.productId.length ; i++){
             let product = await Product.findById(req.body.productId[i])
             if( product.variants[req.body.variants[i]].stockStatus !== "Out of Stock" && product.variants[req.body.variants[i]].stockQuantity >= req.body.quantity[i]){
+                if(req.body.paymentMethod === "Pay with Stripe"){
+                    lineItems.push(
+                        {
+                            price_data : {
+                                currency : "usd",
+                                product_data : {name : req.body.productName[i]},
+                                unit_amount : req.body.price[i] * 100,
+                            },
+                            quantity : req.body.quantity[i],
+                            tax_rates : [tax.id]
+        
+                    })
+                }
                 items.push({
                     productId : req.body.productId[i],
                     productName : req.body.productName[i],
@@ -63,8 +83,21 @@ const placeOrder = async (req,res) => {
             return res.redirect("/cart")
           }
     }else{
+        
         let product = await Product.findById(req.body.productId)
         if( product.variants[req.body.variants].stockStatus !== "Out of Stock" && product.variants[req.body.variants].stockQuantity >= req.body.quantity){
+            if(req.body.paymentMethod === "Pay with Stripe"){
+                lineItems.push({
+                        price_data : {
+                            currency : "usd",
+                            product_data : {name : req.body.productName},
+                            unit_amount : req.body.price * 100,
+                        },
+                        quantity : req.body.quantity,
+                        tax_rates : [tax.id]
+    
+                })
+            }
             items.push({
                 productId : req.body.productId,
                 productName : req.body.productName,
@@ -89,12 +122,15 @@ const placeOrder = async (req,res) => {
             return res.redirect("/cart")
       }    
     }
-    for(let j = 0 ; j < items.length ; j++){
-        let product = await Product.findById(items[j].productId)
-            product.variants[items[j].variant].stockQuantity -=  items[j].quantity
-            await product.save()
-            await Cart.findOneAndDelete({userId : user._id, productId : items[j].productId,variant : items[j].variant})
+    if(req.body.paymentMethod === "Cash on Delivery"){
+        for(let j = 0 ; j < items.length ; j++){
+            let product = await Product.findById(items[j].productId)
+                product.variants[items[j].variant].stockQuantity -=  items[j].quantity
+                await product.save()
+                await Cart.findOneAndDelete({userId : user._id, productId : items[j].productId,variant : items[j].variant})
+        }
     }
+    
     
     let order = new Order({
         orderId : orderIdGenerator(),
@@ -115,23 +151,183 @@ const placeOrder = async (req,res) => {
         orderId : confirmedOrder._id,
         amountToBePaid : req.body.grandTotal,
         amountPaid : 0,
-        paymentMethod : "Cash on Delivery",
+        paymentMethod : req.body.paymentMethod,
         status : "Pending"
     })
     let savedPayment = await payment.save()
     confirmedOrder.paymentId = savedPayment._id
     await confirmedOrder.save()
-    confirmedOrder = await Order.findOne({_id : confirmedOrder._id }).populate("addressId").populate("paymentId")
-    const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
-    const cartItems = await Cart.find({userId : user._id}).populate("productId")
-    return res.render("user-view/order-confirmation-page.ejs",{user,confirmedOrder,productsFullList,cartItems})
+    if(req.body.paymentMethod === "Cash on Delivery"){
+        confirmedOrder = await Order.findOne({_id : confirmedOrder._id }).populate("addressId").populate("paymentId")
+        const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
+        const cartItems = await Cart.find({userId : user._id}).populate("productId")
+        return res.render("user-view/order-confirmation-page.ejs",{user,confirmedOrder,productsFullList,cartItems})
+    }else if(req.body.paymentMethod === "Pay with Stripe"){
+        try{
+            for(let j = 0 ; j < items.length ; j++){
+                    await Cart.findOneAndDelete({userId : user._id, productId : items[j].productId,variant : items[j].variant})
+            }
+            let startDate = new Date()
+            savedPayment.orderWillBeCancelledAt = new Date(startDate.getTime() + (48 * 60 * 60 * 1000))
+            confirmedOrder.willBeCancelledAt = new Date(startDate.getTime() + (48 * 60 * 60 * 1000))
+            await confirmedOrder.save()
+            await savedPayment.save()
+                const session = await stripe.checkout.sessions.create({
+                    mode : "payment",
+                    line_items : lineItems,
+                    success_url : `http://localhost:1348/checkout/payment-processing/${confirmedOrder._id}`,
+                    cancel_url : `http://localhost:1348/order-confirmation/${confirmedOrder._id}?paymentId=${savedPayment._id}&status=Cancelled`,
+                    customer_email : user.email,
+                    metadata : {
+                        user : user._id.toString(),
+                        payment : savedPayment._id.toString()
+                    },
+                    payment_intent_data : {
+                        metadata : {
+                            user : user._id.toString(),
+                            payment : savedPayment._id.toString()
+                        }
+                    }
+                })
+
+                return res.redirect(session.url)
+            } catch (error) {
+                console.log(error)
+            }
+    }
+    
+}
+const retryPayment = async (req,res) => {
+    try {
+        let user = req.session.user || req.user
+        let tax = await stripe.taxRates.create({
+            display_name : "VAT",
+            percentage : 5,
+            inclusive : false
+        })
+        const {id} = req.params
+        const lineItems = []
+        const order = await Order.findById(id)
+        for(let i = 0 ; i < order.items.length ; i ++){
+            if(!order.items[i].isCancelled){
+                lineItems.push(
+                    {
+                        price_data : {
+                            currency : "usd",
+                            product_data : {name : order.items[i].productName},
+                            unit_amount : order.items[i].price * 100,
+                        },
+                        quantity : order.items[i].quantity,
+                        tax_rates : [tax.id]
+        
+                })
+            }
+            
+        }
+        
+        const session = await stripe.checkout.sessions.create({
+            mode : "payment",
+            line_items : lineItems,
+            success_url : `http://localhost:1348/checkout/payment-processing/${order._id}`,
+            cancel_url : `http://localhost:1348/order-confirmation/${order._id}?paymentId=${order.paymentId}&status=Cancelled`,
+            customer_email : user.email,
+            metadata : {
+                payment : order.paymentId.toString()
+            },
+            payment_intent_data : {
+                metadata : {
+                    payment : order.paymentId.toString()
+                }
+            }
+        })
+
+        return res.redirect(session.url)
+    } catch (error) {
+        console.log(error)
+    }
+}
+const getPaymentProcessingPage = async (req,res) => {
+    const {id} = req.params
+    res.render("user-view/payment-processing.ejs",{orderId : id})
+}
+const getOrderStatus = async(req,res) => {
+    try {
+        const {id} = req.params
+    const order = await Order.findById(id)
+    const payment = await Payment.findById(order.paymentId)
+    if(payment.status === "Payment Failed" ){
+       return res.status(402).json({
+            success : false,
+            messsage : "Payment Failed"
+        })
+    }else if(payment.status === "Paid Successfully"){
+       return res.status(200).json({
+            success : true,
+            messsage : "Paid Successfully"
+        })
+    }else{
+       return res.json({
+            messsage : "Pending"
+        })
+    }
+    } catch (error) {
+     console.log(error)   
+    }
+}
+const getOrderConfirmationPage = async (req,res) => {
+   const {id} = req.params
+   if(req.query?.paymentId && req.query?.status === "Cancelled"){
+    await Payment.findOneAndUpdate({_id : new mongoose.Types.ObjectId(req.query.paymentId) },{$set : {status : "Payment Failed"}})
+   }
+   let user = req.session.user || req.user
+   const confirmedOrder = await Order.findOne({_id : new mongoose.Types.ObjectId(id) }).populate("addressId").populate("paymentId")
+   const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
+   const cartItems = await Cart.find({userId : user._id}).populate("productId")
+   console.log(confirmedOrder)
+   return res.render("user-view/order-confirmation-page.ejs",{user,confirmedOrder,productsFullList,cartItems})
+}
+async function cancelOrderWhileOrdersListing(orderId){
+    let order = await Order.findOne({_id : orderId})
+    let payment = await Payment.findOne({_id : order.paymentId})
+    if(order.status[order.status.length - 1] === "Pending"){
+        for(let i = 0 ; i < order.items.length ; i++){
+       
+            let product = await Product.findOne({_id : order.items[i].productId })
+            product.variants[order.items[i].variant].stockQuantity += order.items[i].quantity
+            await product.save()
+            order.items[i].isCancelled = true
+               
+            }
+                order.subTotal = 0
+                order.tax = 0
+                order.grandTotal = 0
+                payment.amountToBePaid = order.grandTotal
+                payment.status = "Order Cancelled"
+                payment.orderWillBeCancelledAt = null
+                order.isCancelled = true
+                order.status.push("Cancelled")
+                order.statusTimeline.cancelledAt = new Date()
+                order.willBeCancelledAt = null
+                await order.save()
+                await payment.save()
+    }
+            
 }
 const getOrders = async (req,res) => {
-    let user = req.session.user || req.user
-    const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
-    const cartItems = await Cart.find({userId : user._id}).populate("productId")
-    const orders = await Order.find({userId : user._id}).sort({createdAt : -1}).populate("paymentId")
-    res.render("user-view/user.orders-listing.ejs",{user,productsFullList,cartItems,orders})
+    try{
+        let user = req.session.user || req.user
+        const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
+        const cartItems = await Cart.find({userId : user._id}).populate("productId")
+        const pendingPaymentOrders = await Order.find({userId : user._id,willBeCancelledAt : {$lt : new Date()}})
+        for(let i = 0 ; i < pendingPaymentOrders.length ; i++){
+         await cancelOrderWhileOrdersListing(pendingPaymentOrders[i])
+        }
+        const orders = await Order.find({userId : user._id}).sort({createdAt : -1}).populate("paymentId")
+    
+        res.render("user-view/user.orders-listing.ejs",{user,productsFullList,cartItems,orders})
+    }catch(error){
+        console.log(error)
+    }
 }
 
 const getOrderDetailPage = async (req,res) => {
@@ -172,11 +368,14 @@ const cancelItem = async (req,res) => {
             order.isCancelled = true
             order.status.push("Cancelled")
             order.statusTimeline.cancelledAt = new Date()
+            order.willBeCancelledAt = null
+            payment.status = "Order Cancelled"
             payment.amountToBePaid = 0
+            payment.orderWillBeCancelledAt = null
             await order.save()
             await payment.save()
         }
-        req.session.message = "This item has been successfully cancelled.<br>Any applicable refund will be processed according to our refund policy."
+        req.session.message = "Item has been successfully cancelled.<br>Any applicable refund will be processed according to our refund policy."
         return res.status(200).json({
             success : true
         })
@@ -202,20 +401,22 @@ const cancelOrder = async (req,res) => {
             product.variants[order.items[i].variant].stockQuantity += order.items[i].quantity
             await product.save()
             order.items[i].isCancelled = true
-            order.subTotal = 0
-            order.tax = 0
-            order.grandTotal = 0
-            payment.amountToBePaid = order.grandTotal
-           
                
             }
+                order.subTotal = 0
+                order.tax = 0
+                order.grandTotal = 0
+                payment.amountToBePaid = order.grandTotal
+                payment.status = "Order Cancelled"
+                payment.orderWillBeCancelledAt = null
                 order.isCancelled = true
                 order.status.push("Cancelled")
                 order.statusTimeline.cancelledAt = new Date()
+                order.willBeCancelledAt = null
                 await order.save()
                 await payment.save()
             
-            req.session.message = "This Order has been successfully cancelled.<br>Any applicable refund will be processed according to our refund policy."
+            req.session.message = "Order has been successfully cancelled.<br>Any applicable refund will be processed according to our refund policy."
             return res.status(200).json({
                 success : true
             })
@@ -310,6 +511,12 @@ const returnOrder = async(req,res) => {
     order.save()
     res.redirect(`/orders/${id}`)
 }
+
+
+
+
+
+
 module.exports = {
     getCheckout,
     placeOrder,
@@ -319,5 +526,10 @@ module.exports = {
     cancelOrder,
     reorder,
     getInvoice,
-    returnOrder
+    returnOrder,
+    // createCheckoutSession,
+    getOrderConfirmationPage,
+    getOrderStatus,
+    retryPayment,
+    getPaymentProcessingPage
 }

@@ -1,5 +1,5 @@
 const User = require("../models/user.model.js");
-
+const Cart = require("../models/cart.model.js")
 const checkSession = async (req, res, next) => {
    
       try {
@@ -50,8 +50,19 @@ const checkSession = async (req, res, next) => {
       res.redirect("/login")
     }
   };
+
+  const isCartHavingItems = async(req,res,next) => {
+    let user = req.session.user || req.user
+    const cartLen = await Cart.find({userId : user._id}).countDocuments()
+    if(cartLen === 0){
+      res.redirect("/orders")
+    }else{
+      next()
+    }
+  }
   module.exports = {
     checkSession,
     isLogged,
-    otpSession
+    otpSession,
+    isCartHavingItems
   };

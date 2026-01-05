@@ -113,6 +113,10 @@ const orderSchema = Schema({
         type : Date,
         default : null
     },
+    willBeCancelledAt : {
+        type : Date,
+        default:null
+    },
     return: {
         isRequested: { type: Boolean, default: false },
         reason: { type: String, default : null },

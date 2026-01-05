@@ -5,6 +5,7 @@ const { connectDatabase } = require("./config/dbConnect");
 const adminRoute = require("./routes/admin.route");
 const userRoute = require("./routes/user.route");
 const path = require("path");
+const webhookHandler = require("./controllers/user.controllers/stripeWebhook.controller.js")
 require("dotenv").config();
 const app = express();
 
@@ -33,6 +34,8 @@ app.use((req, res, next) => {
     res.set("Expires", "0"),
     next();
 });
+
+app.post("/webhook/stripe",express.raw({type : "application/json"}),webhookHandler)
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

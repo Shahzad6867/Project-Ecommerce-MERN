@@ -3,14 +3,24 @@
         <div class="flex justify-between items-center mb-8">
             <div>
                 <h1 class="text-3xl font-bold">Order Details</h1>
-                <p class="text-gray-600">Order <%= order.orderId %> • Placed on <%= new Date(order.createdAt).toLocaleDateString("en-IN", {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric"
-                            })%></p>
+                <% if (!order.isCancelled) { %>
+                    <p class="text-gray-600">Order <%= order.orderId %> • Placed on <%= new Date(order.createdAt).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric"
+                    })%></p>
+                    </p>
+                  <% } else{ %>
+                    <p class="text-gray-600">Order <%= order.orderId %> • Cancelled on <%= new Date(order.statusTimeline.cancelledAt).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric"
+                    })%></p>
+                    <% } %>
+                
             </div>
             <div class="flex">
-                <button type="button" class="px-4 py-2 bg-white border text-black rounded-md hover:bg-gray-100 flex items-center" onclick="reorder('<%= order._id %>')" >
+                <button type="button" class="px-4 py-2 mr-2 bg-white border text-black rounded-md hover:bg-gray-100 flex items-center" onclick="reorder('<%= order._id %>')" >
                     <i data-feather="repeat" class="w-4 h-4 mr-2"></i> Reorder
                 </button>
                 <% if (order.status.includes("Shipped") && !order.status.includes("Return Order Requested")) { %>
@@ -20,8 +30,15 @@
                         </button>
                        </a>
                 <% } %>
+                <% if ((order.paymentId.status === "Pending" || order.paymentId.status === "Payment Failed") & order.paymentId.paymentMethod === "Pay with Stripe" && !order.status.includes("Cancelled")) { %>
+                    <a href="/orders/<%= order._id %>/pending-payment"
+                      class="px-4 py-2 mr-2 bg-yellow-400 text-gray-700 hover:bg-yellow-300 rounded-md font-bold flex items-center">
+                      <i data-feather="credit-card" class="w-4 h-4 mr-2"></i>
+                      Complete Payment
+                    </a>
+                  <% } %>
                 <% if (order.status[order.status.length - 1] === "Pending") { %>
-                    <button type="button" class="px-4 py-2 ml-2 bg-red-400 font-bold text-black rounded-md hover:bg-red-600 flex items-center" onclick="cancelOrder('<%= order._id %>')">
+                    <button type="button" class="px-4 py-2  bg-red-400 font-bold text-black rounded-md hover:bg-red-600 flex items-center" onclick="cancelOrder('<%= order._id %>')">
                         Cancel Order
                     </button>
                 <% } %>
@@ -31,6 +48,14 @@
                         Return Order
                     </button>
                 <% } %>
+                <% if (order.paymentId.status === "Pending"& order.paymentId.paymentMethod === "Pay with Stripe" && !order.status.includes("Cancelled")) { %>
+                    <a href="/orders/<%= order._id %>/pending-payment"
+                      class="px-4 py-2 bg-yellow-400 text-gray-700 hover:bg-yellow-300 rounded-md font-bold flex items-center">
+                      <i data-feather="credit-card" class="w-4 h-4 mr-2"></i>
+                      Complete Payment
+                    </a>
+                  <% } %>
+                
                 <% if (order.status.includes("Return Order Requested")) { %>
                     <button type="button" class="px-4 py-2 ml-2  font-bold bg-yellow-400  text-black rounded-md  flex items-center" disabled>
                         <i data-feather="check" class="w-4 h-4 mr-2"></i>
@@ -304,7 +329,18 @@
                         <i data-feather="credit-card" class="mr-2"></i> Payment Information
                     </h3>
                     <div class="space-y-2 text-gray-700">
-                        <p><strong>Payment Method:</strong> <%= order.paymentId.paymentMethod %></p>
+                        <p><strong>Payment Method:</strong>
+                            <% if (order.paymentId.paymentMethod === "Pay with Stripe" && (order.paymentId.status === "Pending"||order.paymentId.status === "Payment Failed" || order.paymentId.status === "Order Cancelled")) { %>
+                                Pay with Credit / Debit Card
+                              <% } else if(order.paymentId.paymentMethod === "Pay with Stripe" && order.paymentId.status === "Paid Successfully"){%>
+                                Paid with Credit / Debit Card
+                              <% } else if(order.paymentId.paymentMethod === "Pay with NovaWallet" && order.paymentId.status === "Pending") { %>
+                                  Pay with NovaWallet
+                              <% } else if(order.paymentId.paymentMethod === "Pay with NovaWallet" && order.paymentId.status === "Paid Successfully") { %>
+                                Paid with NovaWallet</p>
+                                <% } else { %>
+                                    <%= order.paymentId.paymentMethod %>
+                                 <% } %> </p>
                         <p><strong>Payment Status:</strong> <%= order.paymentId.status %></p>
                         <% if(order.paymentId.paymentDate === null){ %>
                             <p><strong>Payment Date:</strong> Not Paid Yet</p>
@@ -416,7 +452,7 @@
         function cancelItem(orderId,itemId){
             iziToast.question({
         theme : "light",
-        title : "Delete Address",
+        title : "Cancel Item",
         message : "Are you sure you want to cancel this item ?",
         position : "topCenter",
         overlay : true,
@@ -448,7 +484,7 @@
         function cancelOrder(orderId){
             iziToast.question({
         theme : "light",
-        title : "Delete Address",
+        title : "Cancel Order",
         message : "Are you sure you want to cancel this Order ?",
         position : "topCenter",
         overlay : true,

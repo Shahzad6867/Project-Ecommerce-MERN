@@ -11,7 +11,6 @@
   "license": "ISC",
   "description": "Ecommerce Project",
   "dependencies": {
-    "axios": "^1.13.2",
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.7.0",
     "cloudinary-build-url": "^0.2.4",
@@ -24,7 +23,8 @@
     "nodemailer": "^7.0.6",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
-    "puppeteer": "^24.34.0"
+    "puppeteer": "^24.34.0",
+    "stripe": "^20.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
