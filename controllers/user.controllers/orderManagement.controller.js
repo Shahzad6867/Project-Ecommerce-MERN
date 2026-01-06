@@ -507,7 +507,7 @@ const returnOrder = async(req,res) => {
     order.return.isRequested = true
     order.return.reason = req.body.returnReason
     order.return.requestedAt = new Date()
-    order.status.push("Return Requested")
+    order.status.push("Return Order Requested")
     order.save()
     res.redirect(`/orders/${id}`)
 }

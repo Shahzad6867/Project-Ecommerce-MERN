@@ -298,21 +298,7 @@
   justify-content: center;
   margin: 0 auto;
 }
-.order-card {
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-}
-.status-badge {
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-}
-.status-delivered {
-  background: #ecfdf5;
-  color: #065f46;
-}
+
 .tracking-step {
   position: relative;
   padding-right: 30px;

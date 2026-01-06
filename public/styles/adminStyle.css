@@ -4,7 +4,7 @@ body {
   margin: 0;
   padding: 0;
 }
-.sidebar {
+#sidebar {
   width: 220px;
   background: white;
   position: fixed;
@@ -14,6 +14,16 @@ body {
   overflow-y: auto;
   box-shadow: 2px 0 10px rgba(0,0,0,0.05);
   padding: 8px;
+  transition: transform 0.3s ease-in-out;
+}
+/* Closed state */
+.sidebar-closed {
+  transform: translateX(-100%);
+}
+
+/* Open state */
+.sidebar-open {
+  transform: translateX(0);
 }
 .menu-section {
   margin-top: 20px;
@@ -49,12 +59,15 @@ body {
   font-weight: 600;
   border-radius: 8px;
 }
-.main-content-for-orders {
-    margin-left: 220px;
+.main-content {
+    margin-left: 0px;
     margin-top: 70px;
     padding: 20px;
   }
-
+  .main-expanded {
+    margin-left: 220 !important;
+  }
+  
 .main-content-for-addProduct {
     margin-left: 8px;
     margin-top: 70px;
@@ -235,4 +248,47 @@ body {
 }
 .hide{
   display: none !important;
+}
+.product-card{
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+
+}
+.product-image {
+  width: 8rem;
+  height: 8rem;
+  object-fit: cover;
+}
+.order-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  transition: all 0.3s;
+}
+.order-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+}
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.status-processing {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+.status-shipped {
+  background: #f0fdf4;
+  color: #166534;
+}
+.status-delivered {
+  background: #ecfdf5;
+  color: #065f46;
+}
+.status-cancelled {
+  background: #fee2e2;
+  color: #b91c1c;
 }

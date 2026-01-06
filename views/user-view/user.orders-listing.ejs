@@ -1,4 +1,4 @@
-<%- include("../partials/user-side/navbar.ejs")%>
+<%- include("../partials/user-side/navbar.ejs",{title : "Novamart - My Orders"})%>
 <div class="flex">
 <%- include("../partials/user-side/userProfile-sidebar.ejs",{dashboardBtn : "",profileBtn : "",ordersBtn : "",shoppingCartBtn : "",addressBtn : "active disabled",walletBtn : ""})%>
         <div class="main-content">
@@ -151,13 +151,7 @@
                                 </a>
                                 
                               <% } %>
-                              <% if (!order.status.includes("Return Order Requested") && order.status.includes("Delivered")) { %>
-                                <a href="/orders/<%= order._id %>/return-order"
-                                    class="px-4 py-2 border btn-primary rounded-md font-bold flex items-center">
-                                    <i data-feather="rotate-ccw" class="w-4 h-4 mr-2"></i>
-                                    Return Order
-                                  </a>
-                              <% } %>
+                              
 
                               <% if ((order.paymentId.status === "Pending" || order.paymentId.status === "Payment Failed") & order.paymentId.paymentMethod === "Pay with Stripe" && !order.status.includes("Cancelled")) { %>
                                 <a href="/orders/<%= order._id %>/pending-payment"

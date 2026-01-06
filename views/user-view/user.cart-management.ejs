@@ -1,4 +1,4 @@
-<%- include("../partials/user-side/navbar.ejs")%>
+<%- include("../partials/user-side/navbar.ejs",{title : "Novamart - My Cart"})%>
 <div class="main-content">
     <div class="flex justify-between items-center mb-8">
      <h1 class="text-3xl font-bold">My Cart (<span id="cartHeadItemCountInCart" ><%= cartItemsCount[0]?.totalQuantity  || 0 %></span>)</h1>
