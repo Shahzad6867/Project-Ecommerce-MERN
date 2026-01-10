@@ -78,8 +78,98 @@
           </div>
           
         <div class="flex items-center gap-3 mt-3">
-          <p class="text-3xl font-bold text-black">$<%= (product.variants[variant].price).toFixed(2) %></p>
-          <!-- <p class="line-through text-gray-400 text-lg"></p> -->
+            <% let productOfferPrice = 0 %>
+                  <% let categoryOfferPrice = 0 %>
+                  <% let offerPrice = 0 %>
+                  <% let now = new Date() %>
+                  <% if (product.categoryOfferId !== null && product.variants[variant].productOfferId !== undefined && product.variants[variant].productOfferId.startDate <= now  && product.variants[variant].productOfferId.endDate >= now && product.categoryOfferId.startDate <= now  && product.categoryOfferId.endDate >= now) { %>
+                          
+                    <% if (product.variants[variant].productOfferId.discountType === "percentage") { %>
+                      <%  productOfferPrice = product.variants[variant].price - ((product.variants[variant].price * product.variants[variant].productOfferId.discountValue ) / 100) %>
+                    <% } else if(product.variants[variant].productOfferId.discountType === "flat"){%>
+                        <% productOfferPrice = product.variants[variant].price - product.variants[variant].productOfferId.discountValue  %>
+                    <% } %>
+
+                    <% if (product.categoryOfferId.discountType === "percentage") { %>
+                        <% let tempPrice1 = product.variants[variant].price - ((product.variants[variant].price * product.categoryOfferId.discountValue ) / 100) %>
+                        <% let tempPrice2 = product.variants[variant].price - product.categoryOfferId.maxDiscountAmount  %>
+                       
+                            <% if (tempPrice2 > tempPrice1) { %>
+                                <% categoryOfferPrice = tempPrice2 %>
+                                <% isMaxDiscountApplied = true %>
+                            <% } else {%>
+                                <% categoryOfferPrice = tempPrice1 %>
+                            <% } %>
+                     <% } else if(product.categoryOfferId.discountType === "flat"){%>
+                          <% if (product.variants[variant].price > product.categoryOfferId.productMinPrice) { %>
+                            <% categoryOfferPrice = product.variants[variant].price - product.categoryOfferId.discountValue %>
+                          <% } %>
+                      <% } %>
+
+                      <% offerPrice = (productOfferPrice < categoryOfferPrice) ? productOfferPrice : categoryOfferPrice %>
+                      
+            <% } else if(product.categoryOfferId !== null && product.variants[variant].productOfferId !== undefined && product.variants[variant].productOfferId.startDate > now && product.categoryOfferId.startDate <= now  && product.categoryOfferId.endDate >= now) { %>
+                <% if(product.categoryOfferId.startDate <= now  && product.categoryOfferId.endDate >= now){%>
+                    <% if (product.categoryOfferId.discountType === "percentage") { %>
+                        <% let tempPrice1 = product.variants[variant].price - ((product.variants[variant].price * product.categoryOfferId.discountValue ) / 100) %>
+                        <% let tempPrice2 = product.variants[variant].price - product.categoryOfferId.maxDiscountAmount  %>
+                       
+                            <% if (tempPrice2 > tempPrice1) { %>
+                                <% offerPrice = tempPrice2 %>
+                                <% isMaxDiscountApplied = true %>
+                            <% } else {%>
+                                <% offerPrice = tempPrice1 %>
+                            <% } %>
+                     <% } else if(product.variants[variant].productOfferId.discountType === "flat"){%>
+                          <% if (product.variants[variant].price > product.variants[variant].productOfferId.minProductPrice) { %>
+                            <% offerPrice = product.variants[variant].price - product.variants[variant].productOfferId.discountValue %>
+                          <% } %>
+                      <% } %>
+                      
+                <% } %>
+            <% } else if(product.categoryOfferId !== null && product.variants[variant].productOfferId === undefined && product.categoryOfferId.startDate <= now  && product.categoryOfferId.endDate >= now){%>
+               
+                    <% if (product.categoryOfferId.discountType === "percentage") { %>
+                        <% let tempPrice1 = product.variants[variant].price - ((product.variants[variant].price * product.categoryOfferId.discountValue ) / 100) %>
+                        <% let tempPrice2 = product.variants[variant].price - product.categoryOfferId.maxDiscountAmount  %>
+                       
+                            <% if (tempPrice2 > tempPrice1) { %>
+                                <% offerPrice = tempPrice2 %>
+                                <% isMaxDiscountApplied = true %>
+                            <% } else {%>
+                                <% offerPrice = tempPrice1 %>
+                            <% } %>
+                     <% } else if(product.variants[variant].productOfferId.discountType === "flat"){%>
+                          <% if (product.variants[variant].price > product.variants[variant].productOfferId.minProductPrice) { %>
+                            <% offerPrice = product.variants[variant].price - product.variants[variant].productOfferId.discountValue %>
+                          <% } %>
+                      <% } %>
+                      
+               
+            <% } else if(product.categoryOfferId !== null && product.variants[variant].productOfferId !== undefined && product.categoryOfferId.startDate > now && product.variants[variant].productOfferId.startDate <= now && product.variants[variant].productOfferId.endDate >= now){ %>
+                <% if (product.variants[variant].productOfferId.discountType === "percentage") { %>
+                    <%  offerPrice = product.variants[variant].price - ((product.variants[variant].price * product.variants[variant].productOfferId.discountValue ) / 100) %>
+                  <% } else if(product.variants[variant].productOfferId.discountType === "flat"){%>
+                      <% offerPrice = product.variants[variant].price - product.variants[variant].productOfferId.discountValue  %>
+                  <% } %>
+                 
+            <% } else if(product.categoryOfferId === null && product.variants[variant].productOfferId !== undefined && product.variants[variant].productOfferId.startDate <= now && product.variants[variant].productOfferId.endDate >= now){ %>
+                <% if (product.variants[variant].productOfferId.discountType === "percentage") { %>
+                    <%  offerPrice = product.variants[variant].price - ((product.variants[variant].price * product.variants[variant].productOfferId.discountValue ) / 100) %>
+                  <% } else if(product.variants[variant].productOfferId.discountType === "flat"){%>
+                      <% offerPrice = product.variants[variant].price - product.variants[variant].productOfferId.discountValue  %>
+                  <% } %>
+                  
+            <% } %>
+            <% if (offerPrice > 0 && offerPrice < product.variants[variant].price ) { %>
+                <p class="text-3xl font-bold text-black">$ <span id="price<%= product._id  %><%= variant %>" ><%= offerPrice.toFixed(2) %></span></p>
+                <p class="line-through text-gray-400 text-lg">$ <%= (product.variants[variant].price).toFixed(2) %></p>
+                <p class="text-blue-600 text-md font-medium"><%= (((product.variants[variant].price - offerPrice) / product.variants[variant].price) * 100).toFixed(0) %>% off</p> 
+            <% } else {%>
+                <p class="text-3xl font-bold text-black">$ <span id="price<%= product._id  %><%= variant %>" ><%= (product.variants[variant].price).toFixed(2) %></span></p>
+            <% } %>
+          
+          
         </div>
         <div class=" items-center gap-3 mt-3">
             <p class="text-gray-600 flex"><span class="iconify text-green-400" data-icon="charm-tick" style="width: 20;height: 20;"></span>&ensp;Free Delivery</p>
@@ -140,9 +230,94 @@
         <!-- Card -->
          <% for( let i = 0; i < relatedProduct.length; i++ ) { %>
          <% for( let j = 0; j < relatedProduct[i].variants.length; j++ ) { %>
+            <% let productOfferPrice = 0 %>
+            <% let categoryOfferPrice = 0 %>
+            <% let offerPrice = 0 %>
+            <% let now = new Date() %>
+                <% if ( relatedProduct[i].variants[j].stockQuantity !== 0 && relatedProduct[i].variants[j].stockStatus !== "Out of Stock" ) { %>
           <% if (!relatedProduct[i].categoryId.isDeleted && !relatedProduct[i].brandId.isDeleted) { %>
            <% if (!relatedProduct[i].isDeleted) { %>
+                    <% if (relatedProduct[i].categoryOfferId !== null && relatedProduct[i].variants[j].productOfferId !== undefined && relatedProduct[i].variants[j].productOfferId.startDate <= now  && relatedProduct[i].variants[j].productOfferId.endDate >= now && relatedProduct[i].categoryOfferId.startDate <= now  && relatedProduct[i].categoryOfferId.endDate >= now) { %>
+                                            
+                        <% if (relatedProduct[i].variants[j].productOfferId.discountType === "percentage") { %>
+                        <%  productOfferPrice = relatedProduct[i].variants[j].price - ((relatedProduct[i].variants[j].price * relatedProduct[i].productOfferId.discountValue ) / 100) %>
+                        <% } else if(relatedProduct[i].variants[j].productOfferId.discountType === "flat"){%>
+                            <% productOfferPrice = relatedProduct[i].variants[j].price - relatedProduct[i].variants[j].productOfferId.discountValue  %>
+                        <% } %>
+
+                        <% if (relatedProduct[i].categoryOfferId.discountType === "percentage") { %>
+                            <% let tempPrice1 = relatedProduct[i].variants[j].price - ((relatedProduct[i].variants[j].price * relatedProduct[i].categoryOfferId.discountValue ) / 100) %>
+                            <% let tempPrice2 = relatedProduct[i].variants[j].price - relatedProduct[i].categoryOfferId.maxDiscountAmount  %>
+                        
+                                <% if (tempPrice2 > tempPrice1) { %>
+                                    <% categoryOfferPrice = tempPrice2 %>
+                                    
+                                <% } else {%>
+                                    <% categoryOfferPrice = tempPrice1 %>
+                                <% } %>
+                        <% } else if(relatedProduct[i].variants[j].categoryOfferId.discountType === "flat"){%>
+                            <% if (relatedProduct[i].variants[j].price > relatedProduct[i].categoryOfferId.productMinPrice) { %>
+                                <% categoryOfferPrice = relatedProduct[i].variants[j].price - relatedProduct[i].categoryOfferId.discountValue %>
+                            <% } %>
+                        <% } %>
+
+                        <% offerPrice = (productOfferPrice < categoryOfferPrice) ? productOfferPrice : categoryOfferPrice %>
+                        
+                <% } else if(relatedProduct[i].categoryOfferId !== null && relatedProduct[i].variants[j].productOfferId !== undefined && relatedProduct[i].variants[j].productOfferId.startDate > now && relatedProduct[i].categoryOfferId.startDate <= now  && relatedProduct[i].categoryOfferId.endDate >= now) { %>
+                    <% if(relatedProduct[i].categoryOfferId.startDate <= now  && relatedProduct[i].categoryOfferId.endDate >= now){%>
+                        <% if (relatedProduct[i].categoryOfferId.discountType === "percentage") { %>
+                            <% let tempPrice1 = relatedProduct[i].variants[j].price - ((relatedProduct[i].variants[j].price * relatedProduct[i].categoryOfferId.discountValue ) / 100) %>
+                            <% let tempPrice2 = relatedProduct[i].variants[j].price - relatedProduct[i].categoryOfferId.maxDiscountAmount  %>
+                        
+                                <% if (tempPrice2 > tempPrice1) { %>
+                                    <% offerPrice = tempPrice2 %>
+                                
+                                <% } else {%>
+                                    <% offerPrice = tempPrice1 %>
+                                <% } %>
+                        <% } else if(relatedProduct[i].variants[j].productOfferId.discountType === "flat"){%>
+                            <% if (relatedProduct[i].variants[j].price > relatedProduct[i].variants[j].productOfferId.productMinPrice) { %>
+                                <% offerPrice = relatedProduct[i].variants[j].price - relatedProduct[i].variants[j].productOfferId.discountValue %>
+                            <% } %>
+                        <% } %>
+                        
+                    <% } %>
+                <% } else if(relatedProduct[i].categoryOfferId !== null && relatedProduct[i].variants[j].productOfferId === undefined && relatedProduct[i].categoryOfferId.startDate <= now  && relatedProduct[i].categoryOfferId.endDate >= now){%>
+                
+                        <% if (relatedProduct[i].categoryOfferId.discountType === "percentage") { %>
+                            <% let tempPrice1 = relatedProduct[i].variants[j].price - ((relatedProduct[i].variants[j].price * relatedProduct[i].categoryOfferId.discountValue ) / 100) %>
+                            <% let tempPrice2 = relatedProduct[i].variants[j].price - relatedProduct[i].categoryOfferId.maxDiscountAmount  %>
+                        
+                                <% if (tempPrice2 > tempPrice1) { %>
+                                    <% offerPrice = tempPrice2 %>
+                                    <% isMaxDiscountApplied = true %>
+                                <% } else {%>
+                                    <% offerPrice = tempPrice1 %>
+                                <% } %>
+                        <% } else if(relatedProduct[i].variants[j].categoryOfferId.discountType === "flat"){%>
+                            <% if (relatedProduct[i].variants[j].price > relatedProduct[i].categoryOfferId.productMinPrice) { %>
+                                <% offerPrice = relatedProduct[i].variants[j].price - relatedProduct[i].categoryOfferId.discountValue %>
+                            <% } %>
+                        <% } %>
+                        
+                
+                <% } else if(relatedProduct[i].categoryOfferId !== null && relatedProduct[i].variants[j].productOfferId !== undefined && relatedProduct[i].categoryOfferId.startDate > now && relatedProduct[i].variants[j].productOfferId.startDate <= now && relatedProduct[i].variants[j].productOfferId.endDate >= now){ %>
+                    <% if (relatedProduct[i].variants[j].productOfferId.discountType === "percentage") { %>
+                        <%  offerPrice = relatedProduct[i].variants[j].price - ((relatedProduct[i].variants[j].price * relatedProduct[i].variants[j].productOfferId.discountValue ) / 100) %>
+                    <% } else if(relatedProduct[i].variants[j].productOfferId.discountType === "flat"){%>
+                        <% offerPrice = relatedProduct[i].variants[j].price - relatedProduct[i].variants[j].productOfferId.discountValue  %>
+                    <% } %>
+                    
+                <% } else if(relatedProduct[i].categoryOfferId === null && relatedProduct[i].variants[j].productOfferId !== undefined && relatedProduct[i].variants[j].productOfferId.startDate <= now && relatedProduct[i].variants[j].productOfferId.endDate >= now){ %>
+                    <% if (relatedProduct[i].variants[j].productOfferId.discountType === "percentage") { %>
+                        <%  offerPrice = relatedProduct[i].variants[j].price - ((relatedProduct[i].variants[j].price * relatedProduct[i].variants[j].productOfferId.discountValue ) / 100) %>
+                    <% } else if(relatedProduct[i].variants[j].productOfferId.discountType === "flat"){%>
+                        <% offerPrice = relatedProduct[i].variants[j].price - relatedProduct[i].variants[j].productOfferId.discountValue  %>
+                    <% } %>
+                    
+                <% } %>
             <% if (String(relatedProduct[i]._id) !== String(product._id)) { %>
+               
                 <div class="product-card mr-2 bg-white rounded-lg shadow-sm p-4 transition-all w-[240px] flex-shrink-0">
                   <div class="h-40 mb-3 relative">
                       <img src="<%= relatedProduct[i].variants[j].productImages[0] %>" alt="Product" class="w-full h-full object-contain">
@@ -173,18 +348,49 @@
                       <span class="font-regular text-gray-400 text-xs">Size : <a href="#" ><%= (relatedProduct[i].variants[j].size) %></a></span>
                   </div>
                   <div class="flex items-center mb-2">
-                      <span class="font-bold text-lg">$<%= (relatedProduct[i].variants[j].price ).toFixed(2) %></span>
-                      <!-- <span class="text-gray-500 text-sm line-through ml-2">$</span>
-                      <span class="text-green-600 text-xs font-medium ml-2">38% off</span> -->
+                    <% if (offerPrice > 0 && offerPrice < relatedProduct[i].variants[j].price ) { %>
+                        <span class="font-bold text-lg">$ <span id="price<%= relatedProduct[i]._id  %><%= j %>" ><%= offerPrice.toFixed(2) %></span></span>
+                        <span class="text-gray-500 text-sm line-through ml-2">$<%= (relatedProduct[i].variants[j].price).toFixed(2)  %></span>
+                        <span class="text-green-600 text-xs font-medium ml-2"><%= (((relatedProduct[i].variants[j].price - offerPrice) / relatedProduct[i].variants[j].price) * 100).toFixed(0) %>% off</span>   
+                    <% } else {%>
+                        <span class="font-bold text-lg">$ <span id="price<%= relatedProduct[i]._id %><%= j %>"><%= (relatedProduct[i].variants[j].price).toFixed(2) %></span></span>
+                    <% } %>
                   </div>
-                  <button class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-medium text-sm flex items-center justify-center">
-                      <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> Add to Cart
-                  </button>
+                        <% if (isProductInCart) { %>
+                            <div class="flex  justify-between ">
+                            <button type="button" id="addToCartBtn<%= relatedProduct[i]._id %><%= j %>" class="w-[0%] bg-yellow-400 hover:bg-yellow-500 text-gray-900  rounded-md font-medium text-sm flex items-center justify-center" onclick="addToCartInitially(this,'<%- i %>','<%- j %>','<%- relatedProduct[i]._id %>','<%- j %>')">
+                                <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> 
+                            </button>
+                                <div id="incDecQtyDiv<%= relatedProduct[i]._id %><%= j %>" class="flex items-center justify-between w-[100%]  rounded-lg   border border-black w-full ">
+                                    <button id="decQtyBtn<%= relatedProduct[i]._id %><%= j %>" type="button" class="text-center flex justify-center w-full h-full bg-yellow-400 hover:bg-yellow-300 py-1 rounded-l-lg"  onclick="decrementQuantity('<%= i %>','<%= j %>','<%= relatedProduct[i]._id %>')">
+                                        <i data-feather="minus"></i>
+                                    </button> 
+                                    <input type="text" id="quantity<%= relatedProduct[i]._id %><%= j %>" value="<%= isProductInCart.quantity %>" class=" w-[5rem] px-2 text-xl bg-white font-bold py-[0.22rem] border-black-x-sides text-center" >
+                                    <button id="incQtyBtn<%= relatedProduct[i]._id %><%= j %>" type="button" class="text-center flex justify-center w-full h-full py-1 bg-yellow-400 hover:bg-yellow-300 rounded-r-lg"  onclick="incrementQuantity('<%= i %>','<%= j %>','<%= relatedProduct[i]._id %>')">
+                                        <i data-feather="plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                    <% } else {%>
+                        <!-- <a  href="/home/cart?productId=&variant=&quantity=1"> -->
+                            <div id="incDecQtyDiv<%= relatedProduct[i]._id %><%= j %>" class="flex items-center justify-between w-[100%] bg-yellow-400  border border-black rounded-lg hidden">
+                                <button id="decQtyBtn<%= relatedProduct[i]._id %><%= j %>" type="button" class="text-center flex justify-center w-full h-full bg-yellow-400 hover:bg-yellow-300 py-1 rounded-l-lg" onclick="decrementQuantity('<%= i %>','<%= j %>','<%= relatedProduct[i]._id %>')">
+                                    <i data-feather="minus"></i>
+                                </button> 
+                                <input type="text" id="quantity<%= relatedProduct[i]._id %><%= j %>" value="1" class=" w-[5rem] bg-white px-2 text-xl  py-[0.22rem] border-black-x-sides text-center" >
+                                <button id="incQtyBtn<%= relatedProduct[i]._id %><%= j %>" type="button" class="text-center flex justify-center w-full h-full py-1 bg-yellow-400 hover:bg-yellow-300 rounded-r-lg" onclick="incrementQuantity('<%= i %>','<%= j %>','<%= relatedProduct[i]._id %>')">
+                                    <i data-feather="plus"></i>
+                                </button>
+                            </div>
+                            <button type="button" id="addToCartBtn<%= relatedProduct[i]._id %><%= j %>" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-medium text-sm flex items-center justify-center" onclick="addToCartInitially(this,'<%- i %>','<%- j %>','<%- relatedProduct[i]._id %>')">
+                                <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> Add to Cart
+                            </button>
+                    <% } %>
               </div>  
                           
               <% } else {%>
                 <% if (variant != j) { %>
-                  <div class="product-card bg-white rounded-lg shadow-sm p-4 transition-all w-[240px] flex-shrink-0">
+                  <div class="product-card bg-white mr-2 rounded-lg shadow-sm p-4 transition-all w-[240px] flex-shrink-0 ">
                     <div class="h-40 mb-3 relative">
                         <img src="<%= relatedProduct[i].variants[j].productImages[0] %>" alt="Product" class="w-full h-full object-contain">
                         <button class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
@@ -214,9 +420,14 @@
                         <span class="font-regular text-gray-400 text-xs">Size : <a href="#" ><%= (relatedProduct[i].variants[j].size) %></a></span>
                     </div>
                     <div class="flex items-center mb-2">
-                        <span class="font-bold text-lg">$<%= (relatedProduct[i].variants[j].price ).toFixed(2) %></span>
-                        <!-- <span class="text-gray-500 text-sm line-through ml-2"></span>
-                        <span class="text-green-600 text-xs font-medium ml-2">38% off</span> -->
+                        
+                        <% if (offerPrice > 0 && offerPrice < relatedProduct[i].variants[j].price ) { %>
+                            <span class="font-bold text-lg">$ <span id="price<%= relatedProduct[i]._id  %><%= j %>" ><%= offerPrice.toFixed(2) %></span></span>
+                            <span class="text-gray-500 text-sm line-through ml-2">$<%= (relatedProduct[i].variants[j].price).toFixed(2)  %></span>
+                            <span class="text-green-600 text-xs font-medium ml-2"><%= (((relatedProduct[i].variants[j].price - offerPrice) / relatedProduct[i].variants[j].price) * 100).toFixed(0) %>% off</span>   
+                        <% } else {%>
+                            <span class="font-bold text-lg">$ <span id="price<%= relatedProduct[i]._id %><%= j %>"><%= (relatedProduct[i].variants[j].price).toFixed(2) %></span></span>
+                        <% } %>
                     </div>
                     <% let isProductInCart = cartItems.find(item =>  String(relatedProduct[i]._id) === String(item.productId._id) && item.variant === j ) || null %>
                     <% if (isProductInCart) { %>
@@ -252,6 +463,7 @@
                 </div>  
                 <% } %>
                 <% }%>
+                <% }%>
              <% } %>
            <% } %>
          <% } %>
@@ -266,6 +478,7 @@
   feather.replace();
   function addToCartInitiallyFromProductPage(input,variant,productId){
         let cartItemQty = document.getElementById("cartItemQty")
+        let price = Number(document.getElementById(`price${productId}${variant}`).innerText)
         let cartItemsDiv = document.getElementById("cartItemsDiv")
         let myCartHead = document.getElementById("cartHeadItemCount")
         let subTotal = document.getElementById("subTotal")
@@ -306,7 +519,7 @@
                                                          <p class="text-sm text-gray-600 mt-[0.1rem]">Quantity : <strong class="text-black font-bold" id="cartItemQty${productId}${variant}">1</strong></p>
                                                      </a>
                                                     <div class="flex justify-between items-center mt-1">
-                                                        <h2 class="text-lg text-black font-bold ">$ ${data.product.variants[variant].price}</h2>
+                                                        <h2 class="text-lg text-black font-bold ">$ ${price}</h2>
                                                        
                                                             <button type="button" class="text-sm  flex items-center justify-center rounded-lg hover:text-red-500  px-2 z-50  text-black" onclick="deleteItemFromCartFromProductPage('${data.cart._id}','${data.product._id}',${variant})">
                                                                 <i data-feather="trash-2" class="w-5 h-5 mr-1"></i>
@@ -317,7 +530,7 @@
                                                 
                                             </div>
                                         </div>` + cartItemsDiv.innerHTML
-                    subTotal.innerText = (Number(subTotal.innerText) + data.product.variants[variant].price).toFixed(2)
+                    subTotal.innerText = (Number(subTotal.innerText) + price).toFixed(2)
                     feather.replace()
                     iziToast.info({
                         title : "Cart",
@@ -348,6 +561,7 @@
     }
     function incrementQuantityFromProductPage(variantIndex,productId){
         let quantity = document.getElementById(`quantity${productId}${variantIndex}`)
+        let price = Number(document.getElementById(`price${productId}${variantIndex}`).innerText)
         let addToCartBtn = document.getElementById(`addToCartBtn${productId}${variantIndex}`)
         let cartItemQtyToBeUpdated = document.getElementById(`cartItemQty${productId}${variantIndex}`)
         let myCartHead = document.getElementById("cartHeadItemCount")
@@ -368,7 +582,7 @@
             .then(data => {
                 
                 if (data.message === "Quantity has been updated in Cart") {
-                    subTotal.innerText = (Number(subTotal.innerText) + ((counter * data.product.variants[variantIndex].price) - (Number(quantity.value) * data.product.variants[variantIndex].price))).toFixed(2)
+                    subTotal.innerText = (Number(subTotal.innerText) + ((counter * price) - (Number(quantity.value) * price))).toFixed(2)
                     quantity.value = counter
                     cartItemQtyToBeUpdated.innerText = Number(cartItemQtyToBeUpdated.innerText) + 1
                     cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) + 1
@@ -418,6 +632,7 @@
     }
     function decrementQuantityFromProductPage(variantIndex,productId){
         let quantity = document.getElementById(`quantity${productId}${variantIndex}`)
+        let price = Number(document.getElementById(`price${productId}${variantIndex}`).innerText)
         let addToCartBtn = document.getElementById(`addToCartBtn${productId}${variantIndex}`)
         let cartItemQtyToBeUpdated = document.getElementById(`cartItemQty${productId}${variantIndex}`)
         let myCartHead = document.getElementById("cartHeadItemCount")
@@ -436,7 +651,7 @@
                 document.getElementById(`incDecQtyDiv`).classList.add("hidden")
                 myCartHead.innerText = Number(myCartHead.innerText) - 1
                 cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - 1
-                subTotal.innerText = (Number(subTotal.innerText) - ( (Number(quantity.value) * data.product.variants[variantIndex].price) - (counter * data.product.variants[variantIndex].price))).toFixed(2)
+                subTotal.innerText = (Number(subTotal.innerText) - ( (Number(quantity.value) * price) - (counter * price))).toFixed(2)
                 cartItem.remove()
                 if(Number(cartItemQtyNotifier.innerText) === 0){
                     document.getElementById("checkoutBtn").disabled = true
@@ -460,7 +675,7 @@
             .then(res => res.json())
             .then(data => {
                if (data.message === "Quantity has been updated in Cart") {
-                subTotal.innerText = (Number(subTotal.innerText) - ( (Number(quantity.value) * data.product.variants[variantIndex].price) - (counter * data.product.variants[variantIndex].price))).toFixed(2)
+                subTotal.innerText = (Number(subTotal.innerText) - ( (Number(quantity.value) * price) - (counter * price))).toFixed(2)
                 quantity.value = counter
                 cartItemQtyToBeUpdated.innerText = Number(cartItemQtyToBeUpdated.innerText) - 1
                 cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - 1
@@ -499,6 +714,7 @@
     function deleteItemFromCartFromProductPage(cartId,productId,variantIndex) {
         let quantity = document.getElementById(`quantity${productId}${variantIndex}`)
         let addToCartBtn = document.getElementById(`addToCartBtn${productId}${variantIndex}`)
+        let price = Number(document.getElementById(`price${productId}${variantIndex}`).innerText)
         let myCartHead = document.getElementById("cartHeadItemCount")
         let cartItemQtyNotifier = document.getElementById("cartItemQty")
         let subTotal = document.getElementById("subTotal")
@@ -511,7 +727,7 @@
                 myCartHead.innerText = Number(myCartHead.innerText) - Number(quantity.value)
                 cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - Number(quantity.value)
                 quantity.value = 1
-                subTotal.innerText = (Number(subTotal.innerText) -  (Number(quantity.value) * data.product.variants[variantIndex].price) ).toFixed(2)
+                subTotal.innerText = (Number(subTotal.innerText) -  (Number(quantity.value) * price) ).toFixed(2)
                 cartItem.remove()
                 if(document.getElementById("cartItemsDiv").children.length === 0){
                     document.getElementById("cartItemsDiv").innerHTML = `<div id="nothingInCartCard" class="flex  items-center justify-center border border-gray-400 w-[96%] text-left px-3 py-8 text-gray-700  rounded-lg m-2">

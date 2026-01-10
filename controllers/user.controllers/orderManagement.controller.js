@@ -14,7 +14,7 @@ require("dotenv").config()
 const getCheckout = async (req,res) => {
     let user = req.session.user || req.user
     const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
-    const cartItems = await Cart.find({userId : user._id}).populate("productId")
+    const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
     const address = await Address.find({userId : user._id,isDefault : false})
     const defaultAddress = await Address.findOne({userId : user._id,isDefault : true})
     res.render("user-view/user.checkout-page.ejs",{user,productsFullList,cartItems,address,defaultAddress})
@@ -160,7 +160,7 @@ const placeOrder = async (req,res) => {
     if(req.body.paymentMethod === "Cash on Delivery"){
         confirmedOrder = await Order.findOne({_id : confirmedOrder._id }).populate("addressId").populate("paymentId")
         const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
-        const cartItems = await Cart.find({userId : user._id}).populate("productId")
+        const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
         return res.render("user-view/order-confirmation-page.ejs",{user,confirmedOrder,productsFullList,cartItems})
     }else if(req.body.paymentMethod === "Pay with Stripe"){
         try{
@@ -282,7 +282,7 @@ const getOrderConfirmationPage = async (req,res) => {
    let user = req.session.user || req.user
    const confirmedOrder = await Order.findOne({_id : new mongoose.Types.ObjectId(id) }).populate("addressId").populate("paymentId")
    const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
-   const cartItems = await Cart.find({userId : user._id}).populate("productId")
+   const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
    console.log(confirmedOrder)
    return res.render("user-view/order-confirmation-page.ejs",{user,confirmedOrder,productsFullList,cartItems})
 }
@@ -317,7 +317,7 @@ const getOrders = async (req,res) => {
     try{
         let user = req.session.user || req.user
         const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
-        const cartItems = await Cart.find({userId : user._id}).populate("productId")
+        const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
         const pendingPaymentOrders = await Order.find({userId : user._id,willBeCancelledAt : {$lt : new Date()}})
         for(let i = 0 ; i < pendingPaymentOrders.length ; i++){
          await cancelOrderWhileOrdersListing(pendingPaymentOrders[i])
@@ -333,7 +333,7 @@ const getOrders = async (req,res) => {
 const getOrderDetailPage = async (req,res) => {
     let user = req.session.user || req.user
     const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
-    const cartItems = await Cart.find({userId : user._id}).populate("productId")
+    const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
     const order = await Order.findOne({_id : req.params.id}).populate("addressId").populate("paymentId")
     console.log(order)
     res.render("user-view/user.order-details-page.ejs",{user,productsFullList,cartItems,order})

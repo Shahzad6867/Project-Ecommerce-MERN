@@ -43,12 +43,18 @@
                 <div >
                     <fieldset>
                         <legend>Featured</legend>
-                    
-                        <input type="radio" id="yes" name="isFeatured" value="true">
+                    <% if (product[0].isFeatured === true) { %>
+                        <input type="radio" id="yes" name="isFeatured" value="true" checked>
                         <label for="yes">Yes</label><br>
-                    
+                        <input type="radio" id="no" name="isFeatured" value="false" >
+                        <label for="no">No</label><br>
+                    <% } else {%>
+                        <input type="radio" id="yes" name="isFeatured" value="true" >
+                        <label for="yes">Yes</label><br>
                         <input type="radio" id="no" name="isFeatured" value="false" checked>
                         <label for="no">No</label><br>
+                        <% } %>
+                           
                     </fieldset>
                 </div>
                 

@@ -4,7 +4,7 @@
   <div class="flex max-w-7xl mx-auto my-10 px-4 gap-8">
     
     <!-- Sidebar Filters -->
-    <aside class="w-1/4 bg-white p-5 rounded-xl shadow-sm">
+    <aside class="w-1/4 h-[50%] bg-white p-5 rounded-xl shadow-sm">
       <h2 class="text-lg font-semibold mb-4">Filters</h2>
 
       <form action="/shop/filter" method="POST" class="space-y-6">
@@ -74,7 +74,90 @@
           <% if (!products[i].categoryId.isDeleted && !products[i].brandId.isDeleted) { %>
             <% if (!products[i].isDeleted) { %>
                 <% for( let j = 0; j < products[i].variants.length; j++ ) { %>
-                  <% if ( products[i].variants[j].stockQuantity !== 0 && products[i].variants[j].stockStatus !== "Out of Stock" ) { %>
+                  <% let productOfferPrice = 0 %>
+                  <% let categoryOfferPrice = 0 %>
+                  <% let offerPrice = 0 %>
+                  <% let now = new Date() %>
+              <% if ( products[i].variants[j].stockQuantity !== 0 && products[i].variants[j].stockStatus !== "Out of Stock" ) { %>
+                  <% if (products[i].categoryOfferId !== null && products[i].variants[j].productOfferId !== undefined && products[i].variants[j].productOfferId.startDate <= now  && products[i].variants[j].productOfferId.endDate >= now && products[i].categoryOfferId.startDate <= now  && products[i].categoryOfferId.endDate >= now) { %>
+                          
+                      <% if (products[i].variants[j].productOfferId.discountType === "percentage") { %>
+                        <%  productOfferPrice = products[i].variants[j].price - ((products[i].variants[j].price * products[i].variants[j].productOfferId.discountValue ) / 100) %>
+                      <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
+                          <% productOfferPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue  %>
+                      <% } %>
+
+                      <% if (products[i].categoryOfferId.discountType === "percentage") { %>
+                          <% let tempPrice1 = products[i].variants[j].price - ((products[i].variants[j].price * products[i].categoryOfferId.discountValue ) / 100) %>
+                          <% let tempPrice2 = products[i].variants[j].price - products[i].categoryOfferId.maxDiscountAmount  %>
+                         
+                              <% if (tempPrice2 > tempPrice1) { %>
+                                  <% categoryOfferPrice = tempPrice2 %>
+                                  <% isMaxDiscountApplied = true %>
+                              <% } else {%>
+                                  <% categoryOfferPrice = tempPrice1 %>
+                              <% } %>
+                       <% } else if(products[i].categoryOfferId.discountType === "flat"){%>
+                            <% if (products[i].variants[j].price > products[i].categoryOfferId.productMinPrice) { %>
+                              <% categoryOfferPrice = products[i].variants[j].price - products[i].categoryOfferId.discountValue %>
+                            <% } %>
+                        <% } %>
+
+                        <% offerPrice = (productOfferPrice < categoryOfferPrice) ? productOfferPrice : categoryOfferPrice %>
+                        
+              <% } else if(products[i].categoryOfferId !== null && products[i].variants[j].productOfferId !== undefined && products[i].variants[j].productOfferId.startDate > now && products[i].categoryOfferId.startDate <= now  && products[i].categoryOfferId.endDate >= now) { %>
+                  <% if(products[i].categoryOfferId.startDate <= now  && products[i].categoryOfferId.endDate >= now){%>
+                      <% if (products[i].categoryOfferId.discountType === "percentage") { %>
+                          <% let tempPrice1 = products[i].variants[j].price - ((products[i].variants[j].price * products[i].categoryOfferId.discountValue ) / 100) %>
+                          <% let tempPrice2 = products[i].variants[j].price - products[i].categoryOfferId.maxDiscountAmount  %>
+                         
+                              <% if (tempPrice2 > tempPrice1) { %>
+                                  <% offerPrice = tempPrice2 %>
+                                  <% isMaxDiscountApplied = true %>
+                              <% } else {%>
+                                  <% offerPrice = tempPrice1 %>
+                              <% } %>
+                       <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
+                            <% if (products[i].variants[j].price > products[i].variants[j].productOfferId.minProductPrice) { %>
+                              <% offerPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue %>
+                            <% } %>
+                        <% } %>
+                        
+                  <% } %>
+              <% } else if(products[i].categoryOfferId !== null && products[i].variants[j].productOfferId === undefined && products[i].categoryOfferId.startDate <= now  && products[i].categoryOfferId.endDate >= now){%>
+                 
+                      <% if (products[i].categoryOfferId.discountType === "percentage") { %>
+                          <% let tempPrice1 = products[i].variants[j].price - ((products[i].variants[j].price * products[i].categoryOfferId.discountValue ) / 100) %>
+                          <% let tempPrice2 = products[i].variants[j].price - products[i].categoryOfferId.maxDiscountAmount  %>
+                         
+                              <% if (tempPrice2 > tempPrice1) { %>
+                                  <% offerPrice = tempPrice2 %>
+                                  <% isMaxDiscountApplied = true %>
+                              <% } else {%>
+                                  <% offerPrice = tempPrice1 %>
+                              <% } %>
+                       <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
+                            <% if (products[i].variants[j].price > products[i].variants[j].productOfferId.minProductPrice) { %>
+                              <% offerPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue %>
+                            <% } %>
+                        <% } %>
+                        
+                 
+              <% } else if(products[i].categoryOfferId !== null && products[i].variants[j].productOfferId !== undefined && products[i].categoryOfferId.startDate > now && products[i].variants[j].productOfferId.startDate <= now && products[i].variants[j].productOfferId.endDate >= now){ %>
+                  <% if (products[i].variants[j].productOfferId.discountType === "percentage") { %>
+                      <%  offerPrice = products[i].variants[j].price - ((products[i].variants[j].price * products[i].variants[j].productOfferId.discountValue ) / 100) %>
+                    <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
+                        <% offerPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue  %>
+                    <% } %>
+                   
+              <% } else if(products[i].categoryOfferId === null && products[i].variants[j].productOfferId !== undefined && products[i].variants[j].productOfferId.startDate <= now && products[i].variants[j].productOfferId.endDate >= now){ %>
+                  <% if (products[i].variants[j].productOfferId.discountType === "percentage") { %>
+                      <%  offerPrice = products[i].variants[j].price - ((products[i].variants[j].price * products[i].variants[j].productOfferId.discountValue ) / 100) %>
+                    <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
+                        <% offerPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue  %>
+                    <% } %>
+                    
+              <% } %>
                   <div class="product-card bg-white rounded-lg shadow-sm p-4 transition-all w-[214px]">
                     <div class="h-40 mb-3 relative">
                         <img src="<%= products[i].variants[j].productImages[0] %>" alt="Product" class="w-full h-full object-contain">
@@ -104,10 +187,14 @@
                     <div class="flex items-center mb-2">
                         <span class="font-regular text-gray-700 text-xs">Size : <a href="#" ><%= (products[i].variants[j].size) %></a></span>
                     </div>
-                    <div class="flex items-center mb-2">
-                        <span class="font-bold text-lg">$<%= (products[i].variants[j].price ).toFixed(2) %></span>
-                      <!-- <span class="text-gray-500 text-sm line-through ml-2">$</span>
-                        <span class="text-green-600 text-xs font-medium ml-2">38% off</span> -->
+                    <div class="flex flex-shrink-0 justify-between items-center mb-2">
+                      <% if (offerPrice > 0 && offerPrice < products[i].variants[j].price ) { %>
+                        <span class="font-bold text-lg">$<span id="price<%= products[i]._id  %><%= j %>" ><%= offerPrice.toFixed(2) %></span>
+                        <span class="text-gray-500 text-sm line-through ">$<%= (products[i].variants[j].price).toFixed(2)  %></span>
+                        <span class="text-green-600 text-xs font-medium"><%= (((products[i].variants[j].price - offerPrice) / products[i].variants[j].price) * 100).toFixed(0) %>% off</span>   
+                    <% } else {%>
+                        <span class="font-bold text-lg">$<span id="price<%= products[i]._id  %><%= j %>" ><%= (products[i].variants[j].price).toFixed(2) %></span>
+                    <% } %>
                     </div>
                      <% let isProductInCart = cartItems.find(item =>  String(products[i]._id) === String(item.productId._id) && item.variant === j ) || null %>
                         <% if (isProductInCart) { %>

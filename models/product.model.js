@@ -13,6 +13,11 @@ const variantSchema = Schema({
     color: { type: String },
     productImages: {
       type: [String], 
+    },
+    productOfferId : {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "Offer",
+        default : null
     }
 },{_id : false})
 
@@ -37,6 +42,11 @@ const productSchema = Schema({
     categoryId : {
         type : mongoose.Schema.Types.ObjectId,
         ref : "Category"
+    },
+    categoryOfferId : {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "Offer",
+        default : null
     },
     brandId : {
         type : mongoose.Schema.Types.ObjectId,

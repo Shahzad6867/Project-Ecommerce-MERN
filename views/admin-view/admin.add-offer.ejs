@@ -1,0 +1,565 @@
+<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - Add Offer"}) %>
+<%- include("../partials/admin-side/navbar.ejs") %>
+<%- include("../partials/admin-side/sidebar.ejs",{customerBtn : "",categoriesBtn : "",brandsBtn : "",productsBtn : "",ordersBtn : "",offersBtn : "active disabled"}) %>
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800"><%= (offer !== null) ? "Edit Offer" : "Add New Offer" %></h1>
+            <div class="flex space-x-4">
+                <a href="/admin/offers" class="px-4 py-2 border flex items-center justify-between addBtn-primary border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <i data-feather="arrow-left" class="mr-2"></i>
+                    Back to Offers
+                </a>
+            </div>
+        </div>
+        <% if (offer !== null) { %>
+            <form autocomplete="off" id="offerForm" action="/admin/offers/edit-offer?id=<%= offer._id %>" method="post" enctype="multipart/form-data" class="bg-white rounded-lg shadow p-6" novalidate>
+        <% } else {%>
+        <form autocomplete="off" id="offerForm" action="/admin/offers/add-offer" method="post" enctype="multipart/form-data" class="bg-white rounded-lg shadow p-6" novalidate>
+        <% } %>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Offer Name</label>
+                    <input type="text" name="offerName" id="offerName" value="<%= (offer !== null) ? offer.offerName : '' %>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Offer Type</label>
+                    <select name="offerType" id="offerType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" onchange="setAccordingToDiscountType()">
+                        <option value="">Select Offer Type</option>
+                        <option value="product" <%= (offer !== null && offer.applicableOn === "product") ? "selected"  : "" %>>Product Offer</option>
+                        <option value="category"  <%= (offer !== null && offer.applicableOn === "category") ? "selected"  : "" %>>Category Offer</option>
+                    </select>
+                </div>
+                
+                <!-- Product/Category Selection (shown based on offer type) -->
+                <div id="targetSelection" class="md:col-span-2 <%= (offer !== null) ? "" : "hidden" %>">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Target</label>
+                    <div class="select-search">
+                        <input type="text" id="searchInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Search products/categories...">
+                        <div id="searchResults" class="search-results shadow "></div>
+                        <input type="hidden" id="selectedTarget" name="selectedTarget" value="<%= (offer !== null  && offer.applicableOn === "product") ? offer.productId._id   : (offer !== null  && offer.applicableOn === "category") ? offer.categoryId._id : "" %>">
+                        <input type="hidden" id="selectedTargetVariant" name="selectedTargetVariant" value="<%= (offer !== null && offer.applicableOn === "product") ? offer.productVariant : '' %>">
+                        <input type="hidden" id="productPrice" disabled value="<%= (offer !== null && offer.applicableOn === "product") ? offer.productId.variants[offer.productVariant].price : '' %>">
+                        <div id="selectedDisplay" class="mt-2 p-2 bg-gray-50 rounded <%= (offer !== null) ? "" : "hidden" %>">
+                            <div class="flex justify-between items-center">
+                                <span id="selectedName"><%= (offer !== null && offer.applicableOn === "product") ? (offer.productId.productName + " " + offer.productId.variants[offer.productVariant].color + " " + offer.productId.variants[offer.productVariant].size ) : (offer && offer.applicableOn === "category") ? offer.categoryId.categoryName : '' %></span>
+                                <button type="button" onclick="clearSelection()" class="text-red-500">
+                                    <i data-feather="x"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea name="description" id="description" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" rows="3"><%= (offer !== null) ? offer.description : " " %></textarea>
+                </div>
+
+                <%
+                    function toDateTimeLocal(date) {
+                    const d = new Date(date);
+                    const pad = n => String(n).padStart(2, '0');
+
+                    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                    }
+                %>
+
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                    <input type="datetime-local" id="startDate" name="startDate" value="<%= (offer !== null) ? toDateTimeLocal(offer.startDate)  : "" %>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                    <input type="datetime-local" id="endDate" name="endDate" value="<%= (offer !== null) ? toDateTimeLocal(offer.endDate)  : "" %>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Discount Type</label>
+                    <select id="discountType" name="discountType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" onchange="setAccordingToDiscountType()">
+                        <option value="">Select Discount Type</option>
+                        <option value="flat"  <%= (offer !== null && offer.discountType === "flat") ? "selected"  : "" %>>Flat Amount</option>
+                        <option value="percentage"   <%= (offer !== null && offer.discountType === "percentage") ? "selected"  : "" %>>Percentage</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Discount Value</label>
+                    <input type="number" id="discountValue" step="0.01" name="discountValue" value="<%= (offer !== null) ? offer.discountValue  : "" %>" placeholder="Enter a value according to the selected Discount Type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                </div>
+                
+                <div>
+                    <label id="forProductMinPrice" class="block text-sm font-medium text-gray-700 mb-1" <%= (offer !== null && offer.productMinPrice !== null) ? '' : "hidden" %>>Product Minimum Price</label>
+                    <input type="number" step="0.01" name="productMinPrice" id="productMinPrice" value="<%= (offer !== null && offer.productMinPrice!== null) ? offer.productMinPrice : '' %>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" <%= (offer !== null && offer.productMinPrice !== null) ? "" : "hidden" %>>
+                </div>
+                
+                <div>
+                    <label for="maxDiscount" id="forMaxDiscount" class="block text-sm font-medium text-gray-700 mb-1"  <%= (offer !== null && offer.maxDiscountAmount!== null) ? "" : "hidden" %>>Maximum Discount Amount</label>
+                    <input type="number" step="0.01" name="maxDiscountAmount" id="maxDiscountAmount" value="<%= (offer !== null && offer.maxDiscountAmount !== null) ? offer.maxDiscountAmount : "" %>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" <%= (offer !== null && offer.maxDiscountAmount !== null) ? "" : "hidden" %>>
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label for="bannerImage" class="block text-sm font-medium text-gray-700 mb-1">Banner Image</label>
+                    <input type="file" id="bannerImage" name="bannerImage" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" onchange="previewImage(this)">
+                    <div id="imagePreview" class="mt-2 <%= (offer !== null && offer.bannerImage !== null) ? '' : 'hidden' %>">
+                        <img id="previewImg" class="banner-preview" src="<%= (offer !== null && offer.bannerImage !== null) ? offer.bannerImage : "" %>" alt="Banner Preview">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-end space-x-3">
+                <button type="reset" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    Reset
+                </button>
+                <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    Save Offer
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        feather.replace();
+         // Form submission
+         
+
+        function setAccordingToDiscountType(){
+            let offerType = document.getElementById("offerType")
+            let discountType = document.getElementById("discountType")
+            let discountValue = document.getElementById("discountValue")
+            if(offerType.value === "category"){
+                document.getElementById("searchInput").placeholder = "Which Category are you looking for ?"
+            }else{
+                document.getElementById("searchInput").placeholder = "Which Product are you looking for ?"
+            }
+            if(discountType.value === "percentage"){
+                if(offerType.value === "category"){
+                    document.getElementById("forProductMinPrice").hidden = true
+                    document.getElementById("productMinPrice").hidden = true
+                    document.getElementById("forMaxDiscount").hidden = false
+                    document.getElementById("maxDiscountAmount").hidden = false
+                    discountValue.placeholder = "Discount Percentage must be between 1% and 70%" 
+                    return
+                }else if(offerType.value === "product"){
+                    document.getElementById("forProductMinPrice").hidden = true
+                    document.getElementById("productMinPrice").hidden = true
+                    document.getElementById("forMaxDiscount").hidden = true
+                    document.getElementById("maxDiscountAmount").hidden = true
+                    discountValue.placeholder = "Discount Percentage must be between 1% and 70%" 
+                    return
+                }
+                    document.getElementById("forProductMinPrice").hidden = true
+                    document.getElementById("productMinPrice").hidden = true
+                    document.getElementById("forMaxDiscount").hidden = true
+                    document.getElementById("maxDiscountAmount").hidden = true
+                discountValue.placeholder = "Enter a value according to the selected Offer Type"
+            }else if(discountType.value === "flat"){
+                if(offerType.value === "category"){
+                    document.getElementById("forMaxDiscount").hidden = true
+                    document.getElementById("maxDiscountAmount").hidden = true
+                    document.getElementById("forProductMinPrice").hidden = false
+                    document.getElementById("productMinPrice").hidden = false
+                    discountValue.placeholder = "Enter a flat discount amount between $10 and $200."
+                    return
+
+                }else if(offerType.value === "product"){
+                    document.getElementById("forProductMinPrice").hidden = true
+                    document.getElementById("productMinPrice").hidden = true
+                    document.getElementById("forMaxDiscount").hidden = true
+                    document.getElementById("maxDiscountAmount").hidden = true
+                    discountValue.placeholder = "Enter a flat discount amount that is less than 70% of the Product Price"
+                   return
+                }
+                    document.getElementById("forProductMinPrice").hidden = true
+                    document.getElementById("productMinPrice").hidden = true
+                    document.getElementById("forMaxDiscount").hidden = true
+                    document.getElementById("maxDiscountAmount").hidden = true
+                    discountValue.placeholder = "Enter a value according to the selected Offer Type"
+            }else{
+                document.getElementById("forProductMinPrice").hidden = true
+                    document.getElementById("productMinPrice").hidden = true
+                    document.getElementById("forMaxDiscount").hidden = true
+                    document.getElementById("maxDiscountAmount").hidden = true
+                discountValue.placeholder = "Enter a value according to the selected Discount Type"
+            }
+        }
+        
+        
+        
+        let categories = [];
+        fetch("/admin/search-categories",{method : "GET"})
+        .then(res => res.json())
+        .then(data => {
+            categories = data.categories
+        })
+        .catch(error => console.log(error))
+        
+        // Show/hide target selection based on offer type
+        document.getElementById('offerType').addEventListener('change', function() {
+            const targetSelection = document.getElementById('targetSelection');
+            if (this.value === 'product' || this.value === 'category') {
+                targetSelection.classList.remove('hidden');
+            } else {
+                targetSelection.classList.add('hidden');
+                clearSelection();
+            }
+        });
+        
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const offerType = document.getElementById('offerType').value;
+            const resultsContainer = document.getElementById('searchResults');
+            
+            if (searchTerm.length < 2) {
+                resultsContainer.style.display = 'none';
+                return;
+            }
+            
+            let items = [];
+            if (offerType === 'product') {
+                fetch("/admin/search-products",{
+                    method : "POST",
+                    headers : {
+                        "Content-Type" : "application/json"
+                    },
+                    body : JSON.stringify({searchTerm : searchTerm})
+                })
+                .then(res => res.json())
+                .then(data => {
+                    console.log(data)
+                    items = data.products
+                    displayResults(items);
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+                // items = products.filter(p => p.name.toLowerCase().includes(searchTerm));
+            } else if (offerType === 'category') {
+                items = categories.filter(c => c.categoryName.toLowerCase().includes(searchTerm));
+            }
+            
+            displayResults(items);
+        });
+        
+        function displayResults(items) {
+            const offerType = document.getElementById("offerType")
+            const resultsContainer = document.getElementById('searchResults');
+            resultsContainer.innerHTML = '';
+            
+            if (items.length === 0) {
+                resultsContainer.innerHTML = '<div class="search-item text-gray-500 rounded-full">No results found</div>';
+            } else {
+                if(offerType.value === "product"){
+                        for(let i = 0 ; i < items.length ; i++){
+                        for(let j = 0 ; j < items[i].variants.length ; j++){
+                            const div = document.createElement('div');
+                            div.className = 'search-item rounded-full';
+                            div.textContent = `${items[i].productName}-${items[i].variants[j].color}-${items[i].variants[j].size}`;
+                            div.onclick = () => selectItem(items[i],j);
+                            resultsContainer.appendChild(div);
+                        }
+                    }
+                }else{
+                    for(let i = 0 ; i < items.length ; i++){
+                            const div = document.createElement('div');
+                            div.className = 'search-item rounded-full';
+                            div.textContent = `${items[i].categoryName}`;
+                            div.onclick = () => selectItem(items[i]);
+                            resultsContainer.appendChild(div);
+                    }
+                }
+                
+            }
+            
+            resultsContainer.style.display = 'block';
+        }
+        
+        function selectItem(item,variant) {
+            const offerType = document.getElementById("offerType")
+            if(offerType.value === "product"){
+                document.getElementById('selectedTarget').value = item._id;
+            document.getElementById('selectedTargetVariant').value = variant;
+            console.log(item.variants[variant].price)
+            document.getElementById('productPrice').value = item.variants[variant].price;
+            document.getElementById('selectedName').textContent = `${item.productName}-${item.variants[variant].color}-${item.variants[variant].size}`;
+            document.getElementById('selectedDisplay').classList.remove('hidden');
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('searchInput').value = '';
+            }else{
+                document.getElementById('selectedTarget').value = item._id;
+            document.getElementById('selectedName').textContent = item.categoryName;
+            document.getElementById('selectedDisplay').classList.remove('hidden');
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('searchInput').value = '';
+            }
+            
+        }
+        
+        function clearSelection() {
+            document.getElementById('selectedTarget').value = '';
+            document.getElementById('selectedTargetVariant').value = ''
+            document.getElementById('productPrice').value = ''
+            document.getElementById('selectedDisplay').classList.add('hidden');
+        }
+        
+        function previewImage(input) {
+    const preview = document.getElementById('previewImg');
+    const previewContainer = document.getElementById('imagePreview');
+
+    if (!input.files || !input.files[0]) {
+        previewContainer.classList.add('hidden');
+        return;
+    }
+
+    const file = input.files[0];
+
+    // Optional: file type validation
+    if (!file.type.startsWith("image/")) {
+        iziToast.error({
+            title: 'Invalid File',
+            message: 'Please upload a valid image file',
+            position: 'topCenter'
+        });
+        input.value = "";
+        previewContainer.classList.add('hidden');
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+        const img = new Image();
+        img.src = e.target.result;
+
+        img.onload = function () {
+            const requiredWidth = 1440;
+            const requiredHeight = 384;
+
+            if (img.width !== requiredWidth && img.height !== requiredHeight) {
+                iziToast.error({
+                    title: 'Invalid Image Size',
+                    message: `Banner image must be exactly ${requiredWidth} × ${requiredHeight}px`,
+                    position: 'topCenter'
+                });
+
+                input.value = "";
+                preview.src = "";
+                previewContainer.classList.add('hidden');
+                return;
+            }
+
+            // Valid image
+            preview.src = e.target.result;
+            previewContainer.classList.remove('hidden');
+        };
+    };
+
+    reader.readAsDataURL(file);
+}
+
+
+
+        document.getElementById('offerForm').addEventListener('submit', function(e) {
+           // Validate form
+           const offerType = document.getElementById('offerType').value;
+           const offerName = document.getElementById('offerName').value;
+           const startDate = document.getElementById('startDate').value;
+           const endDate = document.getElementById('endDate').value;
+           const discountType = document.getElementById("discountType").value
+           const discountValue = document.getElementById("discountValue").value
+           const description = document.getElementById('description').value;
+           const selectedTarget = document.getElementById('selectedTarget').value;
+
+           const now = new Date();
+           const start = new Date(startDate);
+           const end = new Date(endDate);
+           
+           if(offerName === ""){
+               iziToast.error({
+                   title: 'Error',
+                   message: 'Please enter a Offer Name',
+                   position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+           if(offerType === ""){
+               iziToast.error({
+                   title: 'Error',
+                   message: 'Please select a Offer Type',
+                   position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+           if ((offerType === 'product' || offerType === 'category') && !selectedTarget) {
+               iziToast.error({
+                   title: 'Error',
+                   message: 'Please select a target for the offer',
+                   position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+           if(description === ""){
+               iziToast.error({
+                   title: 'Error',
+                   message: 'Please enter a Description',
+                   position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+           if(startDate === ""){
+               iziToast.error({
+                   title: 'Error',
+                   message: 'Please select a Valid Start Date and Time',
+                   position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+           if(endDate === ""){
+               iziToast.error({
+                   title: 'Error',
+                   message: 'Please select a Valid End Date and Time',
+                   position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+           if (start <= now) {
+            iziToast.error({
+                title: 'Invalid Start Date',
+                message: 'Start date must be in the future',
+                position: 'topCenter'
+            });
+            e.preventDefault();
+            return;
+        }
+
+        if (end <= start) {
+            iziToast.error({
+                title: 'Invalid Date Range',
+                message: 'End date must be greater than start date',
+                position: 'topCenter'
+            });
+            e.preventDefault();
+            return;
+        }
+           if(discountType === ""){
+               iziToast.error({
+                   title: 'Error',
+                   message: 'Please select a Discount Type',
+                   position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+           if(discountValue === ""){
+            iziToast.error({
+                   title: 'Error',
+                   message: 'Please select a Discount Value',
+                   position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+           let price = document.getElementById("productPrice").value
+           if(offerType === "product" && discountType === "flat"){
+           
+            let discountedPrice = (price * 70) / 100
+            
+                if(discountValue > discountedPrice){
+                            iziToast.error({
+                            title: 'Error',
+                            message: 'Please enter a Flat Discount Amount that is less than 70% of the Product Price',
+                            position: 'topCenter'
+                        });
+                        e.preventDefault();
+                    return;
+                }
+               
+           }else if(offerType === "product" && discountType === "percentage"){
+           
+            if(discountValue > 70){
+    
+                iziToast.error({
+                title: 'Error',
+                message: 'Please enter a Discount Percentage that is less than 70',
+                position: 'topCenter'
+                });
+                e.preventDefault();
+                return;
+            }
+
+           }else if(offerType === "category" && discountType === "percentage"){
+           const maxDiscountAmount = document.getElementById("maxDiscountAmount").value
+           if(discountValue > 70){
+   
+               iziToast.error({
+               title: 'Error',
+               message: 'Please enter a Discount Percentage that is less than 70',
+               position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+           if(!maxDiscountAmount){
+            iziToast.error({
+               title: 'Error',
+               message: 'Please enter a Maximum discount Amount',
+               position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+
+          }else if(offerType === "category" && discountType === "flat"){
+           const minProductPrice = document.getElementById("minProductPrice").value
+           const maxDiscount = (minProductPrice * 70) / 100
+           
+           if(discountValue > maxDiscount){
+   
+               iziToast.error({
+               title: 'Error',
+               message: 'Please enter a Flat Discount Amount that is less than 70% of the Product Price',
+               position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+          }
+          if(!minProductPrice){
+            iziToast.error({
+               title: 'Error',
+               message: 'Please enter a Minimum Price for Products that the offer can be applied on.',
+               position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+           
+           
+           
+           
+           iziToast.success({
+               title: 'Offer',
+               message: 'Offer Created Successfully',
+               position: 'topCenter'
+           });
+           
+           // Redirect to offers list after 2 seconds
+           setTimeout(() => {
+               window.location.href = '/admin/offers';
+           }, 2000);
+       });
+        
+       
+    </script>
+</body>
+</html>

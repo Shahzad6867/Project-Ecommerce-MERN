@@ -9,6 +9,7 @@ const productManagmentController = require("../controllers/admin.controllers/pro
 const adminLogoutController = require("../controllers/admin.controllers/adminLogoutController.js")
 const searchController = require("../controllers/admin.controllers/searchController.js")
 const orderManagementController = require("../controllers/admin.controllers/ordersManagementController.js")
+const offerManagementController = require("../controllers/admin.controllers/offerManagementController.js")
 const adminAuth = require("../middlewares/admin.auth.js")
 const upload = require("../config/multerConfig.js")
 
@@ -43,6 +44,17 @@ router.get("/restore-brand",brandManagmentController.restoreBrand)
 router.get("/orders",orderManagementController.getOrders)
 router.get("/orders/:id",orderManagementController.getOrderDetailPage)
 router.patch("/orders/:id/update-status",orderManagementController.updateStatus)
+
+
+//Offer Management
+router.get("/offers",offerManagementController.getOffers)
+router.get("/offers/add-offer",offerManagementController.getAddOffer)
+router.get("/offers/edit-offer",offerManagementController.getEditOffer)
+router.post("/offers/add-offer",upload.single("bannerImage"),offerManagementController.addOffer)
+router.post("/offers/edit-offer",upload.single("bannerImage"),offerManagementController.editOffer)
+router.delete("/offers/delete-offer",offerManagementController.deleteOffer)
+router.post("/search-products",offerManagementController.searchProducts)
+router.get("/search-categories",offerManagementController.searchCategories)
 
 
 //Logout Admin

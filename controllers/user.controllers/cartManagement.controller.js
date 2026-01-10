@@ -2,16 +2,19 @@ const Product = require("../../models/product.model");
 const Address = require("../../models/address.model");
 const User = require("../../models/user.model");
 const Cart = require("../../models/cart.model")
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
+const offerModel = require("../../models/offer.model");
+
 
 const getCart = async (req,res) => {
     let user = req.session.user || req.user
     let message = req.session.message || null
     delete req.session.message
     const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
-    const cartItems = await Cart.find({userId : user._id}).populate("productId")
+    const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
     const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
-    res.render("user-view/user.cart-management.ejs",{message,user,productsFullList,cartItems,cartItemsCount})
+    const offers = await offerModel.find({})
+    res.render("user-view/user.cart-management.ejs",{message,user,productsFullList,cartItems,cartItemsCount,offers})
 }
 
 const addToCart = async (req,res) => {
@@ -39,8 +42,12 @@ const addToCart = async (req,res) => {
     const cartItem = new Cart({
         userId : cartUser._id,
         productId : productId,
+        categoryId : product.categoryId,
         variant : variant,
-        quantity : quantity
+        quantity : quantity,
+        categoryOfferId : product.categoryOfferId,
+        productOfferId : product.variants[variant].productOfferId
+        
     })
     await cartItem.save()
      res.status(200).json({

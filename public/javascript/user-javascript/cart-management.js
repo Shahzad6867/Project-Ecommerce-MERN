@@ -3,6 +3,7 @@
     function addToCartInitially(input,item,variant,productId){
         let cartItemQty = document.getElementById("cartItemQty")
         let cartItemsDiv = document.getElementById("cartItemsDiv")
+        let price = Number(document.getElementById(`price${productId}${variant}`).innerText)
         let myCartHead = document.getElementById("cartHeadItemCount")
         let subTotal = document.getElementById("subTotal")
         console.log(cartItemsDiv)
@@ -47,7 +48,7 @@
                                                          <p class="text-sm text-gray-600 mt-[0.1rem]">Quantity : <strong class="text-black font-bold" id="cartItemQty${productId}${variant}">1</strong></p>
                                                      </a>
                                                     <div class="flex justify-between items-center mt-1">
-                                                        <h2 class="text-lg text-black font-bold ">$ ${data.product.variants[variant].price}</h2>
+                                                        <h2 class="text-lg text-black font-bold ">$ ${price}</h2>
                                                        
                                                             <button type="button" class="text-sm  flex items-center justify-center rounded-lg hover:text-red-500  px-2 z-50  text-black" onclick="deleteItemFromCart('${data.cart._id}','${data.product._id}',${variant})">
                                                                 <i data-feather="trash-2" class="w-5 h-5 mr-1"></i>
@@ -58,7 +59,7 @@
                                                 
                                             </div>
                                         </div>` + cartItemsDiv.innerHTML
-                    subTotal.innerText = (Number(subTotal.innerText) + data.product.variants[variant].price).toFixed(2)
+                    subTotal.innerText = (Number(subTotal.innerText) + price).toFixed(2)
                     feather.replace()
                     iziToast.info({
                         title : "Cart",
@@ -102,6 +103,7 @@
 
     function incrementQuantity(productIndex,variantIndex,productId){
         let quantity = document.getElementById(`quantity${productId}${variantIndex}`)
+        let price = Number(document.getElementById(`price${productId}${variantIndex}`).innerText)
         let addToCartBtn = document.getElementById(`addToCartBtn${productId}${variantIndex}`)
         let cartItemQtyToBeUpdated = document.getElementById(`cartItemQty${productId}${variantIndex}`)
         let myCartHead = document.getElementById("cartHeadItemCount")
@@ -122,7 +124,7 @@
             .then(data => {
                 
                 if (data.message === "Quantity has been updated in Cart") {
-                    subTotal.innerText = (Number(subTotal.innerText) + ((counter * data.product.variants[variantIndex].price) - (Number(quantity.value) * data.product.variants[variantIndex].price))).toFixed(2)
+                    subTotal.innerText = (Number(subTotal.innerText) + ((counter * price) - (Number(quantity.value) * price))).toFixed(2)
                     quantity.value = counter
                     cartItemQtyToBeUpdated.innerText = Number(cartItemQtyToBeUpdated.innerText) + 1
                     cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) + 1
@@ -171,6 +173,7 @@
     }
     function decrementQuantity(productIndex,variantIndex,productId){
         let quantity = document.getElementById(`quantity${productId}${variantIndex}`)
+        let price = Number(document.getElementById(`price${productId}${variantIndex}`).innerText)
         let addToCartBtn = document.getElementById(`addToCartBtn${productId}${variantIndex}`)
         let cartItemQtyToBeUpdated = document.getElementById(`cartItemQty${productId}${variantIndex}`)
         let myCartHead = document.getElementById("cartHeadItemCount")
@@ -192,7 +195,7 @@
                 document.getElementById(`incDecQtyDiv${productId}${variantIndex}`).classList.add("hidden")
                 myCartHead.innerText = Number(myCartHead.innerText) - 1
                 cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - 1
-                subTotal.innerText = (Number(subTotal.innerText) - ( (Number(quantity.value) * data.product.variants[variantIndex].price) - (counter * data.product.variants[variantIndex].price))).toFixed(2)
+                subTotal.innerText = (Number(subTotal.innerText) - ( (Number(quantity.value) * price) - (counter * price))).toFixed(2)
                 cartItem.remove()
                 if(Number(cartItemQtyNotifier.innerText) === 0){
                     document.getElementById("checkoutBtn").disabled = true
@@ -215,7 +218,7 @@
             fetch(`/cart/update-cart-item?productId=${productId}&variant=${variantIndex}&quantity=${counter}`,{method : "PATCH"})
             .then(res => res.json())
             .then(data => {
-                subTotal.innerText = (Number(subTotal.innerText) - ( (Number(quantity.value) * data.product.variants[variantIndex].price) - (counter * data.product.variants[variantIndex].price))).toFixed(2)
+                subTotal.innerText = (Number(subTotal.innerText) - ( (Number(quantity.value) * price) - (counter * price))).toFixed(2)
                 quantity.value = counter
                 cartItemQtyToBeUpdated.innerText = Number(cartItemQtyToBeUpdated.innerText) - 1
                 cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - 1
@@ -230,6 +233,7 @@
     }
     function deleteItemFromCart(cartId,productId,variantIndex) {
         let quantity = document.getElementById(`quantity${productId}${variantIndex}`)
+        let price = Number(document.getElementById(`price${productId}${variantIndex}`).innerText)
         let addToCartBtn = document.getElementById(`addToCartBtn${productId}${variantIndex}`)
         let cartItemQtyToBeUpdated = document.getElementById(`cartItemQty${productId}${variantIndex}`)
         let myCartHead = document.getElementById("cartHeadItemCount")
@@ -253,7 +257,7 @@
                 myCartHead.innerText = Number(myCartHead.innerText) - Number(quantity.value)
                 cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - Number(quantity.value)
                 quantity.value = 1
-                subTotal.innerText = (Number(subTotal.innerText) -  (Number(quantity.value) * data.product.variants[variantIndex].price) ).toFixed(2)
+                subTotal.innerText = (Number(subTotal.innerText) -  (Number(quantity.value) * price) ).toFixed(2)
                 cartItem.remove()
                 if(document.getElementById("cartItemsDiv").children.length === 0){
                     document.getElementById("cartItemsDiv").innerHTML = `<div id="nothingInCartCard" class="flex  items-center justify-center border border-gray-400 w-[96%] text-left px-3 py-8 text-gray-700  rounded-lg m-2">
@@ -273,6 +277,7 @@
 
     function deleteItemInCartFromCart(cartId,productId,variantIndex) {
         let quantity = document.getElementById(`quantity${cartId}`)
+        let price = Number(document.getElementById(`price${cartId}${variantIndex}`).innerText)
         let myCartHead = document.getElementById("cartHeadItemCount")
         let myCartHeadInCart = document.getElementById("cartHeadItemCountInCart")
         let cartItemQtyNotifier = document.getElementById("cartItemQty")
@@ -292,8 +297,8 @@
                 cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - Number(quantity.value)
                 myCartHeadInCart.innerText = Number(myCartHeadInCart.innerText) - Number(quantity.value)
                 subTotalItemInCart.innerText = Number(subTotalItemInCart.innerText) - Number(quantity.value)
-                subTotal.innerText = (Number(subTotal.innerText) -  (Number(quantity.value) * data.product.variants[variantIndex].price) ).toFixed(2)
-                subTotalInCart.innerText =(Number(subTotalInCart.innerText) -  (Number(quantity.value) * data.product.variants[variantIndex].price) ).toFixed(2)
+                subTotal.innerText = (Number(subTotal.innerText) -  (Number(quantity.value) * price) ).toFixed(2)
+                subTotalInCart.innerText =(Number(subTotalInCart.innerText) -  (Number(quantity.value) * price) ).toFixed(2)
                 tax.innerText = (Number(subTotalInCart.innerText) * 0.05 ).toFixed(2)
                 cartItem.remove()
                 if(document.getElementById("cartItemsDiv").children.length === 0){

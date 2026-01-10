@@ -97,10 +97,86 @@
                             <div id="cartItemsDiv" class="w-[100%] max-h-[26rem]   overflow-scroll">
                                 <% let subTotal =  0 %>
                                 <% let itemsWithStock = 0 %>
+                                <% let now = new Date() %>
                               <% for( let i = 0; i < cartItems.length; i++ ) { %>
+                                <% let offerPrice = 0 %>
+                                <% let categoryOfferPrice = 0 %>
+                                <% let productOfferPrice = 0 %>
                                 <% if (!cartItems[i].productId.isDeleted ) { %>
                                   <% if (cartItems[i].productId.variants[cartItems[i].variant].stockQuantity !== 0 && cartItems[i].productId.variants[cartItems[i].variant].stockStatus !== "Out of Stock") { %>
-                                    <% subTotal =  (cartItems[i].productId.variants[cartItems[i].variant].price  * cartItems[i].quantity) + subTotal %>
+                                            <% if (cartItems[i].productOfferId !== null && cartItems[i].categoryOfferId !== null && (cartItems[i].productOfferId.startDate <= now && cartItems[i].productOfferId.endDate >= now) && (cartItems[i].categoryOfferId.startDate <= now && cartItems[i].categoryOfferId.endDate >= now) ) { %>
+                                                <% if (cartItems[i].productOfferId.discountType === "percentage") { %>
+                                                <%  productOfferPrice = cartItems[i].productId.variants[cartItems[i].variant].price - ((cartItems[i].productId.variants[cartItems[i].variant].price * cartItems[i].productOfferId.discountValue ) / 100) %>
+                                                <% } else if(cartItems[i].productOfferId.discountType === "flat") {%>
+                                                <%  productOfferPrice = cartItems[i].productId.variants[cartItems[i].variant].price - cartItems[i].productOfferId.discountValue %>
+                                                <% } %>
+                    
+                                                <% if (cartItems[i].categoryOfferId.discountType === "percentage") { %>
+                                                    <% let tempPrice1 = cartItems[i].productId.variants[cartItems[i].variant].price - ((cartItems[i].productId.variants[cartItems[i].variant].price * cartItems[i].categoryOfferId.discountValue ) / 100) %>
+                                                    <% let tempPrice2 = cartItems[i].productId.variants[cartItems[i].variant].price - cartItems[i].categoryOfferId.maxDiscountAmount  %>
+                                                    <% if (tempPrice2 > tempPrice1) { %>
+                                                        <% categoryOfferPrice = tempPrice2 %>
+                                                    <% } else {%>
+                                                        <% categoryOfferPrice = tempPrice1 %>
+                                                    <% } %>
+                                                    
+                                                <% } else if(cartItems[i].categoryOfferId.discountType === "flat") {%>
+                                                <% if (cartItems[i].productId.variants[cartItems[i].variant].price > cartItems[i].categoryOfferId.productMinPrice) { %>
+                                                    <% categoryOfferPrice = cartItems[i].productId.variants[cartItems[i].variant].price - cartItems[i].categoryOfferId.discountValue %>
+                                                <% } %>
+                                                <% } %>
+                    
+                                                <% offerPrice = (categoryOfferPrice < productOfferPrice) ? categoryOfferPrice : productOfferPrice %>
+                                                <% subTotal += (offerPrice * cartItems[i].quantity) %>
+                                        <% } else if(cartItems[i].productOfferId !== null && cartItems[i].categoryOfferId !== null && (cartItems[i].productOfferId.startDate <= now && cartItems[i].productOfferId.endDate >= now) && cartItems[i].categoryOfferId.startDate > now ){%>
+                                            <% if (cartItems[i].productOfferId.discountType === "percentage") { %>
+                                                <%  offerPrice = cartItems[i].productId.variants[cartItems[i].variant].price - ((cartItems[i].productId.variants[cartItems[i].variant].price * cartItems[i].productOfferId.discountValue ) / 100) %>
+                                            <% } else if(cartItems[i].productOfferId.discountType === "flat") {%>
+                                                <%  offerPrice = cartItems[i].productId.variants[cartItems[i].variant].price - cartItems[i].productOfferId.discountValue %>
+                                            <% } %>
+                                            <% subTotal += (offerPrice * cartItems[i].quantity) %>
+                                        <% } else if(cartItems[i].productOfferId !== null && cartItems[i].categoryOfferId !== null && (cartItems[i].categoryOfferId.startDate <= now && cartItems[i].categoryOfferId.endDate >= now) && cartItems[i].productOfferId.startDate > now ){%>
+                                                <% if (cartItems[i].categoryOfferId.discountType === "percentage") { %>
+                                                        <% let tempPrice1 = cartItems[i].productId.variants[cartItems[i].variant].price - ((cartItems[i].productId.variants[cartItems[i].variant].price * cartItems[i].categoryOfferId.discountValue ) / 100) %>
+                                                        <% let tempPrice2 = cartItems[i].productId.variants[cartItems[i].variant].price - cartItems[i].categoryOfferId.maxDiscountAmount  %>
+                                                        <% if (tempPrice2 > tempPrice1) { %>
+                                                            <% offerPrice = tempPrice2 %>
+                                                        <% } else {%>
+                                                            <% offerPrice = tempPrice1 %>
+                                                        <% } %>
+                                                        
+                                                <% } else if(cartItems[i].categoryOfferId.discountType === "flat") {%>
+                                                    <% if (cartItems[i].productId.variants[cartItems[i].variant].price > cartItems[i].categoryOfferId.productMinPrice) { %>
+                                                        <% offerPrice = cartItems[i].productId.variants[cartItems[i].variant].price - cartItems[i].categoryOfferId.discountValue %>
+                                                    <% } %>
+                                                <% } %>
+                                                <% subTotal += (offerPrice * cartItems[i].quantity) %>
+                                        <% } else if(cartItems[i].productOfferId !== null && cartItems[i].categoryOfferId === null && (cartItems[i].productOfferId.startDate <= now && cartItems[i].productOfferId.endDate >= now) ){%>
+                                            <% if (cartItems[i].productOfferId.discountType === "percentage") { %>
+                                                <%  offerPrice = cartItems[i].productId.variants[cartItems[i].variant].price - ((cartItems[i].productId.variants[cartItems[i].variant].price * cartItems[i].productOfferId.discountValue ) / 100) %>
+                                            <% } else if(cartItems[i].productOfferId.discountType === "flat") {%>
+                                                <%  offerPrice = cartItems[i].productId.variants[cartItems[i].variant].price - cartItems[i].productOfferId.discountValue %>
+                                            <% } %>
+                                            <% subTotal += (offerPrice * cartItems[i].quantity) %>
+                                        <% } else if(cartItems[i].productOfferId === null && cartItems[i].categoryOfferId !== null && (cartItems[i].categoryOfferId.startDate <= now && cartItems[i].categoryOfferId.endDate >= now) ){%>
+                                            <% if (cartItems[i].categoryOfferId.discountType === "percentage") { %>
+                                                <% let tempPrice1 = cartItems[i].productId.variants[cartItems[i].variant].price - ((cartItems[i].productId.variants[cartItems[i].variant].price * cartItems[i].categoryOfferId.discountValue ) / 100) %>
+                                                <% let tempPrice2 = cartItems[i].productId.variants[cartItems[i].variant].price - cartItems[i].categoryOfferId.maxDiscountAmount  %>
+                                                <% if (tempPrice2 > tempPrice1) { %>
+                                                    <% offerPrice = tempPrice2 %>
+                                                <% } else {%>
+                                                    <% offerPrice = tempPrice1 %>
+                                                <% } %>
+                                                
+                                            <% } else if(cartItems[i].categoryOfferId.discountType === "flat") {%>
+                                                <% if (cartItems[i].productId.variants[cartItems[i].variant].price > cartItems[i].categoryOfferId.productMinPrice) { %>
+                                                    <% offerPrice = cartItems[i].productId.variants[cartItems[i].variant].price - cartItems[i].categoryOfferId.discountValue %>
+                                                <% } %>
+                                            <% } %>
+                                            <% subTotal += (offerPrice * cartItems[i].quantity) %>
+                                        <% } else {%>
+                                            <% subTotal += (cartItems[i].productId.variants[cartItems[i].variant].price * cartItems[i].quantity ) %>
+                                        <% } %>
                                     <% itemsWithStock += cartItems[i].quantity %>
                                     <div  id="cartItem<%= cartItems[i].productId._id %><%= cartItems[i].variant %>" href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>">
                                         <input type="text" value="<%= cartItems[i]._id %>" hidden>
@@ -119,7 +195,12 @@
                                                     <p class="text-sm text-gray-600 mt-[0.1rem]">Quantity : <strong class="text-black" id="cartItemQty<%= cartItems[i].productId._id %><%= cartItems[i].variant %>"><%= cartItems[i].quantity %></strong></p>
                                                   </a>
                                                 <div class="flex justify-between items-center mt-1">
-                                                    <h2 class="text-lg text-black font-bold ">$ <%= cartItems[i].productId.variants[cartItems[i].variant].price %></h2>
+                                                    <% if (offerPrice > 0 && offerPrice < cartItems[i].productId.variants[cartItems[i].variant].price ) { %>
+                                                        <h2 class="text-lg text-black font-bold ">$ <span id="price<%= cartItems[i]._id %><%= cartItems[i].variant %>" ><%= offerPrice.toFixed(2) %></span></h2>
+                                                    <% } else {%>
+                                                        <h2 class="text-lg text-black font-bold ">$ <span id="price<%= cartItems[i]._id %><%= cartItems[i].variant %>" ><%= cartItems[i].productId.variants[cartItems[i].variant].price %></span></h2>
+                                                    <% } %>
+                                                    
                                                    
                                                     <button type="button" class="text-sm flex items-center justify-center rounded-lg hover:text-red-500  px-1 z-50  text-black" onclick="deleteItemFromCart('<%- cartItems[i]._id %>','<%- cartItems[i].productId._id %>','<%= cartItems[i].variant %>')">
                                                         <i data-feather="trash-2" class="w-5 h-5 mr-1"></i>
