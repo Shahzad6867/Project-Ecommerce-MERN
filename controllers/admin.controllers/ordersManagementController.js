@@ -1,6 +1,7 @@
 const cloudinary = require("../../config/cloudinaryConfig.js")
 const puppeteer = require("puppeteer")
 const Product = require("../../models/product.model.js");
+const Wallet = require("../../models/wallet.model.js");
 const Order = require("../../models/order.model.js")
 const Payment = require("../../models/payment.model.js")
 
@@ -36,13 +37,15 @@ async function generateInvoicePDF(htmlContent) {
     const page = await browser.newPage();
 
     await page.setContent(htmlContent, {
-        waitUntil: "networkidle0"
+        waitUntil: "domcontentloaded",
+        timeout: 0
     });
 
     const pdfBuffer = await page.pdf({
         format: "A4",
         printBackground: true,
-        margin: { top: "20px", bottom: "20px", left: "20px", right: "20px" }
+        margin: { top: "20px", bottom: "20px", left: "20px", right: "20px" },
+        timeout: 0
       });
       
 
@@ -163,11 +166,33 @@ function uploadPDFToCloudinary(pdfBuffer) {
     });
 }
 
+async function generateAndUploadInvoice(orderId) {
+    try {
+        const order = await Order.findById(orderId)
+            .populate("paymentId")
+            .populate("addressId");
+
+        if (!order) return;
+
+        const html = createInvoice(order);
+        const pdfBuffer = await generateInvoicePDF(html);
+        const uploadResult = await uploadPDFToCloudinary(pdfBuffer);
+
+        order.invoiceUrl = uploadResult.secure_url;
+        order.invoiceCreatedAt = new Date();
+        await order.save();
+
+        console.log("Invoice generated for order:", order.orderId);
+    } catch (error) {
+        console.error("Invoice generation failed:", error);
+    }
+}
 
 
 const updateStatus = async (req,res) => {
-    const {id} = req.params
-    let order = await Order.findById(id).populate("paymentId").populate("addressId")
+    try {
+        const {id} = req.params
+    let order = await Order.findById(id).populate("paymentId")
     
     let {status} = req.query
 
@@ -177,38 +202,120 @@ const updateStatus = async (req,res) => {
         await order.save()
     }else if(status === "Shipped"){
         order.status.push(status)
-        let html = createInvoice(order)
-        let pdfBuffer = await generateInvoicePDF(html)
-        const uploadResult = await uploadPDFToCloudinary(pdfBuffer)
-        order.invoiceUrl = uploadResult.secure_url
-        order.invoiceCreatedAt = new Date()
         order.statusTimeline.shippedAt = new Date()
         await order.save()
+
+        setImmediate(() => generateAndUploadInvoice(order._id))
     }else if(status === "Out for Delivery"){
         order.status.push(status)
         order.statusTimeline.outForDeliveryAt = new Date()
         await order.save()
     }else if(status === "Delivered"){
-        let payment = await Payment.findById(order.paymentId)
-        order.status.push(status)
-        payment.amountPaid = order.paymentId.amountToBePaid
-        payment.status = "Paid Successfully"
-        payment.paymentDate = new Date()
-        order.statusTimeline.deliveredAt = new Date()
+        let payment = await Payment.findById(order.paymentId._id)
+        if(order.paymentId.paymentMethod === "Cash on Delivery"){
+            order.status.push(status)
+            payment.amountPaid = order.paymentId.amountToBePaid
+            payment.status = "Paid Successfully"
+            payment.paymentDate = new Date()
+            order.statusTimeline.deliveredAt = new Date()
+            await order.save()
+            await payment.save()
+        }else {
+            order.status.push(status)
+            order.statusTimeline.deliveredAt = new Date()
+            await order.save()
+        }
+    }else if(status === "Approve Return Request"){
+        let payment = await Payment.findById(order.paymentId._id)
+        let user = req.session.user || req.user
+        let wallet = await Wallet.findOne({userId : user._id})
+        order.status.push("Approved Return Request")
+        let amount = 0
+        for(let i = 0 ; i < order.items.length ; i++){
+            if(order.items[i].return.isRequested === true && order.items[i].return.approvedAt === null && order.items[i].return.declinedAt === null){
+                 amount += (order.items[i].price * order.items[i].quantity)
+                order.items[i].return.approvedAt = new Date()
+                order.items[i].return.refundedAt = new Date()
+            }
+        }
+        payment.amountRefunded += amount
+        order.return.approvedAt = new Date()
+        order.return.refundedAt = new Date()
+        wallet.walletBalance += amount
+        wallet.transactions.push({
+            paymentId : payment._id,
+            transactionType : "Credit",
+            transactionReason : "Order Refund",
+            transactionAmount : amount
+        })
+        await wallet.save()
         await order.save()
         await payment.save()
         
+    }else if(status === "Decline Return Request"){
+        for(let i = 0 ; i < order.items.length ; i++){
+            if(order.items[i].return.isRequested === true && order.items[i].return.approvedAt === null && order.items[i].return.declinedAt === null){
+                order.items[i].return.declinedReason = req.body.declineReason
+                order.items[i].return.declinedAt = new Date()
+           } 
+        }
+        order.status.push("Declined Return Request")
+        order.return.declineReason = req.body.declineReason
+        order.return.declinedAt = new Date()
+        await order.save()
     }
     req.session.message = "Status Updated Successfully"
     return res.status(200).json({
         success : true
     })
+    } catch (error) {
+        console.log(error)
+    }
 }
 
+const updateItemStatus = async (req,res) => {
+    try {
+        let {id} = req.params
+    let order = await Order.findById(id).populate("paymentId")
+    let {status,itemIndex} = req.query
+   
+
+    if(status === "Approve Return Request"){
+        let payment = await Payment.findById(order.paymentId._id)
+        let user = req.session.user || req.user
+        let wallet = await Wallet.findOne({userId : user._id})
+        let priceOfItem = order.items[itemIndex].price * order.items[itemIndex].quantity
+        payment.amountRefunded += priceOfItem 
+        order.items[itemIndex].return.approvedAt = new Date()
+        order.items[itemIndex].return.refundedAt = new Date()
+        wallet.walletBalance += priceOfItem
+        wallet.transactions.push({
+            paymentId : payment._id,
+            transactionType : "Credit",
+            transactionReason : "Order Refund"
+        })
+        await wallet.save()
+        await order.save()
+        await payment.save()
+    }else if(status === "Decline Return Request"){
+        order.items[itemIndex].return.declineReason = req.body.declineReason
+        order.items[itemIndex].return.declinedAt = new Date()
+        await order.save()
+    }
+    return res.json({
+        success : true,
+        message : "Done"
+    })
+    } catch (error) {
+        console.log(error)
+    }
+}
+ 
 
 
 module.exports = {
     getOrders,
     getOrderDetailPage,
-    updateStatus
+    updateStatus,
+    updateItemStatus
 }

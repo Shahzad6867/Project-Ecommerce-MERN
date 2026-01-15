@@ -42,21 +42,16 @@
                         Cancel Order
                     </button>
                 <% } %>
-                <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Delivered")) { %>
-                    <button type="button" class="px-4 py-2 ml-2 btn-primary font-bold text-black rounded-md hover:bg-red-600 flex items-center" onclick="openReturnModalForOrder()">
+                
+                <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Delivered") && !order.status.includes("Approved Return Request") && !order.status.includes("Declined Return Request")) { %>
+                    <button type="button" class="px-4 py-2 ml-2 btn-primary font-bold text-black rounded-md flex items-center" onclick="openReturnModalForOrder('<%= order._id %>')">
                         <i data-feather="rotate-ccw" class="w-4 h-4 mr-2"></i>
                         Return Order
                     </button>
                 <% } %>
-                <% if (order.paymentId.status === "Pending"& order.paymentId.paymentMethod === "Pay with Stripe" && !order.status.includes("Cancelled")) { %>
-                    <a href="/orders/<%= order._id %>/pending-payment"
-                      class="px-4 py-2 bg-yellow-400 text-gray-700 hover:bg-yellow-300 rounded-md font-bold flex items-center">
-                      <i data-feather="credit-card" class="w-4 h-4 mr-2"></i>
-                      Complete Payment
-                    </a>
-                  <% } %>
                 
-                <% if (order.status.includes("Return Order Requested")) { %>
+                
+                <% if (order.status[order.status.length - 1] === "Return Order Requested" && !order.status.includes("Approved Return Request") && !order.status.includes("Declined Return Request")) { %>
                     <button type="button" class="px-4 py-2 ml-2  font-bold bg-yellow-400  text-black rounded-md  flex items-center" disabled>
                         <i data-feather="check" class="w-4 h-4 mr-2"></i>
                         Return Order Requested
@@ -68,7 +63,29 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            
             <div class="lg:col-span-3 ">
+                <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Approved Return Request")) { %>
+                    <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-blue-300 w-full mb-3">
+                        <i data-feather="info" class="w-5 h-5 mr-1"></i>
+                        <p class="text-sm text-black">
+                          Return Request has been Approved at <span class="font-bold" ><%= new Date(order.return.approvedAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
+                        }) %>, </span><span class="font-bold"><%= new Date(order.return.approvedAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>.</span>
+                          The amount has been refunded to your <strong> NovaWallet </strong>
+                         </p>
+                       </div>
+                <% } %>
+                <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Declined Return Request")) { %>
+                    <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-red-300 w-full mb-3">
+                        <i data-feather="info" class="w-5 h-5 mr-1"></i>
+                        <p class="text-sm text-black">
+                          Return Request has been Declined at <span class="font-bold" ><%= new Date(order.return.declinedAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
+                        }) %>, </span><span class="font-bold"><%= new Date(order.return.declinedAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>.</span>
+                          <strong> Reason : </strong><%= order.return.declineReason %>
+                         </p>
+                       </div>
+                <% } %>
+                
                 <div class="order-card p-6 mb-6 border">
                     <h2 class="text-xl font-bold mb-4">Order Tracking</h2>
                     <div class="flex justify-between">
@@ -221,6 +238,8 @@
                             order.status[order.status.length - 1] === 'Delivered' ? 'bg-green-100 text-green-700' : 
                           order.status[order.status.length - 1] === 'Cancelled' ? 'bg-red-100 text-red-700' :
                           order.status[order.status.length - 1] === 'Return Order Requested' ? 'bg-yellow-400 text-black' :
+                          order.status[order.status.length - 1] === 'Approved Return Request' ? 'bg-green-400 text-black' :
+                          order.status[order.status.length - 1] === 'Declined Return Request' ? 'bg-red-400 text-black' :
                            'bg-gray-100 text-gray-700' %>">
                             <%= order.status[order.status.length - 1] %>
                           </span>
@@ -232,11 +251,14 @@
                    
                     <div class="divide-y divide-gray-200">
                         <% for( let i = 0; i < order.items.length; i++ ) { %>
+                            
                             <div class="py-4 flex items-center">
+                                
                                 <% if (!order.items[i].isCancelled && !order.isCancelled) { %>
+                                
                                     <img src="<%= order.items[i].productImage %>" class="product-image border rounded" alt="Product">
                                     <div class="py-4 flex flex-wrap items-center w-[50%]">
-                                       
+                                        
                                         <div class="ml-4 flex-1 ">
                                             <h4 class="font-medium"><%= order.items[i].productName %></h4>
                                             <p class="text-sm text-black">Color: <%= order.items[i].color %></p>
@@ -260,6 +282,35 @@
                                        
                                     </div>
                                 <% } %>
+                                <% if (order.items.length > 1) { %>
+                                    <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Delivered") && !order.status.includes("Approved Return Request") && !order.status.includes("Declined Return Request") && order.items[i].return.isRequested === false ) { %>
+                                        <div class="flex justify-end w-[50%] items-center ">
+                                            <button type="button" class="px-4 py-2 btn-primary font-bold text-black rounded-xl" onclick="openReturnModalForItem('<%- order._id %>','<%- i %>')">
+                                                Return Item
+                                            </button>
+                                        </div>
+                                    <% }else if(order.status[order.status.length - 1] !== "Return Order Requested" && !order.status.includes("Approved Return Request") && !order.status.includes("Declined Return Request") && order.items[i].return.isRequested === true && order.items[i].return.approvedAt === null && order.items[i].return.declinedAt === null) {%>
+                                            <div class="flex justify-end w-[50%] items-center ">
+                                                <button type="button" class="px-4 py-2 bg-yellow-400 font-bold text-black rounded-xl " disabled>
+                                                    Return Item Requested
+                                                </button>
+                                            </div>
+                                    <% }else if(order.status[order.status.length - 1] !== "Return Order Requested" && order.items[i].return.isRequested === true && order.items[i].return.approvedAt !== null) {%>
+                                        <div class="flex justify-end w-[50%] items-center ">
+                                            <button type="button" class="px-4 py-2 bg-green-400 font-bold text-black rounded-xl " >
+                                                Return Item Request Accepted
+                                            </button>
+                                        </div>
+                                        
+                                    <% }else if(order.status[order.status.length - 1] !== "Return Order Requested"  && order.items[i].return.isRequested === true && order.items[i].return.declinedAt !== null) {%>
+                                        <div class="flex justify-end w-[50%] items-center ">
+                                            <button type="button" class="px-4 py-2 bg-red-400 font-bold text-black rounded-xl">
+                                                Return Item Request Declined
+                                            </button>
+                                        </div>
+                                            
+                                    <% } %>  
+                                <% } %> 
                                 <% if (order.status[order.status.length - 1] === "Pending" && !order.items[i].isCancelled ) { %>
                                     <div class="flex justify-end w-[50%] items-center ">
                                         <button type="button" class="bg-red-400 hover:bg-red-500 p-2 font-bold rounded-xl" onclick="cancelItem('<%= order._id %>','<%= order.items[i]._id %>')" >Cancel Item</button>
@@ -270,6 +321,26 @@
                                     </div>
                                 <% } %>    
                             </div>
+                            <% if (order.items[i].return.declinedAt !== null && !order.status.includes("Declined Return Request")) { %>
+                                <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-red-300 w-full mb-3">
+                                    <i data-feather="info" class="w-5 h-5 mr-1"></i>
+                                    <p class="text-sm text-black">
+                                      Return Request has been Declined at <span class="font-bold" ><%= new Date(order.items[i].return.declinedAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
+                                    }) %>, </span><span class="font-bold"><%= new Date(order.items[i].return.declinedAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>.</span>
+                                      <strong> Reason : </strong><%= order.items[i].return.declineReason %>
+                                     </p>
+                                   </div>
+                            <% } %>
+                            <% if (order.items[i].return.approvedAt !== null && !order.status.includes("Approved Return Request")) { %>
+                                <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-blue-300 w-full mb-3">
+                                    <i data-feather="info" class="w-5 h-5 mr-1"></i>
+                                    <p class="text-sm text-black">
+                                      Return Request has been Approved at <span class="font-bold" ><%= new Date(order.items[i].return.approvedAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
+                                    }) %>, </span><span class="font-bold"><%= new Date(order.items[i].return.approvedAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>.</span>
+                                      The amount has been refunded to your <strong> NovaWallet </strong>
+                                     </p>
+                                   </div>
+                            <% } %>
                         <% } %>
                         
                         <!-- More items would go here -->
@@ -353,6 +424,11 @@
                          <% } %>
                         <p><strong>Total Amount to be Paid:</strong> $<%= order.paymentId.amountToBePaid %></p>
                         <p><strong>Total Paid:</strong> $<%= order.paymentId.amountPaid %></p>
+
+                        <% if (order.paymentId.amountRefunded > 0 || order.paymentId.amountToBeRefunded > 0) { %>
+                            <p><strong>Amount to be Refunded:</strong> $<%= order.paymentId.amountToBeRefunded %></p>
+                            <p><strong>Amount Refunded:</strong> $<%= order.paymentId.amountRefunded %></p>
+                        <% } %>
                     </div>
                 </div>
             </div>
@@ -371,7 +447,7 @@
       <h3 id="returnModalHeading">Return Order</h3>
       <p class="subtitle">Please select a reason for return</p>
   
-      <form id="returnForm" method="post" action="/orders/<%= order._id%>/return-order">
+      <form id="returnForm" method="post" action="" enctype="multipart/form-data">
         <!-- Reason -->
         <label for="returnReason">Reason</label>
         <select id="returnReason" name="returnReason" onchange="enableTextBox()">
@@ -387,11 +463,14 @@
         <!-- Message -->
         <label>Additional details (required if ‘Other’ is selected)</label>
         <textarea id="returnMessage"  rows="4" placeholder="Explain briefly..." disabled></textarea>
+
+        <label for="returnOrderMedia" >Upload an Image</label>
+        <input type="file" name="returnOrderMedia" id="returnOrderMedia" accept="image/*" class="border border-gray-300 p-2 rounded-md w-full">
   
         <!-- Buttons -->
         <div class="modal-actions">
           <button type="button" class="btn-cancel rounded-lg" onclick="closeReturnModal()">Cancel</button>
-          <button type="submit" class="btn-submit rounded-lg font-bold ">Submit Return</button>
+          <button type="submit" class="btn-submit rounded-lg font-bold text-black">Submit Return</button>
         </div>
       </form>
     </div>
@@ -400,19 +479,22 @@
 
     <script>
         feather.replace();
-        function openReturnModalForOrder(){
+        function openReturnModalForOrder(orderId){
             document.getElementById("returnModalHeading").innerText = "Return Order"
             document.getElementById("returnModal").style.display = "block"
+             document.getElementById("returnForm").action = `/orders/${orderId}/return-order`
         }
-        function openReturnModalForItem(){
+        function openReturnModalForItem(orderId,itemIndex){
             document.getElementById("returnModalHeading").innerText = "Return Item"
             document.getElementById("returnModal").style.display = "block"
+             document.getElementById("returnForm").action = `/orders/${orderId}/return-item?itemIndex=${itemIndex}`
         }
         function closeReturnModal() {
             document.getElementById("returnModal").style.display = "none"
         }
         document.getElementById("returnForm").addEventListener("submit",function(e){
             let returnReason = document.getElementById("returnReason").value
+            let uploadImage = document.getElementById("returnOrderMedia")
             if(returnReason === ""){
                 iziToast.error({
                     title : "Error",
@@ -434,6 +516,16 @@
                     return
                    }
                 }
+            }
+            if (uploadImage.files.length === 0) {
+                iziToast.error({
+                        title : "Error",
+                        message : "Please upload an image of the item in its current condition to verify your return request",
+                        position : "topRight",
+                        timeout : 5000
+                    })
+                    e.preventDefault()
+                    return
             }
         })
         function enableTextBox(){

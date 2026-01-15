@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/images/novamart.png" type="image/icon-x" />
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <title>Processing Payment - Novamart</title>
+  <style>
+    body {
+  margin: 0;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+  background: #f5f7fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  text-align: center;
+}
+
+.payment-status-icon {
+  width: 100px;
+  height: 100px;
+  background-color:#2ecc71;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#icon-check{
+  color: white;
+}
+
+h2 {
+  margin-bottom: 8px;
+  color: #333;
+}
+
+
+
+p {
+  color: #666;
+  font-size: 14px;
+}
+
+  </style>
+</head>
+<body>
+  <div>
+    <div class="container">
+      <div class="payment-status-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check" id="icon-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </div>
+      <h1>Payment Successful</h1>
+      <p>You will be redirected soon to <a href="/wallet">Wallet</a></p>
+    </div>
+    <div class="container">
+      <h1>Novamart</h1>
+    </div>
+  </div>
+  
+
+  
+</body>
+<script>
+feather.replace()
+setTimeout(function(){
+  window.location.href = "/wallet"
+},3000)
+
+</script>
+</html>

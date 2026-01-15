@@ -300,6 +300,8 @@ const resetDefaultAddress = async (req, res) => {
   return res.redirect("/address");
 };
 
+
+
 module.exports = {
   getProfile,
   getAddress,
@@ -308,5 +310,5 @@ module.exports = {
   deleteAddress,
   resetDefaultAddress,
   getEditProfile,
-  editProfile,
+  editProfile
 };

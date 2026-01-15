@@ -8,6 +8,7 @@
                  <!-- Left Column - Order Summary -->
                  <div class="w-[65%]">
                     <!-- Address Selection -->
+                    <input type="hidden" id="serverMessage"  value="<%= typeof message !== 'undefined' ? message : '' %>">
                     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-xl font-bold">Select Address</h2>
@@ -323,7 +324,7 @@
                             <button id="payWithWalletBtn" type="button" class="payBtn flex w-full justify-center items-center py-3 px-4  rounded-full ">
                                
                                 <h1  class="text-lg  font-bold mr-2">
-                                  Nova Wallet
+                                 Pay with Nova Wallet
                                 </h1>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 48 48">
                                     <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="3" stroke-linejoin="round" d="M43.5 21.09v-7.465a6.21 6.21 0 0 0-6.2-6.2H10.7a6.25 6.25 0 0 0-6.2 6.2v7.719" stroke-width="1" />
@@ -701,7 +702,7 @@
     </div>
     
     <script>
-        
+        let serverMessage = document.getElementById("serverMessage").value
         document.getElementById("cashOnDeliveryBtn").addEventListener("click",function(){
             document.getElementById("placeOrderBtn").classList.remove("hidden")
 
@@ -749,6 +750,13 @@
             document.getElementById("addAddressModal").classList.remove("hidden")
             document.getElementById("cancelAddAddressModalBtn").classList.add("hidden")
             document.getElementById("closeAddAddressModalBtn").classList.add("hidden")
+        }
+        if(serverMessage === "Insufficient Balance in NovaWallet, Please Top-up the wallet or Pay with Card"){
+            iziToast.error({
+                title : "Wallet",
+                message : serverMessage,
+                position : "topRight"
+            })
         }
     </script>
     

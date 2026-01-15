@@ -106,7 +106,7 @@
                             <% if (products[i].categoryOfferId !== null && products[i].variants[j].productOfferId !== undefined && products[i].variants[j].productOfferId.startDate <= now  && products[i].variants[j].productOfferId.endDate >= now && products[i].categoryOfferId.startDate <= now  && products[i].categoryOfferId.endDate >= now) { %>
                                     
                                     <% if (products[i].variants[j].productOfferId.discountType === "percentage") { %>
-                                      <%  productOfferPrice = products[i].variants[j].price - ((products[i].variants[j].price * products[i].productOfferId.discountValue ) / 100) %>
+                                      <%  productOfferPrice = products[i].variants[j].price - ((products[i].variants[j].price * products[i].variants[j].productOfferId.discountValue ) / 100) %>
                                     <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
                                         <% productOfferPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue  %>
                                     <% } %>

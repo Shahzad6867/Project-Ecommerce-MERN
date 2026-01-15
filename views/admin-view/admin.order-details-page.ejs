@@ -39,6 +39,9 @@
                             order.status[order.status.length - 1] === 'Shipped' ? 'bg-blue-100 text-blue-700' : 
                                 order.status[order.status.length - 1] === 'Delivered' ? 'bg-green-100 text-green-700' : 
                             order.status[order.status.length - 1] === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                            order.status[order.status.length - 1] === 'Return Order Requested' ? 'bg-yellow-400 text-black' :
+                          order.status[order.status.length - 1] === 'Approved Return Request' ? 'bg-green-400 text-black' :
+                          order.status[order.status.length - 1] === 'Declined Return Request' ? 'bg-red-400 text-black' :
                             'bg-gray-100 text-gray-700' %>">
                                 <%= order.status[order.status.length - 1] %>
                             </span>
@@ -75,6 +78,49 @@
                                                 <p class="font-medium text-gray-400">Price : $<%= order.items[i].price %></p>
                                             </div>
                                         
+                                        </div>
+                                    <% } %>
+                                    <% if(order.status[order.status.length - 1] !== "Return Order Requested" && !order.status.includes("Approved Return Request") && !order.status.includes("Declined Return Request") && order.items[i].return.isRequested === true && order.items[i].return.approvedAt === null && order.items[i].return.declinedAt === null) {%>
+                                        <div class="w-[50%]">
+                                            <div class="flex justify-end w-full items-center ">
+                                                <button type="button" class="px-3 py-1 bg-yellow-400 font-bold text-black rounded-full " disabled>
+                                                    Return Item Requested
+                                                </button>
+                                            </div>
+                                            <div class="flex justify-end w-full items-center mt-2 ">
+                                                <select name="updateOrderItemStatus" id="updateOrderItemStatus" class=" mr-1 px-1 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                                    <option value="">Update Status</option>
+                                                    <option value="Approve Return Request" >Approve Return Request</option>
+                                                    <option value="Decline Return Request" >Decline Return Request</option>
+                                                </select>
+                                                <button type="button" class="btn-primary rounded-md p-1" onclick="updateOrderItemStatus('<%- order._id %>','<%- i %>')">
+                                                    <i data-feather="check" ></i>
+                                                </button>
+                                            </div>
+                                            <div id="declineItemReasonDiv" class="w-full flex justify-end mt-2 hidden">
+                                               <div class="w-[73%] border rounded-md p-2">
+                                                    <div class="flex justify-between items-center">
+                                                        <label for="declineItemReason">Decline Item Reason</label>
+                                                        <span class="text-red-600 text-xs">Mandatory</span>
+                                                    </div>
+                                                  
+                                                  <textarea name="declineItemReason" rows="3" id="declineItemReason" class=" w-full px-1 py-1 border border-gray-400  rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                                               </div>
+                                            </div>
+                                            
+                                        </div>
+                                        
+                                    <%} else if(order.status[order.status.length - 1] !== "Return Order Requested" && order.items[i].return.isRequested === true && order.items[i].return.approvedAt !== null ) {%>
+                                        <div class="flex justify-end w-full items-center ">
+                                            <button type="button" class="px-3 py-1 bg-green-400 font-bold text-black rounded-full " disabled>
+                                                Return Item Request Approved
+                                            </button>
+                                        </div>
+                                    <%}  if(order.status[order.status.length - 1] !== "Return Order Requested" && order.items[i].return.isRequested === true && order.items[i].return.declinedAt !== null ) {%>
+                                        <div class="flex justify-end w-full items-center ">
+                                            <button type="button" class="px-3 py-1 bg-red-400 font-bold text-black rounded-full " disabled>
+                                                Return Item Request Declined
+                                            </button>
                                         </div>
                                     <% } %>
                                     <% if(order.isCancelled || order.items[i].isCancelled) {%>
@@ -118,6 +164,26 @@
                         </div>
                     </div>
 
+                    <% if (order.return.isRequested === true && order.return.proof !== null) { %>
+                     <div class="w-full p-4 order-card rounded-md bg-white flex justify-center h-[30%]  items-center">
+                        <img src="<%= order.return.proof %>" class="rounded-md max-w-[100%] max-h-[100%]">
+                     </div>
+                    <% } %>
+                    <% for( let i = 0; i < order.items.length; i++ ) { %>
+                        <% if (order.items[i].return.isRequested === true && order.items[i].return.proof !== null) { %>
+                           
+                            <div class="w-full p-4 order-card rounded-md bg-white mb-4">
+                                <div class="py-2">
+                                    <h1><%= order.items[i].productName %>-<%= order.items[i].color %>-<%= order.items[i].size %></h1>
+                                </div>
+                               <div class="w-full pt-2 rounded-md bg-white flex justify-center   items-center">
+                                  <img src="<%= order.items[i].return.proof %>" class="rounded-md max-w-[100%] max-w-64 object-contain">
+                               </div>
+                               
+                            </div>
+                           <% } %>
+                    <% } %>
+                   
                 
                     
                     
@@ -129,7 +195,7 @@
                         <h2 class="text-xl font-bold mb-4">Update Order Status</h2>
                         <div class="flex justify-between">
                             <select id="orderUpdateStatus" name="status" class="w-[50%] px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
-                                <% if (order.status[order.status.length - 1] === "Delivered" || order.status[order.status.length - 1] === "Cancelled") { %>
+                                <% if (order.status[order.status.length - 1] === "Delivered" || order.status[order.status.length - 1] === "Cancelled" ||  order.status[order.status.length - 1] === "Return Order Requested") { %>
                                     <option name="" value="" id="" selected disabled><%= order.status[order.status.length - 1] %></option>
                                 <% } else { %>
                                     <option name="" value="" id="" selected ><%= order.status[order.status.length - 1] %></option>
@@ -143,13 +209,26 @@
                                     <option value="Out for Delivery" >Out for Delivery</option>
                                 <% } else if(order.status[order.status.length - 1] === "Out for Delivery"){ %>
                                         <option value="Delivered" >Delivered</option>
+                                <% } else if(order.status[order.status.length - 1] === "Return Order Requested"){ %>
+                                    <option value="Approve Return Request" >Approve Return Request</option>
+                                    <option value="Decline Return Request" >Decline Return Request</option>
                                 <% } %>
                             </select>
-                            
+                           
                             <button type="button" id="updateStatusBtn" class="px-4 py-2 btn-primary text-gray-700 rounded-md hover:bg-gray-100 flex items-center" onclick="updateStatus('<%- order._id %>')">
                                 Update Status
                             </button>
                         </div>
+                        <div id="declineReasonDiv" class=" mt-2 p-1 border border-gray-400 rounded-md hidden">
+
+                            <div class="flex justify-between items-center"> 
+                                <label for="">Decline Reason : </label>
+                                <span class="text-red-600 text-xs mr-2">Mandatory</span>
+                            </div>
+                            
+                            <textarea id="declineReasonTextBox" name="declineReason" rows="4" class="border border-gray-400 w-full mt-1 rounded-md p-1" disabled></textarea>
+                        </div>
+                        
                     </div>
                     <div class="order-card p-6 border">
                         <h3 class="text-lg font-semibold mb-3 flex items-center">
@@ -211,6 +290,28 @@
 
     <script>
         feather.replace();
+
+        document.getElementById("orderUpdateStatus").addEventListener("change",function () {
+            if(this.value === "Decline Return Request"){
+                document.getElementById("declineReasonDiv").classList.remove("hidden") 
+                document.getElementById("declineReasonTextBox").disabled = false
+            }
+            if(this.value === "Approve Return Request"){
+                document.getElementById("declineReasonDiv").classList.add("hidden") 
+                document.getElementById("declineReasonTextBox").disabled = true
+            }
+        })
+
+        document.getElementById("updateOrderItemStatus").addEventListener("change",function () {
+            if(this.value === "Decline Return Request"){
+                document.getElementById("declineItemReasonDiv").classList.remove("hidden") 
+                document.getElementById("declineItemReason").disabled = false
+            }
+            if(this.value === "Approve Return Request"){
+                document.getElementById("declineItemReasonDiv").classList.add("hidden") 
+                document.getElementById("declineItemReason").disabled = true
+            }
+        })
         function cancelItem(orderId,itemId){
             iziToast.question({
         theme : "light",
@@ -293,7 +394,82 @@
             document.getElementById("updationOverlay").classList.remove("hidden")
             fetch(`/admin/orders/${orderId}/update-status?status=${statusToBe}`,{method : "PATCH"})
             .then(res => window.location.href = `/admin/orders/${orderId}`)
+          }else if(statusToBe !== "" && statusToBe === "Approve Return Request"){
+            document.getElementById("updateStatusBtn").disabled = true
+            document.getElementById("updationOverlay").classList.remove("hidden")
+            fetch(`/admin/orders/${orderId}/update-status?status=${statusToBe}`,{method : "PATCH"})
+            .then(res => window.location.href = `/admin/orders/${orderId}`)
+          }else if(statusToBe !== "" && statusToBe === "Decline Return Request"){
+            let declineReason = document.getElementById("declineReasonTextBox").value
+            if(declineReason === "" || declineReason === undefined){
+                iziToast.error({
+                    title : "Update Status",
+                    message : "Please provide a Decline Reason",
+                    position : "topRight"
+                })
+                event.preventDefault()
+                return
+            }
+            document.getElementById("updateStatusBtn").disabled = true
+            document.getElementById("updationOverlay").classList.remove("hidden")
+            fetch(`/admin/orders/${orderId}/update-status?status=${statusToBe}`,{
+                method : "PATCH",
+                headers : {
+                   'Content-Type': 'application/json'
+                },
+                body : JSON.stringify({
+                    declineReason : declineReason
+                })
+            })
+            .then(res => window.location.href = `/admin/orders/${orderId}`)
           }
+        }
+
+        function updateOrderItemStatus(orderId,itemIndex){
+            let updateItemStatus = document.getElementById("updateOrderItemStatus")
+            if(updateItemStatus.value === ""){
+                iziToast.error({
+                    title : "Update Item Status",
+                    message : "Please select an option",
+                    position : "topRight"
+                })
+                event.preventDefault()
+                return
+            }
+            if(updateItemStatus.value !== "" && updateItemStatus.value === "Approve Return Request"){
+            document.getElementById("updateStatusBtn").disabled = true
+            document.getElementById("updationOverlay").classList.remove("hidden")
+            fetch(`/admin/orders/${orderId}/update-item-status?status=${updateItemStatus.value}&itemIndex=${itemIndex}`,{method : "PATCH"})
+                .then(res => window.location.href = `/admin/orders/${orderId}`)
+                .catch(error => console.log(error))
+          }
+          if(updateItemStatus.value !== "" && updateItemStatus.value === "Decline Return Request"){
+            let declineReason = document.getElementById("declineItemReason").value
+            if(declineReason === "" || declineReason === undefined){
+                iziToast.error({
+                    title : "Update Item Status",
+                    message : "Please provide a Decline Reason",
+                    position : "topRight"
+                })
+                event.preventDefault()
+                return
+            }
+            document.getElementById("updateStatusBtn").disabled = true
+            document.getElementById("updationOverlay").classList.remove("hidden")
+            fetch(`/admin/orders/${orderId}/update-item-status?status=${updateItemStatus.value}&itemIndex=${itemIndex}`,{
+                method : "PATCH",
+                headers : {
+                   'Content-Type': 'application/json'
+                },
+                body : JSON.stringify({
+                    declineReason : declineReason
+                })
+            })
+                .then(res => window.location.href = `/admin/orders/${orderId}`)
+                .catch(error => console.log(error))
+          }
+               
+            
         }
     </script>
 </body>

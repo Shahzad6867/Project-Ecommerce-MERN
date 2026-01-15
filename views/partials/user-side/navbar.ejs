@@ -34,7 +34,7 @@
             <div class="flex items-center">
                 <a id="nav-logo" href="/" class="text-2xl font-bold text-black" >NovaMart</a>
             </div>
-            <input type="hidden" id="serverMessageNavbar"  value="<%= typeof message !== 'undefined' ? message : '' %>">
+            
             <!-- Search Bar -->
             <div class="flex-1 mx-8">
                 <!-- <div class="relative">
@@ -398,27 +398,7 @@
 
        
 
-       if(serverMessageNavbar === "Product Unavailable"){
-                iziToast.info({
-                    title : "Cart",
-                    message : serverMessageNavbar,
-                    position : "topRight"
-                })
-       }
-       if(serverMessageNavbar === "Product has been added to Cart"){
-                iziToast.info({
-                    title : "Cart",
-                    message : serverMessageNavbar,
-                    position : "topRight"
-                })
-       }
-       if(serverMessageNavbar === "Product has been removed from your Cart"){
-                iziToast.info({
-                    title : "Cart",
-                    message : serverMessageNavbar,
-                    position : "topRight"
-                })
-       }
+      
 
 
     </script>

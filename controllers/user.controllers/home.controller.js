@@ -273,6 +273,8 @@ const lookUpProducts = async function(query,priceQuery,limit){
     }])
     return products  
 }
+
+
 const getHomepage = async(req,res) => {
     try {
       let message = req.session.message || null 

@@ -12,7 +12,8 @@ const homeController = require("../controllers/user.controllers/home.controller.
 const profileManagementController = require("../controllers/user.controllers/userProfileManagement.controller.js")
 const cartManagementController = require("../controllers/user.controllers/cartManagement.controller.js")
 const orderManagementController = require("../controllers/user.controllers/orderManagement.controller.js")
-
+const userWalletController = require("../controllers/user.controllers/userWallet.controller.js")
+ 
 
 
 router.get("/auth/google",passport.authenticate("google",{scope : ["profile","email"]}))
@@ -70,10 +71,18 @@ router.patch("/orders/:id/cancel-item",orderManagementController.cancelItem)
 router.patch("/orders/:id/cancel-order",orderManagementController.cancelOrder)
 router.get("/orders/:id/invoice",orderManagementController.getInvoice)
 router.post("/cart/reorder",orderManagementController.reorder)
-router.post("/orders/:id/return-order",orderManagementController.returnOrder)
-// router.post("/create-checkout-session",userAuth.checkSession,orderManagementController.createCheckoutSession)
+router.post("/orders/:id/return-order",upload.single("returnOrderMedia"),orderManagementController.returnOrder)
+router.post("/orders/:id/return-item",upload.single("returnOrderMedia"),orderManagementController.returnItem)
 router.get("/checkout/payment-processing/:id",userAuth.checkSession,orderManagementController.getPaymentProcessingPage)
 router.get("/order-confirmation/:id",userAuth.checkSession,orderManagementController.getOrderConfirmationPage)
 router.get("/order-status/:id",userAuth.checkSession,orderManagementController.getOrderStatus)
 router.get("/orders/:id/pending-payment",userAuth.checkSession,orderManagementController.retryPayment)
+
+// User Wallet
+router.get("/wallet",userAuth.checkSession,userWalletController.getWallet)
+router.post("/wallet/top-up",userWalletController.walletTopUp)
+router.get("/payment-processing/:id",userAuth.checkSession,userWalletController.getPaymentProcessingPage)
+router.get("/payment-status/:id",userAuth.checkSession,userWalletController.getPaymentStatus)
+router.get("/payment-successful",userAuth.checkSession,userWalletController.getPaymentSuccesful)
+router.get("/payment-failed/:id",userAuth.checkSession,userWalletController.getPaymentFailed)
 module.exports = router

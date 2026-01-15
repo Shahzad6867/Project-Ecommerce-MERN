@@ -10,13 +10,21 @@ const paymentSchema = new Schema({
     orderId : {
         type : mongoose.Schema.Types.ObjectId,
         ref : "Order",
-        required : true,
         default : null
     },
     amountToBePaid : {
-        type : Number
+        type : Number,
+        default : 0
     },
     amountPaid : {
+        type : Number,
+        default : 0
+    },
+    amountToBeRefunded : {
+        type : Number,
+        default : 0
+    },
+    amountRefunded : {
         type : Number,
         default : 0
     },
@@ -28,9 +36,17 @@ const paymentSchema = new Schema({
         type : String,
         enum : ["Cash on Delivery","Pay with Stripe","Pay with NovaWallet"]
     },
+    paymentIntentId : {
+        type : String,
+        default : null
+    },
     status : {
         type : String,
         enum : ["Pending","Paid Successfully","Payment Failed","Order Cancelled"]
+    },
+    relatedTo : {
+        type : String,
+        enum : ["Order","Wallet"]
     },
     orderWillBeCancelledAt : {
         type : Date,

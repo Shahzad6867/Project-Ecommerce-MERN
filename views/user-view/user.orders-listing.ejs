@@ -1,6 +1,6 @@
 <%- include("../partials/user-side/navbar.ejs",{title : "Novamart - My Orders"})%>
 <div class="flex">
-<%- include("../partials/user-side/userProfile-sidebar.ejs",{dashboardBtn : "",profileBtn : "",ordersBtn : "",shoppingCartBtn : "",addressBtn : "active disabled",walletBtn : ""})%>
+<%- include("../partials/user-side/userProfile-sidebar.ejs",{dashboardBtn : "",profileBtn : "",ordersBtn : "active disabled",shoppingCartBtn : "",addressBtn : "",walletBtn : ""})%>
         <div class="main-content">
  
             <div class="flex justify-between items-center mb-8">
@@ -27,7 +27,7 @@
                     <!-- Order 1 -->
                     <% orders.forEach(order => { %>
                         <div class="order-card p-6 border rounded-lg mb-6 bg-white shadow-sm">
-                          <% if ((order.paymentId.status === "Pending" ||order.paymentId.status === "Payment Failed"  ) && order.paymentId.paymentMethod === "Pay with Stripe" && !order.status.includes("Cancelled")) { %>
+                          <% if ((order.paymentId.status === "Pending" || order.paymentId.status === "Payment Failed"  ) && order.paymentId.paymentMethod === "Pay with Stripe" && !order.status.includes("Cancelled")) { %>
                             <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-yellow-300 w-[80%] mb-3">
                              <i data-feather="alert-triangle" class="w-5 h-5 mr-1"></i>
                              <p class="text-sm text-black">
@@ -37,6 +37,26 @@
                               </p>
                             </div>
                            <% } %>
+                           <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Approved Return Request")) { %>
+                            <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-blue-300 w-[70%] mb-3">
+                                <i data-feather="info" class="w-5 h-5 mr-1"></i>
+                                <p class="text-sm text-black">
+                                  Return Request has been Approved at <span class="font-bold" ><%= new Date(order.return.approvedAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
+                                }) %>, </span><span class="font-bold"><%= new Date(order.return.approvedAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>.</span>
+                                  The amount has been refunded to your <strong>NovaWallet</strong>.
+                                 </p>
+                               </div>
+                        <% } %>
+                           <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Declined Return Request")) { %>
+                            <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-red-300 w-full mb-3">
+                                <i data-feather="info" class="w-5 h-5 mr-1"></i>
+                                <p class="text-sm text-black">
+                                  Return Request has been Declined at <span class="font-bold" ><%= new Date(order.return.declinedAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
+                                }) %>, </span><span class="font-bold"><%= new Date(order.return.declinedAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>.</span>
+                                  <strong> Reason : </strong><%= order.return.declineReason %>
+                                 </p>
+                               </div>
+                        <% } %>
                           <!-- Top Section -->
                           <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
                             <div>
@@ -84,6 +104,8 @@
                                 order.status[order.status.length - 1] === 'Delivered' ? 'bg-green-100 text-green-700' : 
                               order.status[order.status.length - 1] === 'Cancelled' ? 'bg-red-100 text-red-700' :
                               order.status[order.status.length - 1] === 'Return Order Requested' ? 'bg-yellow-400 text-black' :
+                              order.status[order.status.length - 1] === 'Approved Return Request' ? 'bg-green-400 text-black' :
+                              order.status[order.status.length - 1] === 'Declined Return Request' ? 'bg-red-400 text-black' :
                                'bg-gray-100 text-gray-700' %>">
                                 <%= order.status[order.status.length - 1] %>
                               </span>

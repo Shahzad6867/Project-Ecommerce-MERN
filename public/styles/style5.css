@@ -432,3 +432,24 @@
   padding: 8px 14px;
   cursor: pointer;
 }
+.wallet-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+.transaction-item {
+  transition: all 0.3s;
+}
+.transaction-item:hover {
+  background: #f8f8f8;
+}
+.wallet-balance {
+  background: linear-gradient(180deg, #2eec71 0%, #3c5445 100%);
+  color: white;
+}
+.credit {
+  color: #2eec71;
+}
+.debit {
+  color: #ef4444;
+}

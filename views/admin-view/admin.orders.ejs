@@ -67,108 +67,119 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-            <% for(let i = 0; i < orders.length; i++ ) { %>
-              <% let sumOfQuantity = 0 %>
-             
-                <tr>
-                 
-                  <td class="px-2 py-4 whitespace-nowrap text-sm text-center text-gray-500">
-                    <%= i + 1 %>
-                  </td>
+         <% if (orders.length > 0) { %>
+          <% for(let i = 0; i < orders.length; i++ ) { %>
+            <% let sumOfQuantity = 0 %>
+           
+              <tr>
                
-                  <!-- Product info (image + name) only for first variant -->
-                  <td class="px-2 py-4 whitespace-wrap text-center">
-                    <div class="flex items-center justify-center">
-                      
-                      <div>
-                      
-                          <div class="text-sm font-medium uppercase text-gray-900">
-                         <%= orders[i].orderId %>
-                          </div>
-                        
-
-                        
-                      </div>
-                    </div>
-                  </td>
-                  
-          
-                
-                  <td class="px-2 py-4 whitespace-nowrap  text-sm text-center text-gray-500">
-                    <%= orders[i].userId.firstName %> <%= orders[i].userId.lastName %>
-                  </td>
-                  <td class="px-2 py-4 whitespace-nowrap  text-sm text-center text-gray-500">
-                    <%= new Date(orders[i].statusTimeline.orderedAt).toLocaleDateString("en-IN", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric"
-                  }) %> • <%= new Date(orders[i].statusTimeline.orderedAt).toLocaleTimeString('en-US', { 
-                          hour: '2-digit', 
-                          minute: '2-digit', 
-                          hour12: true 
-                      }) %>
-                  </td>
-          
-                  <!-- Variant-specific details -->
-                  <td class="px-2 py-2 text-center whitespace-nowrap text-sm font-large text-gray-500">
-                   
-                    <% for( let j = 0; j < orders[i].items.length; j++ ) { %>
-                      <% if (!orders[i].items[j].isCancelled) { %>
-                        <% sumOfQuantity += orders[i].items[j].quantity %>
-                     <% } %>
-                    <% } %>
-                       
-                         
-                 
-                    <%= sumOfQuantity %>
-                  </td>
-                  <td class="px-2 py-2 whitespace-nowrap text-sm text-center font-large text-gray-500">
-                    $ <%= orders[i].grandTotal %> 
-                  </td>
-                  <td class="px-2 py-2 whitespace-nowrap text-sm text-center font-large text-gray-500">
-                     <%= orders[i].paymentId.paymentMethod %> 
-                  </td>
-                  <td class="px-2 py-6 text-center text-sm whitespace-nowrap">
-                    <span class="px-3 py-1 rounded-full text-sm font-bold whitespace-nowrap inline-block
-                          <%= orders[i].paymentId.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
-                        orders[i].paymentId.status === 'Paid Successfully' ? 'bg-green-100 text-green-700' :
-                        orders[i].paymentId.status === 'Payment Failed' ? 'bg-red-100 text-red-700' : 
-                        'bg-gray-100 text-gray-700' %>">
-                          <%= orders[i].paymentId.status %>
-                     </span>
-                  </td>
-          
-                  <!-- Status (only once for product) -->
-                  <td class="px-2 py-6 text-center text-sm whitespace-nowrap">
-
+                <td class="px-2 py-4 whitespace-nowrap text-sm text-center text-gray-500">
+                  <%= i + 1 %>
+                </td>
+             
+                <!-- Product info (image + name) only for first variant -->
+                <td class="px-2 py-4 whitespace-wrap text-center">
+                  <div class="flex items-center justify-center">
                     
+                    <div>
+                    
+                        <div class="text-sm font-medium uppercase text-gray-900">
+                       <%= orders[i].orderId %>
+                        </div>
                       
-                    <span class="px-3 py-1 rounded-full text-sm font-bold whitespace-nowrap inline-block
 
-                                <%= orders[i].status[orders[i].status.length - 1] === 'Pending' ? 'bg-gray-100 text-gray-700' :
-                               orders[i].status[orders[i].status.length - 1] === 'Processed' ? 'bg-yellow-100 text-yellow-700' : 
-                               orders[i].status[orders[i].status.length - 1] === 'Shipped' ? 'bg-blue-100 text-blue-700' : 
-                                orders[i].status[orders[i].status.length - 1] === 'Delivered' ? 'bg-green-100 text-green-700' : 
-                              orders[i].status[orders[i].status.length - 1] === 'Cancelled' ? 'bg-red-100 text-red-700' :
-                              orders[i].status[orders[i].status.length - 1] === 'Return Order Requested' ? 'bg-yellow-400  text-black' :
-                               'bg-gray-100 text-gray-700' %>">
-                                <%= orders[i].status[orders[i].status.length - 1] %>
-                      </span>
+                      
+                    </div>
+                  </div>
+                </td>
+                
+        
+              
+                <td class="px-2 py-4 whitespace-nowrap  text-sm text-center text-gray-500">
+                  <%= orders[i].userId.firstName %> <%= orders[i].userId.lastName %>
+                </td>
+                <td class="px-2 py-4 whitespace-nowrap  text-sm text-center text-gray-500">
+                  <%= new Date(orders[i].statusTimeline.orderedAt).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric"
+                }) %> • <%= new Date(orders[i].statusTimeline.orderedAt).toLocaleTimeString('en-US', { 
+                        hour: '2-digit', 
+                        minute: '2-digit', 
+                        hour12: true 
+                    }) %>
+                </td>
+        
+                <!-- Variant-specific details -->
+                <td class="px-2 py-2 text-center whitespace-nowrap text-sm font-large text-gray-500">
+                 
+                  <% for( let j = 0; j < orders[i].items.length; j++ ) { %>
+                    <% if (!orders[i].items[j].isCancelled) { %>
+                      <% sumOfQuantity += orders[i].items[j].quantity %>
+                   <% } %>
+                  <% } %>
+                     
+                       
+               
+                  <%= sumOfQuantity %>
+                </td>
+                <td class="px-2 py-2 whitespace-nowrap text-sm text-center font-large text-gray-500">
+                  $ <%= orders[i].grandTotal %> 
+                </td>
+                <td class="px-2 py-2 whitespace-nowrap text-sm text-center font-large text-gray-500">
+                   <%= orders[i].paymentId.paymentMethod %> 
+                </td>
+                <td class="px-2 py-6 text-center text-sm whitespace-nowrap">
+                  <span class="px-3 py-1 rounded-full text-sm font-bold whitespace-nowrap inline-block
+                        <%= orders[i].paymentId.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+                      orders[i].paymentId.status === 'Paid Successfully' ? 'bg-green-100 text-green-700' :
+                      orders[i].paymentId.status === 'Payment Failed' ? 'bg-red-100 text-red-700' : 
+                      'bg-gray-100 text-gray-700' %>">
+                        <%= orders[i].paymentId.status %>
+                   </span>
+                </td>
+        
+                <!-- Status (only once for product) -->
+                <td class="px-2 py-6 text-center text-sm whitespace-nowrap">
+
                   
-                  </td>
+                    
+                  <span class="px-3 py-1 rounded-full text-sm font-bold whitespace-nowrap inline-block
+
+                              <%= orders[i].status[orders[i].status.length - 1] === 'Pending' ? 'bg-gray-100 text-gray-700' :
+                             orders[i].status[orders[i].status.length - 1] === 'Processed' ? 'bg-yellow-100 text-yellow-700' : 
+                             orders[i].status[orders[i].status.length - 1] === 'Shipped' ? 'bg-blue-100 text-blue-700' : 
+                              orders[i].status[orders[i].status.length - 1] === 'Delivered' ? 'bg-green-100 text-green-700' : 
+                            orders[i].status[orders[i].status.length - 1] === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                            orders[i].status[orders[i].status.length - 1] === 'Return Order Requested' ? 'bg-yellow-400  text-black' :
+                             'bg-gray-100 text-gray-700' %>">
+                              <%= orders[i].status[orders[i].status.length - 1] %>
+                    </span>
+                
+                </td>
+        
+                <!-- Actions only once -->
+                <td class="px-2 py-4 text-center text-sm text-gray-500 w-[110px] whitespace-nowrap">
+                    <a href="/admin/orders/<%= orders[i]._id %>">
+                      <button type="button" class="text-black flex items-center gap-1 border shadow-md px-2 py-2 rounded-lg whitespace-nowrap min-w-[70px]">
+                    
+                        <i data-feather="eye" class="w-4 h-4 mr-1"></i> View 
+                      </button>
+                    </a>
+                    
+                </td>
+              </tr>
+           <% } %>
+         <% } else {%>
           
-                  <!-- Actions only once -->
-                  <td class="px-2 py-4 text-center text-sm text-gray-500 w-[110px] whitespace-nowrap">
-                      <a href="/admin/orders/<%= orders[i]._id %>">
-                        <button type="button" class="text-black flex items-center gap-1 border shadow-md px-2 py-2 rounded-lg whitespace-nowrap min-w-[70px]">
-                      
-                          <i data-feather="eye" class="w-4 h-4 mr-1"></i> View 
-                        </button>
-                      </a>
-                      
-                  </td>
-                </tr>
-             <% } %>
+              <tr >
+                <td></td>
+                <td class="text-center py-2">
+                  <h1>No Orders Yet !</h1>
+                </td>
+              </tr>
+          
+          <% } %>
            
           </tbody>
       </table>
@@ -204,7 +215,7 @@
         </a>
         <% } %>
         <a href="/admin/orders?page=<%= Number(page) < pages ? Number(page) + 1 : pages %>">
-          <% if (Number(page) === pages) { %>
+          <% if (Number(page) === pages || Number(page) === 1) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Next
             </button>

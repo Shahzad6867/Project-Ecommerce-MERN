@@ -1,4 +1,5 @@
 const User = require("../../models/user.model.js");
+const Wallet = require("../../models/wallet.model.js");
 const Otp = require("../../models/user-otp.model.js");
 const {otpGenerator} = require("../../config/otpGenerator.js")
 const mailer = require("../../config/nodemailer.js")
@@ -48,6 +49,12 @@ const getUserOtp = async (req, res) => {
           isVerified: true,
         });
         let savedUser = await newUser.save();
+        let wallet = new Wallet({
+          userId : savedUser._id,
+          balanceAmount : 0,
+          transactions : []
+        })
+        await wallet.save()
         req.session.message = "User Created Successfully, Please Log In";
         delete req.session.otpUser
         return res.redirect("/login");

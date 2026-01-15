@@ -1,6 +1,7 @@
 const passport = require("passport")
 const GoogleStrategy = require("passport-google-oauth20").Strategy
 const User = require("../models/user.model")
+const Wallet = require("../models/wallet.model")
 const cloudinary = require("./cloudinaryConfig.js")
 require("dotenv").config()
 
@@ -27,7 +28,14 @@ passport.use( new GoogleStrategy({
                 googleId : profile.id
             })
 
-            await user.save()
+            let savedUser = await user.save()
+
+            wallet = new Wallet({
+                userId : savedUser._id,
+                balanceAmount : 0,
+                transactions : []
+            })
+            await wallet.save()
             return done(null,user)
         }
     } catch (error) {
