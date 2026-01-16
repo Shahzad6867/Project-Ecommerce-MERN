@@ -15,6 +15,7 @@ body {
   box-shadow: 2px 0 10px rgba(0,0,0,0.05);
   padding: 8px;
   transition: transform 0.3s ease-in-out;
+  z-index: 1;
 }
 /* Closed state */
 .sidebar-closed {

@@ -1,10 +1,15 @@
-<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - Order Detail Page"}) %>
+<!-- Header -->
+<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - Order Management"}) %>
+<!-- Navbar -->
 <%- include("../partials/admin-side/navbar.ejs") %>
-   <div class="relative">
-    <div id="updationOverlay" class="absolute w-full h-full opacity-50 z-[99] px-[35rem] py-[20rem] bg-black hidden">
+<!-- Sidebar -->
+<%- include("../partials/admin-side/sidebar.ejs",{customerBtn : "",categoriesBtn : "",brandsBtn : "",productsBtn : "", ordersBtn : "active disabled",offersBtn : ""}) %>
+   <div class="main-content">
+    <div id="updationOverlay" class="absolute flex justify-center items-center w-full h-full opacity-50 z-[99] top-0 left-0 bg-black hidden">
         <h1 class="text-white text-5xl ">Updating ...</h1>
     </div>
-        <div class="w-full p-10 mt-5 ">
+    </div>
+        <div class="w-full px-10 ">
             <input type="text" id="serverMessage" value="<%= message ? message : ' ' %>" hidden>
             <div class="flex justify-between items-center mb-8 ">
                 <div>
