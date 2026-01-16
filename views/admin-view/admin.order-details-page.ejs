@@ -3,7 +3,7 @@
 <!-- Navbar -->
 <%- include("../partials/admin-side/navbar.ejs") %>
 <!-- Sidebar -->
-<%- include("../partials/admin-side/sidebar.ejs",{customerBtn : "",categoriesBtn : "",brandsBtn : "",productsBtn : "", ordersBtn : "active disabled",offersBtn : ""}) %>
+<%- include("../partials/admin-side/sidebar.ejs",{customerBtn : "",categoriesBtn : "",brandsBtn : "",productsBtn : "", ordersBtn : "active disabled",offersBtn : "",couponsBtn : "",reportsBtn : ""}) %>
    <div class="main-content">
     <div id="updationOverlay" class="absolute flex justify-center items-center w-full h-full opacity-50 z-[99] top-0 left-0 bg-black hidden">
         <h1 class="text-white text-5xl ">Updating ...</h1>
@@ -160,6 +160,12 @@
                                         <span class="text-gray-600">Tax</span>
                                         <span class="font-medium">$<%= order.tax %></span>
                                     </div>
+                                    <% if (order.discount !== null) { %>
+                                        <div class="flex justify-between py-2">
+                                            <span class="text-gray-600">Discount</span>
+                                            <span class="font-medium">- $<%= order.discount %></span>
+                                        </div>
+                                    <% } %>
                                     <div class="flex justify-between py-2 font-bold text-lg border-t border-gray-200 mt-2">
                                         <span>Total</span>
                                         <span>$<%= order.grandTotal %></span>

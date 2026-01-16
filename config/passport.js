@@ -3,7 +3,15 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy
 const User = require("../models/user.model")
 const Wallet = require("../models/wallet.model")
 const cloudinary = require("./cloudinaryConfig.js")
+const crypto = require("crypto")
 require("dotenv").config()
+
+function generateReferralCode(userId) {
+    const randomPart = crypto.randomBytes(3).toString("hex").toUpperCase(); 
+    const userPart = userId.toString().slice(-4).toUpperCase(); 
+
+    return `REF-${userPart}-${randomPart}`;
+}
 
 passport.use( new GoogleStrategy({
     clientID : process.env.GOOGLE_CLIENTID,
@@ -29,6 +37,7 @@ passport.use( new GoogleStrategy({
             })
 
             let savedUser = await user.save()
+            savedUser.referralCode = generateReferralCode(savedUser._id)
 
             wallet = new Wallet({
                 userId : savedUser._id,
@@ -36,6 +45,7 @@ passport.use( new GoogleStrategy({
                 transactions : []
             })
             await wallet.save()
+            await savedUser.save()
             return done(null,user)
         }
     } catch (error) {

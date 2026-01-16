@@ -6,6 +6,8 @@ const cloudinary = require("../../config/cloudinaryConfig.js")
 const {extractPublicId} = require("cloudinary-build-url")
 const fs = require("fs")
 const User = require("../../models/user.model");
+require("dotenv").config()
+
 const getProfile = async (req, res) => {
   const theUser = req.session.user || req.user;
   const productsFullList = await Product.find(
@@ -23,6 +25,7 @@ const getProfile = async (req, res) => {
     isDefault: true,
   });
   const user = await User.findOne({ _id: theUser._id });
+  const referralUrl = process.env.APP_BASE_URL + `?ref=${user.referralCode}`
   let message = req.session.message || null;
   delete req.session.message;
   res.render("user-view/user.profile-page.ejs", {
@@ -32,7 +35,8 @@ const getProfile = async (req, res) => {
     address,
     defaultAddress,
     cartItems,
-    cartItemsCount
+    cartItemsCount,
+    referralUrl
   });
 };
 

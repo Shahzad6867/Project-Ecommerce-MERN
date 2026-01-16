@@ -17,7 +17,7 @@ const getCheckout = async (req,res) => {
     let message = req.session.message || null
     delete req.session.message
     const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
-    const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
+    const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId").populate("couponApplied")
     const address = await Address.find({userId : user._id,isDefault : false})
     const defaultAddress = await Address.findOne({userId : user._id,isDefault : true})
     res.render("user-view/user.checkout-page.ejs",{user,productsFullList,cartItems,address,defaultAddress,message})
@@ -36,6 +36,15 @@ const placeOrder = async (req,res) => {
         percentage : 5,
         inclusive : false
     })
+    let coupon = null
+    if(req.body.discount && req.body.paymentMethod === "Pay with Stripe"){
+        coupon = await stripe.coupons.create({
+            amount_off : Number(req.body.discount) * 100,
+            duration : "once",
+            currency : "usd",
+            name : req.body.couponName
+        })
+    }
 
     const items = []
     const lineItems = []
@@ -142,6 +151,8 @@ const placeOrder = async (req,res) => {
         items : items,
         subTotal : req.body.subTotal,
         tax : req.body.tax,
+        discount : req.body.discount || null,
+        couponCode : req.body.couponName || null,
         grandTotal : req.body.grandTotal,
         paymentId : null,
         statusTimeline : {
@@ -176,7 +187,30 @@ const placeOrder = async (req,res) => {
             confirmedOrder.willBeCancelledAt = new Date(startDate.getTime() + (48 * 60 * 60 * 1000))
             await confirmedOrder.save()
             await savedPayment.save()
-                const session = await stripe.checkout.sessions.create({
+            let session = null
+            if(req.body.discount && req.body.paymentMethod === "Pay with Stripe"){
+                session = await stripe.checkout.sessions.create({
+                    mode : "payment",
+                    line_items : lineItems,
+                    discounts : [{coupon : coupon.id}],
+                    success_url : `http://localhost:1348/checkout/payment-processing/${confirmedOrder._id}`,
+                    cancel_url : `http://localhost:1348/order-confirmation/${confirmedOrder._id}?paymentId=${savedPayment._id}&status=Cancelled`,
+                    customer_email : user.email,
+                    metadata : {
+                        user : user._id.toString(),
+                        payment : savedPayment._id.toString(),
+                        for : "Order"
+                    },
+                    payment_intent_data : {
+                        metadata : {
+                            user : user._id.toString(),
+                            payment : savedPayment._id.toString(),
+                            for : "Order"
+                        }
+                    }
+                })
+            }else{
+                session = await stripe.checkout.sessions.create({
                     mode : "payment",
                     line_items : lineItems,
                     success_url : `http://localhost:1348/checkout/payment-processing/${confirmedOrder._id}`,
@@ -195,6 +229,8 @@ const placeOrder = async (req,res) => {
                         }
                     }
                 })
+            }
+                
 
                 return res.redirect(session.url)
             } catch (error) {
@@ -264,24 +300,56 @@ const retryPayment = async (req,res) => {
             }
             
         }
-        
-        const session = await stripe.checkout.sessions.create({
-            mode : "payment",
-            line_items : lineItems,
-            success_url : `http://localhost:1348/checkout/payment-processing/${order._id}`,
-            cancel_url : `http://localhost:1348/order-confirmation/${order._id}?paymentId=${order.paymentId}&status=Cancelled`,
-            customer_email : user.email,
-            metadata : {
-                payment : order.paymentId.toString(),
-                for : "Order"
-            },
-            payment_intent_data : {
+        let session = null
+        if(order.discount !== null){
+            let coupon = await stripe.coupons.create({
+                amount_off : order.discount * 100,
+                duration : "once",
+                currency : "usd",
+                name : order.couponCode
+            })
+            session = await stripe.checkout.sessions.create({
+                mode : "payment",
+                line_items : lineItems,
+                discounts : [{
+                    coupon : coupon.id
+                }
+                ],
+                success_url : `http://localhost:1348/checkout/payment-processing/${order._id}`,
+                cancel_url : `http://localhost:1348/order-confirmation/${order._id}?paymentId=${order.paymentId}&status=Cancelled`,
+                customer_email : user.email,
                 metadata : {
                     payment : order.paymentId.toString(),
                     for : "Order"
+                },
+                payment_intent_data : {
+                    metadata : {
+                        payment : order.paymentId.toString(),
+                        for : "Order"
+                    }
                 }
-            }
-        })
+            })
+        }else{
+            session = await stripe.checkout.sessions.create({
+                mode : "payment",
+                line_items : lineItems,
+                success_url : `http://localhost:1348/checkout/payment-processing/${order._id}`,
+                cancel_url : `http://localhost:1348/order-confirmation/${order._id}?paymentId=${order.paymentId}&status=Cancelled`,
+                customer_email : user.email,
+                metadata : {
+                    payment : order.paymentId.toString(),
+                    for : "Order"
+                },
+                payment_intent_data : {
+                    metadata : {
+                        payment : order.paymentId.toString(),
+                        for : "Order"
+                    }
+                }
+            })
+        }
+        
+        
 
         return res.redirect(session.url)
     } catch (error) {
@@ -392,12 +460,20 @@ const cancelItem = async (req,res) => {
     if(order.status[order.status.length - 1] === "Pending"){
         for(let i = 0 ; i < order.items.length ; i++){
             if(String(order.items[i]._id) === String(itemId)){
+                let amount = 0
+                if(order.discount !== null){
+                    let discountDividedByItems = order.discount / order.items.length 
+                    amount = (order.items[i].price  * order.items[i].quantity) - discountDividedByItems
+                    order.discount -= discountDividedByItems
+                 }else{
+                    amount = (order.items[i].price * order.items[i].quantity)
+                 }
                 let product = await Product.findOne({_id : order.items[i].productId })
                 product.variants[order.items[i].variant].stockQuantity += order.items[i].quantity
                 await product.save()
                 if (payment.paymentMethod === "Pay with NovaWallet" && order.items[i].isCancelled === false) {
                     let wallet = await Wallet.findOne({userId : user._id})
-                    wallet.walletBalance += (order.items[i].price * order.items[i].quantity)
+                    wallet.walletBalance += amount
                     wallet.transactions.push({
                         paymentId : payment._id,
                         transactionType : "Credit",
@@ -407,14 +483,13 @@ const cancelItem = async (req,res) => {
                     await wallet.save()
                     payment.amountRefunded += (order.items[i].price * order.items[i].quantity)
                 }else if (payment.paymentMethod === "Pay with Stripe" && order.items[i].isCancelled === false) {
-                    let amount = (order.items[i].price * order.items[i].quantity)
                     payment.amountToBeRefunded += amount
                     let refund = await stripe.refunds.create({
                         payment_intent : payment.paymentIntentId,
                         amount : amount,
                         reason : "requested_by_customer"
                     })
-                    console.log(refund)
+                    
                     order.items[i].refundOnCancelled = {
                         refundId : refund.id,
                         amount : refund.amount,
@@ -424,9 +499,14 @@ const cancelItem = async (req,res) => {
                 }else if(payment.paymentMethod === "Cash on Delivery"){
                     payment.amountToBePaid = order.grandTotal
                 }
-                order.subTotal = (order.subTotal -  (order.items[i].price * order.items[i].quantity)).toFixed(2)
-                order.tax = (order.subTotal * 0.05).toFixed(2)
-                order.grandTotal = (order.subTotal + order.tax).toFixed(2)
+                
+                order.subTotal = (order.subTotal -  (order.items[i].price * order.items[i].quantity)).toFixed(2) 
+                if(order.discount !== null){
+                    order.grandTotal = (order.subTotal + order.tax - order.discount).toFixed(2)
+                }else{
+                    order.grandTotal = (order.subTotal + order.tax).toFixed(2)
+                }
+               
                 
                 order.items[i].isCancelled = true
                 await order.save()
@@ -475,7 +555,12 @@ const cancelOrder = async (req,res) => {
         let amount = 0
         for(let i = 0 ; i < order.items.length ; i++){
             if(order.items[i].isCancelled === false && (payment.paymentMethod === "Pay with NovaWallet" || payment.paymentMethod === "Pay with Stripe")){
-                amount += (order.items[i].price * order.items[i].quantity)
+                if(order.discount !== null){
+                    let discountDividedByItems = order.discount / order.items.length 
+                    amount += (order.items[i].price  * order.items[i].quantity) - discountDividedByItems
+                 }else{
+                    amount += (order.items[i].price  * order.items[i].quantity)
+                 }
             }
             let product = await Product.findOne({_id : order.items[i].productId })
             product.variants[order.items[i].variant].stockQuantity += order.items[i].quantity
@@ -488,7 +573,7 @@ const cancelOrder = async (req,res) => {
                     amount : amount,
                     reason : "requested_by_customer"
                 })
-                console.log(refund)
+               
                 order.items[i].refundOnCancelled = {
                     refundId : refund.id,
                     amount : refund.amount,

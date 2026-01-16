@@ -207,10 +207,8 @@
     transition: background 0.6s ease-in-out; /* slow smooth hover animation */
   
   }
-  .offerBtn:hover {
-    background: linear-gradient(135deg, #013562 20%, #0057FF 100%);
-
-  }
+  
+  
   .payBtn { 
    border: 1px solid black;
    color: black;

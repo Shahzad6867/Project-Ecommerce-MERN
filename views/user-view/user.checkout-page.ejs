@@ -261,12 +261,26 @@
                                 <input type="number" name="tax" value="<%= Number(tax) %>" hidden>
                                 <span class="font-medium">$<%= tax %></span>
                             </div>
-                           
+                            <% let isApplied = false %>
+                            <% let discountedAmount = 0 %>
+                            <% let grandTotal = (Number(subTotal) + (Number(subTotal) * 0.05)).toFixed(2) %>
+                           <% if (cartItems[0]?.couponApplied !== null && cartItems[0]?.couponApplied.endDate >= now) { %>
+                            <% discountedAmount = (grandTotal * cartItems[0]?.couponApplied.discountValue) / 100 %>
+                            <% if (discountedAmount > cartItems[0]?.couponApplied.maxDiscountAmount) { %>
+                                <% discountedAmount = cartItems[0]?.couponApplied.maxDiscountAmount %>
+                            <% } %>
+                            <% isApplied = true %>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Discount</span>
+                                <input type="text" name="couponName" value="<%= cartItems[0].couponApplied.name %>" hidden>
+                                <input type="number" name="discount" value="<%= Number(discountedAmount).toFixed(2) %>" hidden>
+                                <span class="font-medium">$<%= discountedAmount.toFixed(2) %></span>
+                            </div>
+                           <% } %>
                             <div class="flex justify-between text-lg font-bold pt-2">
                                 <span>Total</span>
-                                <% let grandTotal = (Number(subTotal) + Number(tax)).toFixed(2) %>
-                                <input type="text" name="grandTotal" value="<%= grandTotal %>" hidden>
-                                <span>$<%= grandTotal  %></span>
+                                <input type="text" name="grandTotal" value="<%= (isApplied === true) ? (grandTotal - discountedAmount).toFixed(2) : grandTotal %>" hidden>
+                                <span>$<%= (isApplied === true) ? (grandTotal - discountedAmount).toFixed(2) : grandTotal %></span>
                             </div>
                         </div>
                         

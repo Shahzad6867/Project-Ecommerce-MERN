@@ -55,6 +55,12 @@
                         <span class="text-gray-600">Tax</span>
                         <span class="font-medium">$<%= confirmedOrder.tax %></span>
                     </div>
+                    <% if (confirmedOrder.discount !== null) { %>
+                        <div class="flex justify-between py-2">
+                            <span class="text-gray-600">Discount</span>
+                            <span class="font-medium">- $<%= confirmedOrder.discount %></span>
+                        </div>
+                    <% } %>
                     <div class="flex justify-between py-2 font-bold text-lg">
                         <span>Total</span>
                         <span>$<%= confirmedOrder.grandTotal %></span>
@@ -101,8 +107,8 @@
             </div>
             <% if (confirmedOrder.paymentId.status === "Paid Successfully" || confirmedOrder.paymentId.status === "Pending") { %>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-                    <a href="/orders" class="px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold flex items-center justify-center mt-4">
-                        <i data-feather="list" class="mr-2"></i> View All Orders
+                    <a href="/orders/<%= confirmedOrder._id%>" class="px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold flex items-center justify-center mt-4">
+                        <i data-feather="eye" class="mr-2"></i> View Order
                     </a>
                     <a href="/shop" class="px-6 py-3 border border-gray-300 hover:bg-green-100 text-gray-800 rounded-lg font-medium flex items-center justify-center mt-4">
                         <i data-feather="shopping-cart" class="mr-2"></i> Continue Shopping
@@ -113,8 +119,8 @@
                     <a href="/orders/<%= confirmedOrder._id %>/pending-payment" class="px-6 py-3 bg-red-500 hover:bg-red-700 text-gray-800 rounded-lg font-bold flex items-center justify-center mt-4">
                         <i data-feather="rotate-ccw" class="mr-2"></i> Retry Payment
                     </a>
-                    <a href="/orders" class="px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold flex items-center justify-center mt-4">
-                        <i data-feather="list" class="mr-2"></i> View All Orders
+                    <a href="/orders/<%= confirmedOrder._id%>" class="px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold flex items-center justify-center mt-4">
+                        <i data-feather="eye" class="mr-2"></i> View Order
                     </a>
                 </div>
              <% } %>

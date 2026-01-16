@@ -99,6 +99,14 @@ const orderSchema = Schema({
     tax : {
         type : Number
     },
+    discount : {
+        type : Number,
+        default : null
+    },
+    couponCode : {
+        type : String,
+        default : null
+    },
     grandTotal : {
         type : Number
     },

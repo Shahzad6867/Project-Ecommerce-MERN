@@ -1,14 +1,14 @@
 <!-- Header -->
-<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - Offer Management"}) %>
+<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - Coupon Management"}) %>
 <!-- Navbar -->
 <%- include("../partials/admin-side/navbar.ejs") %>
 <!-- Sidebar -->
-<%- include("../partials/admin-side/sidebar.ejs",{customerBtn : "",categoriesBtn : "",brandsBtn : "",productsBtn : "",ordersBtn : "",offersBtn : "active disabled",couponsBtn : "",reportsBtn : ""}) %>
+<%- include("../partials/admin-side/sidebar.ejs",{customerBtn : "",categoriesBtn : "",brandsBtn : "",productsBtn : "",ordersBtn : "",offersBtn : "",couponsBtn : "active disabled",reportsBtn : ""}) %>
   <!-- Main Content -->
   <div class="main-content">
     <input type="text" id="serverMessage" value="<%= (message) ? message : '' %>" hidden>
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold text-gray-800">Offers</h1>
+      <h1 class="text-2xl font-bold text-gray-800">Coupons</h1>
       <!-- <div class="relative">
         <form autocomplete="off" action="/admin/products" method="post">
             <input type="search" placeholder="Whom are you looking for ?" name="search" 
@@ -25,10 +25,10 @@
       </template>  
 
 
-         <a href="/admin/offers/add-offer">
+         <a href="/admin/coupons/add-coupon">
             <button class="addBtn-primary  font-medium text-gray-700 py-2 px-3  rounded-md transition duration-300 ">
                 <i class="fa fa-plus text-gray-700"></i>
-                Add Offer
+                Add Coupon
               </button>
          </a>
     </div>
@@ -60,17 +60,23 @@
         <thead class="bg-green-50">
           <tr>
             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">No</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">Offer Name</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Discount Type</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Applicable On</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Starts On</th>
+            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">Coupon Name</th>
+            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Discount Value (%)</th>
             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Expires On</th>
             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Status</th>
             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-            <% for(let i = 0; i < offers.length; i++ ) { %>
+          <% if (coupons.length === 0) { %>
+            <tr>
+              <td></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
+               No Coupons Added Yet !
+              </td>
+            </tr>
+          <% } %>
+            <% for(let i = 0; i < coupons.length; i++ ) { %>
               
               
                 <tr>
@@ -83,23 +89,23 @@
                   <td class="px-6 py-4 whitespace-wrap text-center">
                     <div class="flex items-center justify-center">
                       <div class="flex-shrink-0 h-14 w-14">
-                        <% if (offers[i].bannerImage === null) { %>
+                        <% if (coupons[i].bannerImage === null) { %>
                           <img class="h-14 w-14 border-2 border-green-700 rounded-full" src="/images/Special Offer.png" alt="">
                         <% } else {%>
-                          <img class="h-14 w-14 border-2 border-green-700 rounded-full" src="<%= offers[i].bannerImage %>" alt="">
+                          <img class="h-14 w-14 border-2 border-green-700 rounded-full" src="<%= coupons[i].bannerImage %>" alt="">
                           <% } %>
                         
                       </div>
                       <div class="ml-4 ">
                         
-                        <% if (offers[i].offerName.length > 25) { %>
-                          <% let offerName = offers[i].offerName.slice(0,19) %>
+                        <% if (coupons[i].name.length > 25) { %>
+                          <% let couponName = coupons[i].name.slice(0,19) %>
                           <div class="text-sm font-medium uppercase text-gray-900">
-                         <%=  offerName %><span class="text-lg font-semibold"> . . .</span>
+                         <%=  couponName %><span class="text-lg font-semibold"> . . .</span>
                           </div>
                         <% } else { %>
                           <div class="text-sm font-medium uppercase text-gray-900">
-                         <%= offers[i].offerName %>
+                         <%= coupons[i].name %>
                           </div>
                           <% } %>
 
@@ -111,37 +117,29 @@
           
                 
                   <td class="px-6 py-4 whitespace-nowrap uppercase text-sm text-center text-gray-500">
-                    <%= offers[i].discountType %>
+                    <%= coupons[i].discountValue %>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap uppercase text-sm text-center text-gray-500">
-                    <%= offers[i].applicableOn %>
-                  </td>
+                 
           
-                  <!-- Variant-specific details -->
+                 
                   <td class="px-6 py-2 whitespace-nowrap text-sm text-center font-large text-gray-500">
-                    <%= new Date(offers[i].startDate).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"}) %>, <%= new Date(offers[i].startDate).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>
-                  </td>
-                  <td class="px-6 py-2 whitespace-nowrap text-sm text-center font-large text-gray-500">
-                    <%= new Date(offers[i].endDate).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"}) %>, <%= new Date(offers[i].endDate).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>
+                    <%= new Date(coupons[i].endDate).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"}) %>, <%= new Date(coupons[i].endDate).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>
                   </td>
                  
 
             
                   <td class="px-6 py-2 whitespace-nowrap text-center text-sm font-large text-gray-500">
                       <% let now = new Date() %>
-                      <% if (offers[i].startDate <= now && offers[i].endDate >= now) { %>
+                      <% if (coupons[i].endDate >= now) { %>
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
-                      <% } else if (offers[i].startDate > now) { %>
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Upcoming</span>
-                        <% } else if (offers[i].startDate < now && offers[i].endDate < now){  %>
+                        <% } else if (coupons[i].endDate < now){  %>
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactive</span> 
                       <% } %>
-                  
                   </td>
           
                   <!-- Actions only once -->
                   <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                      <a href="/admin/offers/edit-offer?id=<%= offers[i]._id %>">
+                      <a href="/admin/coupons/edit-coupon?id=<%= coupons[i]._id %>">
                         <button title="Edit" class="text-cyan-500 hover:text-cyan-700 mr-3 " >
                           <i class="fas fa-edit"></i>
                         </button>
@@ -149,7 +147,7 @@
                       
                       <button title="Delete" type="button"
                           class="text-red-600 hover:text-red-900 delete-user-btn">
-                        <i class="fas fa-trash" onclick="deleteOffer('<%= offers[i]._id %>')"></i>
+                        <i class="fas fa-trash" onclick="deleteCoupon('<%= coupons[i]._id %>')"></i>
                       </button>
                   </td>
                 </tr>
@@ -164,11 +162,11 @@
     <!-- Pagination -->
     <div class="flex items-center justify-between mt-4">
       <div class="text-sm text-gray-500">
-        Showing <span class="font-medium">1</span> to <span class="font-medium"><%= offers.length %></span> of <span class="font-medium"><%= count %></span> results
+        Showing <span class="font-medium">1</span> to <span class="font-medium"><%= coupons.length %></span> of <span class="font-medium"><%= count %></span> results
       </div>
       <div class="flex space-x-2">
         
-        <a href="/admin/offers?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %>">
+        <a href="/admin/coupons?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %>">
           <% if (Number(page) === 1) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Previous
@@ -182,14 +180,14 @@
        </a>
         <% let i = Number(page) > 4 ? Number(page) - 3 : 1 %>
         <% for(;i <= pages; i++ ) { %>
-        <a href="/admin/offers?page=<%= i %>">
+        <a href="/admin/coupons?page=<%= i %>">
           <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
             <%= i %>
           </button>
         </a>
         <% } %>
-        <a href="/admin/offers?page=<%= Number(page) < pages ? Number(page) + 1 : pages %>">
-          <% if (Number(page) === pages) { %>
+        <a href="/admin/coupons?page=<%= Number(page) < pages ? Number(page) + 1 : pages %>">
+          <% if (Number(page) === 1 ||Number(page) === pages) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Next
             </button>
@@ -210,7 +208,7 @@
   feather.replace()
 
   const serverMessage = document.getElementById("serverMessage").value
-  if(serverMessage === "Offer Updated Successfully"){
+  if(serverMessage === "Coupon Updated Successfully"){
     iziToast.success({
       title : "Offer",
       message : serverMessage,
@@ -219,15 +217,15 @@
   }
   
 
-  function deleteOffer(offerId){
+  function deleteCoupon(couponId){
     iziToast.question({
         theme : "light",
-        title : "Delete Offer",
-        message : "Are you sure you want to delete the Offer ?",
+        title : "Delete Coupon",
+        message : "Are you sure you want to delete the Coupon ?",
         position : "topCenter",
         overlay : true,
         close : false,
-        id : "deleteOffer",
+        id : "deleteCoupon",
         zindex : 9999,
         timeout : 30000,
         backgroundColor : "white", 
@@ -235,16 +233,16 @@
             ["<button>OK</button>",function(instance,toast){
                 instance.hide({transitionOut : "fadeOut"},toast,'button')
 
-                fetch(`/admin/offers/delete-offer?id=${offerId}`,{method : "DELETE"})
+                fetch(`/admin/coupons/delete-offer?id=${couponId}`,{method : "DELETE"})
                 .then(res => res.json() )
                 .then(data => {
                     iziToast.error({
-                      title : "Offer" ,
+                      title : "Coupon" ,
                       message : data.message,
                       position : "topRight"
                   })
                   setTimeout(() => {
-                    window.location.href = "/admin/offers" 
+                    window.location.href = "/admin/coupons" 
                   },3000)
                 
                 })

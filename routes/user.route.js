@@ -61,6 +61,8 @@ router.post("/cart",cartManagementController.addToCart)
 router.patch("/cart/update-cart-item",cartManagementController.updateCartItem)
 router.get("/home/delete-cart-item",cartManagementController.deleteCartItemFromHome)
 router.delete("/cart/delete-cart-item",cartManagementController.deleteCartItem)
+router.patch("/cart/apply-coupon/:id",cartManagementController.applyCoupon)
+router.patch("/cart/remove-coupon",cartManagementController.removeCoupon)
 
 // Order Management
 router.get("/checkout",userAuth.checkSession,userAuth.isCartHavingItems,orderManagementController.getCheckout)

@@ -134,6 +134,10 @@ function createInvoice(order){
                     <span>Tax:</span>
                     <span>$${ order.tax }</span>
                 </div>
+                <div style="display: flex; justify-content: space-between; padding: 5px 0;">
+                    <span>Discount:</span>
+                    <span>$${ order.discount || "NA" }</span>
+                </div>
                 <div style="display: flex; justify-content: space-between; padding: 10px 0; border-top: 1px solid #ddd; font-weight: bold; font-size: 18px;">
                     <span>Total:</span>
                     <span>$${ order.grandTotal }</span>

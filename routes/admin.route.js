@@ -10,6 +10,8 @@ const adminLogoutController = require("../controllers/admin.controllers/adminLog
 const searchController = require("../controllers/admin.controllers/searchController.js")
 const orderManagementController = require("../controllers/admin.controllers/ordersManagementController.js")
 const offerManagementController = require("../controllers/admin.controllers/offerManagementController.js")
+const couponManagementController = require("../controllers/admin.controllers/couponManagementController.js")
+const reportsController = require("../controllers/admin.controllers/reportsController.js")
 const adminAuth = require("../middlewares/admin.auth.js")
 const upload = require("../config/multerConfig.js")
 
@@ -56,6 +58,19 @@ router.post("/offers/edit-offer",upload.single("bannerImage"),offerManagementCon
 router.delete("/offers/delete-offer",offerManagementController.deleteOffer)
 router.post("/search-products",offerManagementController.searchProducts)
 router.get("/search-categories",offerManagementController.searchCategories)
+
+//Coupon Management
+router.get("/coupons",couponManagementController.getCoupons)
+router.get("/coupons/add-coupon",couponManagementController.getAddCoupon)
+router.get("/coupons/edit-coupon",couponManagementController.getEditCoupon)
+router.post("/coupons/add-coupon",upload.single("bannerImage"),couponManagementController.addCoupon)
+router.post("/coupons/edit-coupon",upload.single("bannerImage"),couponManagementController.editCoupon)
+router.delete("/coupons/delete-coupons",couponManagementController.deleteCoupon)
+
+//Sales Report 
+router.get("/reports",reportsController.getSalesReport)
+
+
 
 
 //Logout Admin

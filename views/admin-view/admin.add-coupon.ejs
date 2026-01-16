@@ -1,0 +1,251 @@
+<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - Add Offer"}) %>
+<%- include("../partials/admin-side/navbar.ejs") %>
+<%- include("../partials/admin-side/sidebar.ejs",{customerBtn : "",categoriesBtn : "",brandsBtn : "",productsBtn : "",ordersBtn : "",offersBtn : "",couponsBtn : "active disabled",reportsBtn : ""}) %>
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800"><%= (coupon !== null) ? "Edit Coupon" : "Add New Coupon" %></h1>
+            <div class="flex space-x-4">
+                <a href="/admin/coupons" class="px-4 py-2 border flex items-center justify-between addBtn-primary border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <i data-feather="arrow-left" class="mr-2"></i>
+                    Back to Coupons
+                </a>
+            </div>
+        </div>
+        <% if (coupon !== null) { %>
+            <form  id="couponForm" action="/admin/coupons/edit-coupon?id=<%= coupon._id %>" method="post" enctype="multipart/form-data" class="bg-white rounded-lg shadow p-6" novalidate>
+        <% } else {%>
+        <form  id="couponForm" action="/admin/coupons/add-coupon" method="post" enctype="multipart/form-data" class="bg-white rounded-lg shadow p-6" novalidate>
+        <% } %>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Coupon Name</label>
+                    <input type="text" name="couponName" id="couponName" value="<%= (coupon !== null) ? coupon.name : '' %>" class="w-full px-3 uppercase py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                </div>
+                
+                
+                
+                <!-- Product/Category Selection (shown based on offer type) -->
+                
+                
+                <div >
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea name="description" id="description" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" rows="3"><%= (coupon !== null) ? coupon.description : " " %></textarea>
+                </div>
+
+                <%
+                    function toDateTimeLocal(date) {
+                    const d = new Date(date);
+                    const pad = n => String(n).padStart(2, '0');
+
+                    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                    }
+                %>
+
+                
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                    <input type="datetime-local" id="endDate" name="endDate" value="<%= (coupon !== null) ? toDateTimeLocal(coupon.endDate)  : "" %>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                </div>
+                
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Discount Value(%)</label>
+                    <input type="number" id="discountValue" step="0.01" name="discountValue" value="<%= (coupon !== null) ? coupon.discountValue  : "" %>" placeholder="How much percentage are you willing to give Discount" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                </div>
+                
+                <div>
+                    <label id="forMinAmount" class="block text-sm font-medium text-gray-700 mb-1" >Minimum Order Amount</label>
+                    <input type="number" step="0.01" name="minAmount" id="minAmount" value="<%= (coupon !== null && coupon.minAmount !== null) ? coupon.minAmount : '' %>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" %>>
+                </div>
+                
+                <div>
+                    <label for="maxDiscount" id="forMaxDiscount" class="block text-sm font-medium text-gray-700 mb-1">Maximum Discount Amount</label>
+                    <input type="number" step="0.01" name="maxDiscountAmount" id="maxDiscountAmount" value="<%= (coupon !== null && coupon.maxDiscountAmount !== null) ? coupon.maxDiscountAmount : "" %>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"  %>>
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label for="bannerImage" class="block text-sm font-medium text-gray-700 mb-1">Banner Image</label>
+                    <input type="file" id="bannerImage" name="bannerImage" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" onchange="previewImage(this)">
+                    <div id="imagePreview" class="mt-2 <%= (coupon !== null && coupon.bannerImage !== null) ? '' : 'hidden' %>">
+                        <img id="previewImg" class="banner-preview" src="<%= (coupon !== null && coupon.bannerImage !== null) ? coupon.bannerImage : "" %>" alt="Banner Preview">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-end space-x-3">
+                <button type="reset" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    Reset
+                </button>
+                <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    Save Coupon
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        feather.replace();
+         // Form submission
+     function previewImage(input) {
+        const preview = document.getElementById('previewImg');
+        const previewContainer = document.getElementById('imagePreview');
+
+        if (!input.files || !input.files[0]) {
+            previewContainer.classList.add('hidden');
+            return;
+        }
+
+            const file = input.files[0];
+
+        // Optional: file type validation
+        if (!file.type.startsWith("image/")) {
+            iziToast.error({
+                title: 'Invalid File',
+                message: 'Please upload a valid image file',
+                position: 'topCenter'
+            });
+            input.value = "";
+            previewContainer.classList.add('hidden');
+            return;
+        }
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const img = new Image();
+                img.src = e.target.result;
+
+                img.onload = function () {
+                    const requiredWidth = 1440;
+                    const requiredHeight = 384;
+
+                    if (img.width !== requiredWidth && img.height !== requiredHeight) {
+                        iziToast.error({
+                            title: 'Invalid Image Size',
+                            message: `Banner image must be exactly ${requiredWidth} × ${requiredHeight}px`,
+                            position: 'topCenter'
+                        });
+
+                        input.value = "";
+                        preview.src = "";
+                        previewContainer.classList.add('hidden');
+                        return;
+                    }
+
+                    // Valid image
+                    preview.src = e.target.result;
+                    previewContainer.classList.remove('hidden');
+                };
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+
+
+        document.getElementById('couponForm').addEventListener('submit', function(e) {
+           // Validate form
+          
+           const couponName = document.getElementById('couponName').value;
+           const endDate = document.getElementById('endDate').value;
+           const discountValue = document.getElementById("discountValue").value
+           const minAmount = document.getElementById("minAmount").value
+           const maxDiscountAmount = document.getElementById("maxDiscountAmount").value
+           const description = document.getElementById('description').value;
+
+           const now = new Date();
+           const end = new Date(endDate);
+           
+           if(couponName === ""){
+               iziToast.error({
+                   title: 'Error',
+                   message: 'Please enter a Coupon Name',
+                   position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+           
+           if(description === ""){
+               iziToast.error({
+                   title: 'Error',
+                   message: 'Please enter a Description',
+                   position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+           
+           if(endDate === ""){
+               iziToast.error({
+                   title: 'Error',
+                   message: 'Please select a Valid End Date and Time',
+                   position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+           if(end <= now){
+               iziToast.error({
+                   title: 'Error',
+                   message: 'Please select a Future End Date and Time ',
+                   position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+           if(discountValue === ""){
+            iziToast.error({
+                   title: 'Error',
+                   message: 'Please enter a Discount Value',
+                   position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+           
+           
+            if(discountValue > 70){
+    
+                iziToast.error({
+                title: 'Error',
+                message: 'Please enter a Discount Percentage that is less than 70',
+                position: 'topCenter'
+                });
+                e.preventDefault();
+                return;
+            }
+           if(minAmount === ""){
+            iziToast.error({
+                   title: 'Error',
+                   message: 'Please enter a Minimum Order Amount that the coupon can be Applied',
+                   position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+           if(maxDiscountAmount === ""){
+            iziToast.error({
+                   title: 'Error',
+                   message: 'Please enter a Maximum Discount that the coupon can apply on Order amount.',
+                   position: 'topCenter'
+               });
+               e.preventDefault();
+               return;
+           }
+           
+
+            
+
+      
+           
+           
+           
+       });
+        
+       
+    </script>
+</body>
+</html>

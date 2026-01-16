@@ -3,7 +3,7 @@
 <!-- Navbar -->
 <%- include("../partials/admin-side/navbar.ejs") %>
 <!-- Sidebar -->
-<%- include("../partials/admin-side/sidebar.ejs",{customerBtn : "",categoriesBtn : "",brandsBtn : "",productsBtn : "", ordersBtn : "active disabled",offersBtn : ""}) %>
+<%- include("../partials/admin-side/sidebar.ejs",{customerBtn : "",categoriesBtn : "",brandsBtn : "",productsBtn : "", ordersBtn : "active disabled",offersBtn : "",couponsBtn : "",reportsBtn : ""}) %>
   <!-- Main Content -->
   <div class="main-content">
     <div class="flex justify-between items-center mb-6">
@@ -172,12 +172,12 @@
            <% } %>
          <% } else {%>
           
-              <tr >
-                <td></td>
-                <td class="text-center py-2">
-                  <h1>No Orders Yet !</h1>
-                </td>
-              </tr>
+          <tr>
+            <td></td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
+             No Orders Yet !
+            </td>
+          </tr>
           
           <% } %>
            

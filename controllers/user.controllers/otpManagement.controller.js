@@ -1,13 +1,19 @@
 const User = require("../../models/user.model.js");
 const Wallet = require("../../models/wallet.model.js");
 const Otp = require("../../models/user-otp.model.js");
+const Coupon = require("../../models/coupon.model.js");
 const {otpGenerator} = require("../../config/otpGenerator.js")
 const mailer = require("../../config/nodemailer.js")
 const bcryptjs = require("bcryptjs");
+const crypto = require("crypto");
 require("dotenv").config();
 
+function generateReferralCode(userId) {
+    const randomPart = crypto.randomBytes(3).toString("hex").toUpperCase(); 
+    const userPart = userId.toString().slice(-4).toUpperCase(); 
 
-
+    return `REF-${userPart}-${randomPart}`;
+}
 
 const getUserOtp = async (req, res) => {
     let message = req.session.message || null;
@@ -37,6 +43,21 @@ const getUserOtp = async (req, res) => {
       if (userOtp.otpCode === inputOtp) {
         await Otp.deleteOne({_id : userOtp._id})
         const { firstName, lastName, email, phone, password, terms } = req.session.otpUser;
+        if(req.session.referral){
+          let user = await User.findOne({referralCode : req.session.referral})
+          let coupon = new Coupon({
+            name : "REFERRALCOUPON",
+            description : "Upto 10% off on next Order",
+            endDate : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            discountValue : 10,
+            minAmount : 500,
+            maxDiscountAmount : 60,
+            bannerImage : null,
+            userId : user._id,
+            maxUsage : 1
+          })
+          await coupon.save()
+        }
         const passwordHashed = await bcryptjs.hash(password, 12);
         console.log(passwordHashed)
         const newUser = new User({
@@ -49,12 +70,14 @@ const getUserOtp = async (req, res) => {
           isVerified: true,
         });
         let savedUser = await newUser.save();
+        savedUser.referralCode = generateReferralCode(savedUser._id)
         let wallet = new Wallet({
           userId : savedUser._id,
           balanceAmount : 0,
           transactions : []
         })
         await wallet.save()
+        await savedUser.save()
         req.session.message = "User Created Successfully, Please Log In";
         delete req.session.otpUser
         return res.redirect("/login");

@@ -1,0 +1,132 @@
+<!-- Header -->
+<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - User Management"}) %>
+<!-- Navbar -->
+<%- include("../partials/admin-side/navbar.ejs") %>
+<!-- Sidebar -->
+<%- include("../partials/admin-side/sidebar.ejs",{customerBtn : "",categoriesBtn : "",brandsBtn : "",productsBtn : "",ordersBtn : "",offersBtn : "",couponsBtn : "",reportsBtn : "active disabled"}) %>
+
+<div class="main-content">
+  <!-- Page Wrapper -->
+  <div class="max-w-7xl mx-auto p-6">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">Sales Report</h1>
+
+      <div class="flex gap-3">
+        <button class="px-4 py-2 bg-gray-200 rounded-md text-sm">Today</button>
+        <button class="px-4 py-2 bg-gray-200 rounded-md text-sm">Last 7 Days</button>
+        <button class="px-4 py-2 bg-gray-200 rounded-md text-sm">Last 30 Days</button>
+        <button class="px-4 py-2 bg-gray-800 text-white rounded-md text-sm">Custom</button>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+
+      <div class="bg-white rounded-lg p-5 shadow">
+        <p class="text-sm text-gray-500">Total Sales</p>
+        <h2 class="text-2xl font-bold text-gray-800 mt-1">$48,920.00</h2>
+      </div>
+
+      <div class="bg-white rounded-lg p-5 shadow">
+        <p class="text-sm text-gray-500">Total Orders</p>
+        <h2 class="text-2xl font-bold text-gray-800 mt-1">1,248</h2>
+      </div>
+
+      <div class="bg-white rounded-lg p-5 shadow">
+        <p class="text-sm text-gray-500">Total Discount</p>
+        <h2 class="text-2xl font-bold text-red-500 mt-1">-$4,320.00</h2>
+      </div>
+
+      <div class="bg-white rounded-lg p-5 shadow">
+        <p class="text-sm text-gray-500">Net Revenue</p>
+        <h2 class="text-2xl font-bold text-green-600 mt-1">$44,600.00</h2>
+      </div>
+
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Sales Chart -->
+      <div class="lg:col-span-2 bg-white rounded-lg p-5 shadow">
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">
+          Sales Overview
+        </h3>
+        <canvas id="salesChart" height="110"></canvas>
+      </div>
+
+      <!-- Distribution Chart -->
+      <div class="bg-white rounded-lg p-5 shadow">
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">
+          Payment Distribution
+        </h3>
+        <canvas id="paymentChart"></canvas>
+      </div>
+
+    </div>
+
+    <!-- Export Buttons -->
+    <div class="flex justify-end gap-3 mt-8">
+      <button class="px-5 py-2 bg-blue-600 text-white rounded-md">
+        Download PDF
+      </button>
+      <button class="px-5 py-2 bg-green-600 text-white rounded-md">
+        Download Excel
+      </button>
+    </div>
+
+  </div>
+</div>
+  <!-- Charts Script -->
+  <script>
+    feather.replace()
+    // Sales Line Chart
+    const salesCtx = document.getElementById('salesChart');
+
+    new Chart(salesCtx, {
+      type: 'line',
+      data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+          label: 'Sales ($)',
+          data: [5200, 6800, 7500, 6100, 8200, 9100, 10200],
+          borderWidth: 2,
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+
+    // Payment Doughnut Chart
+    const paymentCtx = document.getElementById('paymentChart');
+
+    new Chart(paymentCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Stripe', 'Cash on Delivery', 'Wallet'],
+        datasets: [{
+          data: [65, 25, 10],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

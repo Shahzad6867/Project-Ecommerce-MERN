@@ -5,6 +5,11 @@
         <div class="main-content">
             <h1 class="text-3xl font-bold mb-8">My Profile</h1>
             <input type="text"  id="serverMessage" value="<%= message %>" hidden>
+            <div class="w-full h-[6.4rem] profile-card mb-2 p-4">
+                <h1 class="ml-1 mb-1 font-bold">Refer & Earn : <span class="text-gray-500 font-medium">(Refer to your friends and family to earn a coupon)</span></h1>
+                <input type="text" id="referral-link" value="<%= referralUrl %>" class="w-[91%] px-2 py-2 rounded-md border border-gray-w00" disabled>
+                <button type="button" id="copyBtn" class="btn-primary font-bold px-4 py-2 rounded-lg" onclick="copyToClipboard()">Copy</button>
+            </div>
             <div class="flex gap-6">
                 <div class="w-[45%]">
                     <div class="profile-card  p-6">
@@ -119,6 +124,7 @@
                         <% } %>
                 </div>
                 
+                
                 <div class="w-[55%]">
                     <div class="profile-card p-6 ">
                         <h2 class="text-xl font-bold mb-6">Personal Information</h2>
@@ -210,16 +216,33 @@
                             
                         </div>
                        
+                        
+                        
                     </div>
+                    
                     <% } %>
                 </div>
             </div>
         </div>
         
 </div>
+
     
     <script>
         feather.replace();
+        function copyToClipboard() {
+            const text = document.getElementById("referral-link").value;
+
+            // Use the modern Clipboard API to copy
+            navigator.clipboard.writeText(text).then(() => {
+                document.getElementById("copyBtn").innerText = "Copied"
+                setTimeout(() => {
+                   document.getElementById("copyBtn").innerText = "Copy"
+                },10000)
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+            }
         const serverMessage = document.getElementById("serverMessage").value 
 
     

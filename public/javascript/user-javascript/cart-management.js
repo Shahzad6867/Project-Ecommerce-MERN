@@ -328,6 +328,9 @@
                     position : "topRight"
                 });
                 })
+               
+                window.location.href = "/cart"     
+            
     }
     
     

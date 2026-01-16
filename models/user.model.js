@@ -47,6 +47,10 @@ const userSchema = new Schema({
         required : false,
         unique : false
     },
+    referralCode : {
+        type : String,
+        default : null
+    },
     terms : {
         type : String,
         required : false

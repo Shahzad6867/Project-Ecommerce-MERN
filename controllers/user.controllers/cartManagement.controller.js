@@ -3,7 +3,9 @@ const Address = require("../../models/address.model");
 const User = require("../../models/user.model");
 const Cart = require("../../models/cart.model")
 const mongoose = require("mongoose");
-const offerModel = require("../../models/offer.model");
+const Offer = require("../../models/offer.model");
+const Coupon = require("../../models/coupon.model");
+const { getCoupons } = require("../admin.controllers/couponManagementController");
 
 
 const getCart = async (req,res) => {
@@ -11,10 +13,12 @@ const getCart = async (req,res) => {
     let message = req.session.message || null
     delete req.session.message
     const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
-    const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
+    const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId").populate("couponApplied")
     const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
-    const offers = await offerModel.find({})
-    res.render("user-view/user.cart-management.ejs",{message,user,productsFullList,cartItems,cartItemsCount,offers})
+    const offers = await Offer.find({})
+    const coupons = await Coupon.find({userId : null})
+    const userCoupons = await Coupon.find({userId : user._id})
+    res.render("user-view/user.cart-management.ejs",{message,user,productsFullList,cartItems,cartItemsCount,offers,coupons,userCoupons})
 }
 
 const addToCart = async (req,res) => {
@@ -146,11 +150,29 @@ const deleteCartItemFromHome = async (req,res) => {
         res.redirect("/")
        }
 }
-
+const applyCoupon = async (req,res) => {
+    let {id} = req.params
+    let user = req.session.user || req.user
+    await Cart.updateMany({userId : user._id},{couponApplied : id})
+    return res.json({
+        success : true,
+        message : "Done"
+    })
+}
+const removeCoupon = async (req,res) => {
+    let user = req.session.user || req.user
+    await Cart.updateMany({userId : user._id},{couponApplied : null})
+    return res.json({
+        success : true,
+        message : "Done"
+    })
+}
 module.exports = {
     getCart,
     addToCart,
     updateCartItem,
     deleteCartItemFromHome,
-    deleteCartItem
+    deleteCartItem,
+    applyCoupon,
+    removeCoupon
 }
