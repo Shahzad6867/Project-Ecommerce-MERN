@@ -15,8 +15,8 @@
 
       <div class="flex gap-3">
         <button class="px-4 py-2 bg-gray-200 rounded-md text-sm">Today</button>
-        <button class="px-4 py-2 bg-gray-200 rounded-md text-sm">Last 7 Days</button>
-        <button class="px-4 py-2 bg-gray-200 rounded-md text-sm">Last 30 Days</button>
+        <a href="/admin/reports?range=7"><button class="px-4 py-2 bg-gray-200 rounded-md text-sm">Last 7 Days</button></a>
+        <a href="/admin/reports?range=30"><button class="px-4 py-2 bg-gray-200 rounded-md text-sm">Last 30 Days</button></a>
         <button class="px-4 py-2 bg-gray-800 text-white rounded-md text-sm">Custom</button>
       </div>
     </div>
@@ -26,22 +26,22 @@
 
       <div class="bg-white rounded-lg p-5 shadow">
         <p class="text-sm text-gray-500">Total Sales</p>
-        <h2 class="text-2xl font-bold text-gray-800 mt-1">$48,920.00</h2>
+        <h2 class="text-2xl font-bold text-gray-800 mt-1">$<%= (totalSales.totalSales).toFixed(2) %></h2>
       </div>
 
       <div class="bg-white rounded-lg p-5 shadow">
         <p class="text-sm text-gray-500">Total Orders</p>
-        <h2 class="text-2xl font-bold text-gray-800 mt-1">1,248</h2>
+        <h2 class="text-2xl font-bold text-gray-800 mt-1"><%= totalOrders %></h2>
       </div>
 
       <div class="bg-white rounded-lg p-5 shadow">
         <p class="text-sm text-gray-500">Total Discount</p>
-        <h2 class="text-2xl font-bold text-red-500 mt-1">-$4,320.00</h2>
+        <h2 class="text-2xl font-bold text-red-500 mt-1">-$<%= totalDiscounts.totalDiscounts %></h2>
       </div>
 
       <div class="bg-white rounded-lg p-5 shadow">
         <p class="text-sm text-gray-500">Net Revenue</p>
-        <h2 class="text-2xl font-bold text-green-600 mt-1">$44,600.00</h2>
+        <h2 class="text-2xl font-bold text-green-600 mt-1">$<%= (totalNetSales.totalNetSales).toFixed(2) %></h2>
       </div>
 
     </div>
@@ -80,18 +80,21 @@
   </div>
 </div>
   <!-- Charts Script -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <script>
     feather.replace()
-    // Sales Line Chart
-    const salesCtx = document.getElementById('salesChart');
-
-    new Chart(salesCtx, {
+  
+    const salesLabels = '<%- JSON.stringify(salesTrend.map(s => s._id)) %>'
+    const salesData = '<%- JSON.stringify(salesTrend.map(s => s.total)) %>'
+  
+    new Chart(document.getElementById('salesChart'), {
       type: 'line',
       data: {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        labels: salesLabels,
         datasets: [{
-          label: 'Sales ($)',
-          data: [5200, 6800, 7500, 6100, 8200, 9100, 10200],
+          label: 'Sales',
+          data: salesData,
           borderWidth: 2,
           tension: 0.4,
           fill: true
@@ -103,30 +106,31 @@
           legend: { display: false }
         }
       }
-    });
-
-    // Payment Doughnut Chart
-    const paymentCtx = document.getElementById('paymentChart');
-
-    new Chart(paymentCtx, {
+    })
+  </script>
+  
+  <script>
+    const paymentLabels = '<%- JSON.stringify(paymentSplit.map(p => p._id)) %>'
+    const paymentData = '<%- JSON.stringify(paymentSplit.map(p => p.count)) %>'
+  
+    new Chart(document.getElementById('paymentChart'), {
       type: 'doughnut',
       data: {
-        labels: ['Stripe', 'Cash on Delivery', 'Wallet'],
+        labels: paymentLabels,
         datasets: [{
-          data: [65, 25, 10],
+          data: paymentData,
           borderWidth: 1
         }]
       },
       options: {
         responsive: true,
         plugins: {
-          legend: {
-            position: 'bottom'
-          }
+          legend: { position: 'bottom' }
         }
       }
-    });
+    })
   </script>
+  
 
 </body>
 </html>

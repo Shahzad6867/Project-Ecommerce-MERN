@@ -273,7 +273,7 @@
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Discount</span>
                                 <input type="text" name="couponName" value="<%= cartItems[0].couponApplied.name %>" hidden>
-                                <input type="number" name="discount" value="<%= Number(discountedAmount).toFixed(2) %>" hidden>
+                                <input type="number" name="discount" value="<%= discountedAmount.toFixed(2) %>" hidden>
                                 <span class="font-medium">$<%= discountedAmount.toFixed(2) %></span>
                             </div>
                            <% } %>

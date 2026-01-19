@@ -38,8 +38,9 @@ const placeOrder = async (req,res) => {
     })
     let coupon = null
     if(req.body.discount && req.body.paymentMethod === "Pay with Stripe"){
+        console.log(req.body.discount * 100)
         coupon = await stripe.coupons.create({
-            amount_off : Number(req.body.discount) * 100,
+            amount_off : Math.floor(Number(req.body.discount) * 100),
             duration : "once",
             currency : "usd",
             name : req.body.couponName

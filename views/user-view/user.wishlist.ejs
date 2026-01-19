@@ -1,0 +1,116 @@
+
+<%- include("../partials/user-side/navbar.ejs",{title : "Novamart - Home"})%>
+
+    
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        
+
+
+        <!-- Categories Grid -->
+        
+
+
+        <!-- Featured Products -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6">Wishlist</h2>
+            <div class="">
+                <!-- Product Card 1 -->
+
+                 <% for( let i = 0; i < wishlistItems.length; i++ ) { %>
+                           
+                            
+                <div class="product-card mr-2 bg-white rounded-lg shadow-sm p-4 transition-all w-[240px] flex-shrink-0">
+                    <div class="h-40 mb-3 relative">
+                        <img src="<%= wishlistItems[i].productId.variants[wishlistItems[i].variant].productImages[0] %>" alt="Product" class="w-full h-full object-contain">
+                        <button class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
+                            <i data-feather="heart" class="w-4 h-4"></i>
+                        </button>
+                        <a href="/product?id=<%= wishlistItems[i]._id %>&variant=<%= wishlistItems[i].variant %>">
+                            <button class="absolute top-12 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
+                                <i data-feather="eye" class="w-4 h-4"></i>
+                            </button>
+                        </a>
+                    </div>
+                    <h3 class="font-medium text-sm mb-1 truncate"><%= wishlistItems[i].productId.productName  %></h3>
+                    <div class="flex items-center mb-1">
+                        <div class="text-yellow-400 flex">
+                            <i data-feather="star" class="w-4 h-4 fill-current"></i>
+                            <i data-feather="star" class="w-4 h-4 fill-current"></i>
+                            <i data-feather="star" class="w-4 h-4 fill-current"></i>
+                            <i data-feather="star" class="w-4 h-4 fill-current"></i>
+                            <i data-feather="star" class="w-4 h-4 fill-current"></i>
+                        </div>
+                        <span class="text-gray-500 text-xs ml-1">(4,567)</span>
+                    </div>
+                    <!-- <div class="flex items-center mb-2">
+                        <span class="font-regular text-xs">Brand : <a href="#" class="text-blue-700"></a></span>
+                    </div> -->
+                    <div class="flex items-center mb-2">
+                        <span class="font-regular text-gray-700 text-xs">Size : <a href="#" ><%= (wishlistItems[i].productId.variants[wishlistItems[i].variant].size) %></a></span>
+                    </div>
+                    <div class="flex items-center mb-2">
+                       
+                        <span class="font-bold text-lg">$ <span id="price<%= wishlistItems[i]._id %><%= wishlistItems[i].variant %>"><%= (wishlistItems[i].productId.variants[wishlistItems[i].variant].price).toFixed(2) %></span></span>
+                    </div>
+                    <% let isProductInCart = wishlistItems.find(item =>  String(wishlistItems[i]._id) === String(item.productId._id) && item.variant === j ) || null %>
+                    <% if (isProductInCart) { %>
+                            <div class="flex  justify-between ">
+                               <button type="button" id="addToCartBtn<%= wishlistItems[i]._id %><%= wishlistItems[i].variant %>" class="w-[0%] bg-yellow-400 hover:bg-yellow-500 text-gray-900  rounded-md font-medium text-sm flex items-center justify-center" onclick="addToCartInitially(this,'<%- i %>','<%- j %>','<%- wishlistItems[i]._id %>')">
+                                <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> 
+                            </button>
+                                <div id="incDecQtyDiv<%= wishlistItems[i]._id %><%= wishlistItems[i].variant %>" class="flex items-center justify-between w-[100%]  rounded-lg   border border-black w-full ">
+                                    <button id="decQtyBtn<%= wishlistItems[i]._id %><%= wishlistItems[i].variant %>" type="button" class="text-center flex justify-center w-full h-full bg-yellow-400 hover:bg-yellow-300 py-1 rounded-l-lg"  onclick="decrementQuantity('<%= i %>','<%= j %>','<%= wishlistItems[i]._id %>')">
+                                        <i data-feather="minus"></i>
+                                    </button> 
+                                    <input type="text" id="quantity<%= wishlistItems[i]._id %><%= wishlistItems[i].variant %>" value="<%= isProductInCart.quantity %>" class=" w-[5rem] px-2 text-xl bg-white font-bold py-[0.22rem] border-black-x-sides text-center" >
+                                    <button id="incQtyBtn<%= wishlistItems[i]._id %><%= wishlistItems[i].variant %>" type="button" class="text-center flex justify-center w-full h-full py-1 bg-yellow-400 hover:bg-yellow-300 rounded-r-lg"  onclick="incrementQuantity('<%= i %>','<%= wishlistItems[i].variant %>','<%= wishlistItems[i]._id %>')">
+                                        <i data-feather="plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                    <% } else {%>
+                        <!-- <a  href="/home/cart?productId=&variant=&quantity=1"> -->
+                            <div id="incDecQtyDiv<%= wishlistItems[i]._id %><%= wishlistItems[i].variant %>" class="flex items-center justify-between w-[100%] bg-yellow-400  border border-black rounded-lg hidden">
+                                <button id="decQtyBtn<%= wishlistItems[i]._id %><%= wishlistItems[i].variant %>" type="button" class="text-center flex justify-center w-full h-full bg-yellow-400 hover:bg-yellow-300 py-1 rounded-l-lg" onclick="decrementQuantity('<%= i %>','<%= wishlistItems[i].variant %>','<%= wishlistItems[i]._id %>')">
+                                    <i data-feather="minus"></i>
+                                </button> 
+                                <input type="text" id="quantity<%= wishlistItems[i]._id %><%= wishlistItems[i].variant %>" value="1" class=" w-[5rem] bg-white px-2 text-xl  py-[0.22rem] border-black-x-sides text-center" >
+                                <button id="incQtyBtn<%= wishlistItems[i]._id %><%= wishlistItems[i].variant %>" type="button" class="text-center flex justify-center w-full h-full py-1 bg-yellow-400 hover:bg-yellow-300 rounded-r-lg" onclick="incrementQuantity('<%= i %>','<%= wishlistItems[i].variant %>','<%= wishlistItems[i]._id %>')">
+                                    <i data-feather="plus"></i>
+                                </button>
+                            </div>
+                            <button type="button" id="addToCartBtn<%= wishlistItems[i]._id %><%= wishlistItems[i].variant %>" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-medium text-sm flex items-center justify-center" onclick="addToCartInitially(this,'<%- i %>','<%- wishlistItems[i].variant  %>','<%- wishlistItems[i]._id %>')">
+                                <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> Add to Cart
+                            </button>
+                            
+                    <% } %>   
+                </div>     
+                               <% } %> 
+                           
+                   
+                <!-- More product cards... -->
+            </div>
+        </section>
+
+
+
+
+      
+
+
+        
+
+
+        
+    </main>
+
+    
+
+    <!-- Footer -->
+    <%- include("../partials/user-side/footer.ejs")%>
+
+    
+</body>
+</html>

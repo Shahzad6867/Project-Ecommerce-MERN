@@ -11,6 +11,7 @@ const resetPassController = require("../controllers/user.controllers/resetPasswo
 const homeController = require("../controllers/user.controllers/home.controller.js")
 const profileManagementController = require("../controllers/user.controllers/userProfileManagement.controller.js")
 const cartManagementController = require("../controllers/user.controllers/cartManagement.controller.js")
+const wishlistManagementController = require("../controllers/user.controllers/wishlistManagement.controller.js")
 const orderManagementController = require("../controllers/user.controllers/orderManagement.controller.js")
 const userWalletController = require("../controllers/user.controllers/userWallet.controller.js")
  
@@ -63,6 +64,13 @@ router.get("/home/delete-cart-item",cartManagementController.deleteCartItemFromH
 router.delete("/cart/delete-cart-item",cartManagementController.deleteCartItem)
 router.patch("/cart/apply-coupon/:id",cartManagementController.applyCoupon)
 router.patch("/cart/remove-coupon",cartManagementController.removeCoupon)
+
+//Wishlist
+router.get("/wishlist",userAuth.checkSession,wishlistManagementController.getWishlist)
+router.post("/wishlist",wishlistManagementController.addToWishlist)
+router.get("/home/delete-wishlist-item",wishlistManagementController.deleteWishlistItemFromHome)
+router.delete("/cart/delete-wislist-item",wishlistManagementController.deleteWishlistItem)
+
 
 // Order Management
 router.get("/checkout",userAuth.checkSession,userAuth.isCartHavingItems,orderManagementController.getCheckout)
