@@ -98,101 +98,104 @@
                     <% if (!products[i].isDeleted) { %>
                     <% if (products[i].isFeatured) { %>
                         <% for( let j = 0; j < products[i].variants.length; j++ ) { %>
-                           <% let productOfferPrice = 0 %>
-                           <% let categoryOfferPrice = 0 %>
-                           <% let offerPrice = 0 %>
-                           <% let now = new Date() %>
                             <% if ( products[i].variants[j].stockQuantity !== 0 && products[i].variants[j].stockStatus !== "Out of Stock" ) { %>
-                            <% if (products[i].categoryOfferId !== null && products[i].variants[j].productOfferId !== undefined && products[i].variants[j].productOfferId.startDate <= now  && products[i].variants[j].productOfferId.endDate >= now && products[i].categoryOfferId.startDate <= now  && products[i].categoryOfferId.endDate >= now) { %>
-                                    
-                                    <% if (products[i].variants[j].productOfferId.discountType === "percentage") { %>
-                                      <%  productOfferPrice = products[i].variants[j].price - ((products[i].variants[j].price * products[i].variants[j].productOfferId.discountValue ) / 100) %>
-                                    <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
-                                        <% productOfferPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue  %>
-                                    <% } %>
-
-                                    <% if (products[i].categoryOfferId.discountType === "percentage") { %>
-                                        <% let tempPrice1 = products[i].variants[j].price - ((products[i].variants[j].price * products[i].categoryOfferId.discountValue ) / 100) %>
-                                        <% let tempPrice2 = products[i].variants[j].price - products[i].categoryOfferId.maxDiscountAmount  %>
-                                       
-                                            <% if (tempPrice2 > tempPrice1) { %>
-                                                <% categoryOfferPrice = tempPrice2 %>
-                                                
-                                            <% } else {%>
-                                                <% categoryOfferPrice = tempPrice1 %>
-                                            <% } %>
-                                     <% } else if(products[i].variants[j].categoryOfferId.discountType === "flat"){%>
-                                          <% if (products[i].variants[j].price > products[i].categoryOfferId.productMinPrice) { %>
-                                            <% categoryOfferPrice = products[i].variants[j].price - products[i].categoryOfferId.discountValue %>
-                                          <% } %>
-                                      <% } %>
-
-                                      <% offerPrice = (productOfferPrice < categoryOfferPrice) ? productOfferPrice : categoryOfferPrice %>
-                                      
-                            <% } else if(products[i].categoryOfferId !== null && products[i].variants[j].productOfferId !== undefined && products[i].variants[j].productOfferId.startDate > now && products[i].categoryOfferId.startDate <= now  && products[i].categoryOfferId.endDate >= now) { %>
-                                <% if(products[i].categoryOfferId.startDate <= now  && products[i].categoryOfferId.endDate >= now){%>
-                                    <% if (products[i].categoryOfferId.discountType === "percentage") { %>
-                                        <% let tempPrice1 = products[i].variants[j].price - ((products[i].variants[j].price * products[i].categoryOfferId.discountValue ) / 100) %>
-                                        <% let tempPrice2 = products[i].variants[j].price - products[i].categoryOfferId.maxDiscountAmount  %>
-                                       
-                                            <% if (tempPrice2 > tempPrice1) { %>
-                                                <% offerPrice = tempPrice2 %>
-                                               
-                                            <% } else {%>
-                                                <% offerPrice = tempPrice1 %>
-                                            <% } %>
-                                     <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
-                                          <% if (products[i].variants[j].price > products[i].variants[j].productOfferId.productMinPrice) { %>
-                                            <% offerPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue %>
-                                          <% } %>
-                                      <% } %>
-                                      
-                                <% } %>
-                            <% } else if(products[i].categoryOfferId !== null && products[i].variants[j].productOfferId === undefined && products[i].categoryOfferId.startDate <= now  && products[i].categoryOfferId.endDate >= now){%>
-                               
-                                    <% if (products[i].categoryOfferId.discountType === "percentage") { %>
-                                        <% let tempPrice1 = products[i].variants[j].price - ((products[i].variants[j].price * products[i].categoryOfferId.discountValue ) / 100) %>
-                                        <% let tempPrice2 = products[i].variants[j].price - products[i].categoryOfferId.maxDiscountAmount  %>
-                                       
-                                            <% if (tempPrice2 > tempPrice1) { %>
-                                                <% offerPrice = tempPrice2 %>
-                                                <% isMaxDiscountApplied = true %>
-                                            <% } else {%>
-                                                <% offerPrice = tempPrice1 %>
-                                            <% } %>
-                                     <% } else if(products[i].variants[j].categoryOfferId.discountType === "flat"){%>
-                                          <% if (products[i].variants[j].price > products[i].categoryOfferId.productMinPrice) { %>
-                                            <% offerPrice = products[i].variants[j].price - products[i].categoryOfferId.discountValue %>
-                                          <% } %>
-                                      <% } %>
-                                      
-                               
-                            <% } else if(products[i].categoryOfferId !== null && products[i].variants[j].productOfferId !== undefined && products[i].categoryOfferId.startDate > now && products[i].variants[j].productOfferId.startDate <= now && products[i].variants[j].productOfferId.endDate >= now){ %>
-                                <% if (products[i].variants[j].productOfferId.discountType === "percentage") { %>
-                                    <%  offerPrice = products[i].variants[j].price - ((products[i].variants[j].price * products[i].variants[j].productOfferId.discountValue ) / 100) %>
-                                  <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
-                                      <% offerPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue  %>
-                                  <% } %>
-                                 
-                            <% } else if(products[i].categoryOfferId === null && products[i].variants[j].productOfferId !== undefined && products[i].variants[j].productOfferId.startDate <= now && products[i].variants[j].productOfferId.endDate >= now){ %>
-                                <% if (products[i].variants[j].productOfferId.discountType === "percentage") { %>
-                                    <%  offerPrice = products[i].variants[j].price - ((products[i].variants[j].price * products[i].variants[j].productOfferId.discountValue ) / 100) %>
-                                  <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
-                                      <% offerPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue  %>
-                                  <% } %>
-                                  
-                            <% } %>
+                                <%
+                                /* ================================
+                                   Base values
+                                ================================ */
+                                const now = new Date()
+                                const price = products[i].variants[j].price
+                                const productOffer = products[i].variants[j].productOfferId
+                                const categoryOffer = products[i].categoryOfferId
+                                
+                                let offerPrice = price
+                                let productOfferPrice = null
+                                let categoryOfferPrice = null
+                                
+                                /* ================================
+                                   Check offer activeness
+                                ================================ */
+                                const isProductOfferActive =
+                                  productOffer &&
+                                  productOffer.startDate <= now &&
+                                  productOffer.endDate >= now
+                                
+                                const isCategoryOfferActive =
+                                  categoryOffer &&
+                                  categoryOffer.startDate <= now &&
+                                  categoryOffer.endDate >= now
+                                
+                                /* ================================
+                                   Calculate product offer price
+                                ================================ */
+                                if (isProductOfferActive) {
+                                  if (productOffer.discountType === "percentage") {
+                                    productOfferPrice =
+                                      price - (price * productOffer.discountValue) / 100
+                                  } else if (productOffer.discountType === "flat") {
+                                    productOfferPrice =
+                                      price - productOffer.discountValue
+                                  }
+                                }
+                                
+                                /* ================================
+                                   Calculate category offer price
+                                ================================ */
+                                if (isCategoryOfferActive) {
+                                  if (categoryOffer.discountType === "percentage") {
+                                    const percentPrice =
+                                      price - (price * categoryOffer.discountValue) / 100
+                                
+                                    const maxPrice =
+                                      price - categoryOffer.maxDiscountAmount
+                                
+                                    // Apply max discount cap
+                                    categoryOfferPrice = Math.max(percentPrice, maxPrice)
+                                
+                                  } else if (categoryOffer.discountType === "flat") {
+                                    if (price > categoryOffer.productMinPrice) {
+                                      categoryOfferPrice =
+                                        price - categoryOffer.discountValue
+                                    }
+                                  }
+                                }
+                                
+                                /* ================================
+                                   Decide final offer price
+                                ================================ */
+                                if (productOfferPrice !== null && categoryOfferPrice !== null) {
+                                  // Both active → choose better discount
+                                  offerPrice = Math.min(productOfferPrice, categoryOfferPrice)
+                                
+                                } else if (productOfferPrice !== null) {
+                                  // Only product offer active
+                                  offerPrice = productOfferPrice
+                                
+                                } else if (categoryOfferPrice !== null) {
+                                  // Only category offer active
+                                  offerPrice = categoryOfferPrice
+                                }
+                                // Else → no active offer, original price remains
+                                %>
+                                
                             
                             
                 <div class="product-card mr-2 bg-white rounded-lg shadow-sm p-4 transition-all w-[240px] flex-shrink-0">
                     <div class="h-40 mb-3 relative">
                         <img src="<%= products[i].variants[j].productImages[0] %>" alt="Product" class="w-full h-full object-contain">
-                        <button class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100" >
-                            <i data-feather="heart" class="w-4 h-4"></i>
+
+                        <% let isProductInWishlist = wishlistItems.find(item => String(products[i]._id) === String(item.productId) && item.variant === j)%>
+                       
+                        <button  type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100" onclick="removeFromWishlist('<%= products[i]._id %>','<%= j %>')">
+                            <i data-feather="heart" class="w-4 h-4" fill="#FF2400" stroke="#FF2400"></i>
                         </button>
-                        <button class="absolute top-2 right-2 bg-red-400 rounded-full p-2 shadow-md hover:bg-gray-100 hidden" disabled>
-                            <i data-feather="heart" class="w-4 h-4"></i>
-                        </button>
+                      
+                            <button id="addWishBtn<%= products[i]._id %><%= j %>" type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 <%= (isProductInWishlist) ? 'hidden' : '' %>" onclick="addToWishlist(this,'<%= products[i]._id %>','<%= j %>')">
+                                <i  data-feather="heart" class="w-4 h-4" ></i>
+                            </button>
+                       
+        
+                       
                         <a href="/product?id=<%= products[i]._id %>&variant=<%= j%>">
                             <button class="absolute top-12 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
                                 <i data-feather="eye" class="w-4 h-4"></i>
@@ -295,103 +298,103 @@
             </div>
             <div class="relative">
                 <div class="deals-carousel scroll-x-div">
+                    <%   const now = new Date() %>
                     <% for( let i = 0; i < products.length; i++ ) { %>
                         <% if (!products[i].categoryId.isDeleted && !products[i].brandId.isDeleted) { %>
                         <% if (!products[i].isDeleted) { %>
                          <% if (!products[i].isFeatured) { %>
                         <% for( let j = 0; j < products[i].variants.length; j++ ) { %>
-                            <% let productOfferPrice = 0 %>
-                            <% let categoryOfferPrice = 0 %>
-                            <% let offerPrice = 0 %>
-                            <% let now = new Date() %>
+                           
                         <% if ( products[i].variants[j].stockQuantity !== 0 && products[i].variants[j].stockStatus !== "Out of Stock" ) { %>
-                            <% if (products[i].categoryOfferId !== null && products[i].variants[j].productOfferId !== undefined && (products[i].variants[j].productOfferId.startDate <= now  && products[i].variants[j].productOfferId.endDate >= now) && (products[i].categoryOfferId.startDate <= now  && products[i].categoryOfferId.endDate >= now)) { %>
-                                    
-                                <% if (products[i].variants[j].productOfferId.discountType === "percentage") { %>
-                                  <%  productOfferPrice = products[i].variants[j].price - ((products[i].variants[j].price * products[i].variants[j].productOfferId.discountValue ) / 100) %>
-                                <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
-                                  
-                                    <% productOfferPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue  %>
-                                <% } %>
-
-                                <% if (products[i].categoryOfferId.discountType === "percentage") { %>
-                                    
-                                    <% let tempPrice1 = products[i].variants[j].price - ((products[i].variants[j].price * products[i].categoryOfferId.discountValue ) / 100) %>
-                                    <% let tempPrice2 = products[i].variants[j].price - products[i].categoryOfferId.maxDiscountAmount  %>
-                                   
-                                        <% if (tempPrice2 > tempPrice1) { %>
-                                            <% categoryOfferPrice = tempPrice2 %>
-                                        <% } else {%>
-                                            <% categoryOfferPrice = tempPrice1 %>
-                                        <% } %>
-                                 <% } else if(products[i].categoryOfferId.discountType === "flat"){%>
-                                    
-                                      <% if (products[i].variants[j].price > products[i].categoryOfferId.productMinPrice) { %>
-                                        
-                                        <% categoryOfferPrice = products[i].variants[j].price - products[i].categoryOfferId.discountValue %>
-                                      <% } %>
-                                  <% } %>
-
-                                  <% offerPrice = (productOfferPrice < categoryOfferPrice) ? productOfferPrice : categoryOfferPrice %>
-                                  
-                        <% } else if(products[i].categoryOfferId !== null && products[i].variants[j].productOfferId !== undefined && products[i].variants[j].productOfferId.startDate > now && products[i].categoryOfferId.startDate <= now  && products[i].categoryOfferId.endDate >= now) { %>
-                            <% if(products[i].categoryOfferId.startDate <= now  && products[i].categoryOfferId.endDate >= now){%>
-                                <% if (products[i].categoryOfferId.discountType === "percentage") { %>
-                                    <% let tempPrice1 = products[i].variants[j].price - ((products[i].variants[j].price * products[i].categoryOfferId.discountValue ) / 100) %>
-                                    <% let tempPrice2 = products[i].variants[j].price - products[i].categoryOfferId.maxDiscountAmount  %>
-                                   
-                                        <% if (tempPrice2 > tempPrice1) { %>
-                                            <% offerPrice = tempPrice2 %>
-                                            <% isMaxDiscountApplied = true %>
-                                        <% } else {%>
-                                            <% offerPrice = tempPrice1 %>
-                                        <% } %>
-                                 <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
-                                      <% if (products[i].variants[j].price > products[i].variants[j].productOfferId.productMinPrice) { %>
-                                        <% offerPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue %>
-                                      <% } %>
-                                  <% } %>
-                                  
-                            <% } %>
-                        <% } else if(products[i].categoryOfferId !== null && products[i].variants[j].productOfferId === undefined && products[i].categoryOfferId.startDate <= now  && products[i].categoryOfferId.endDate >= now){%>
-                           
-                                <% if (products[i].categoryOfferId.discountType === "percentage") { %>
-                                    <% let tempPrice1 = products[i].variants[j].price - ((products[i].variants[j].price * products[i].categoryOfferId.discountValue ) / 100) %>
-                                    <% let tempPrice2 = products[i].variants[j].price - products[i].categoryOfferId.maxDiscountAmount  %>
-                                   
-                                        <% if (tempPrice2 > tempPrice1) { %>
-                                            <% offerPrice = tempPrice2 %>
-                                        <% } else {%>
-                                            <% offerPrice = tempPrice1 %>
-                                        <% } %>
-                                 <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
-                                      <% if (products[i].variants[j].price > products[i].variants[j].productOfferId.productMinPrice) { %>
-                                        <% offerPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue %>
-                                      <% } %>
-                                  <% } %>
-                                  
-                           
-                        <% } else if(products[i].categoryOfferId !== null && products[i].variants[j].productOfferId !== undefined && products[i].categoryOfferId.startDate > now && products[i].variants[j].productOfferId.startDate <= now && products[i].variants[j].productOfferId.endDate >= now){ %>
-                            <% if (products[i].variants[j].productOfferId.discountType === "percentage") { %>
-                                <%  offerPrice = products[i].variants[j].price - ((products[i].variants[j].price * products[i].variants[j].productOfferId.discountValue ) / 100) %>
-                              <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
-                                  <% offerPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue  %>
-                              <% } %>
-                             
-                        <% } else if(products[i].categoryOfferId === null && products[i].variants[j].productOfferId !== undefined && products[i].variants[j].productOfferId.startDate <= now && products[i].variants[j].productOfferId.endDate >= now){ %>
-                            <% if (products[i].variants[j].productOfferId.discountType === "percentage") { %>
-                                <%  offerPrice = products[i].variants[j].price - ((products[i].variants[j].price * products[i].variants[j].productOfferId.discountValue ) / 100) %>
-                              <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
-                                  <% offerPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue  %>
-                              <% } %>
+                            <%
+                                /* ================================
+                                   Base values
+                                ================================ */
                               
-                        <% } %>
+                                const price = products[i].variants[j].price
+                                const productOffer = products[i].variants[j].productOfferId
+                                const categoryOffer = products[i].categoryOfferId
+                                
+                                let offerPrice = price
+                                let productOfferPrice = null
+                                let categoryOfferPrice = null
+                                
+                                /* ================================
+                                   Check offer activeness
+                                ================================ */
+                                const isProductOfferActive =
+                                  productOffer &&
+                                  productOffer.startDate <= now &&
+                                  productOffer.endDate >= now
+                                
+                                const isCategoryOfferActive =
+                                  categoryOffer &&
+                                  categoryOffer.startDate <= now &&
+                                  categoryOffer.endDate >= now
+                                
+                                /* ================================
+                                   Calculate product offer price
+                                ================================ */
+                                if (isProductOfferActive) {
+                                  if (productOffer.discountType === "percentage") {
+                                    productOfferPrice =
+                                      price - (price * productOffer.discountValue) / 100
+                                  } else if (productOffer.discountType === "flat") {
+                                    productOfferPrice =
+                                      price - productOffer.discountValue
+                                  }
+                                }
+                                
+                                /* ================================
+                                   Calculate category offer price
+                                ================================ */
+                                if (isCategoryOfferActive) {
+                                  if (categoryOffer.discountType === "percentage") {
+                                    const percentPrice =
+                                      price - (price * categoryOffer.discountValue) / 100
+                                
+                                    const maxPrice =
+                                      price - categoryOffer.maxDiscountAmount
+                                
+                                    // Apply max discount cap
+                                    categoryOfferPrice = Math.max(percentPrice, maxPrice)
+                                
+                                  } else if (categoryOffer.discountType === "flat") {
+                                    if (price > categoryOffer.productMinPrice) {
+                                      categoryOfferPrice =
+                                        price - categoryOffer.discountValue
+                                    }
+                                  }
+                                }
+                                
+                                /* ================================
+                                   Decide final offer price
+                                ================================ */
+                                if (productOfferPrice !== null && categoryOfferPrice !== null) {
+                                  // Both active → choose better discount
+                                  offerPrice = Math.min(productOfferPrice, categoryOfferPrice)
+                                
+                                } else if (productOfferPrice !== null) {
+                                  // Only product offer active
+                                  offerPrice = productOfferPrice
+                                
+                                } else if (categoryOfferPrice !== null) {
+                                  // Only category offer active
+                                  offerPrice = categoryOfferPrice
+                                }
+                                // Else → no active offer, original price remains
+                                %>
                             <div class="product-card mr-2 bg-white rounded-lg shadow-sm p-4 transition-all w-[240px] flex-shrink-0">
                                 <div class="h-40 mb-3 relative">
                                     <img src="<%= products[i].variants[j].productImages[0] %>" alt="Product" class="w-full h-full object-contain">
-                                    <button class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
-                                        <i data-feather="heart" class="w-4 h-4"></i>
+                                    <% let isProductInWishlist = wishlistItems.find(item => String(products[i]._id) === String(item.productId) && item.variant === j)%>
+                                    <button  type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100" onclick="removeFromWishlist('<%= products[i]._id %>','<%= j %>')">
+                                        <i data-feather="heart" class="w-4 h-4" fill="#FF2400" stroke="#FF2400"></i>
                                     </button>
+                                  
+                                        <button id="addWishBtn<%= products[i]._id %><%= j %>" type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 <%= (isProductInWishlist) ? 'hidden' : '' %>" onclick="addToWishlist(this,'<%= products[i]._id %>','<%= j %>')">
+                                            <i  data-feather="heart" class="w-4 h-4" ></i>
+                                        </button>
                                     <a href="/product?id=<%= products[i]._id %>&variant=<%= j%>">
                                         <button class="absolute top-12 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
                                             <i data-feather="eye" class="w-4 h-4"></i>
@@ -473,6 +476,67 @@
 
     
 
+    <script>
+        function addToWishlist(btn,productId,variant){
+            btn.classList.add("hidden")
+            let itemCount = document.getElementById("wishlistItemQty")
+            fetch(`/wishlist?productId=${productId}&variant=${variant}`,{method : "POST"})
+            .then(res => res.json())
+            .then(data => {
+                iziToast.success({
+                    title : "Wishlist",
+                    message : data.message,
+                    position : "topRight"
+                })
+            })
+            .catch(error => {
+                iziToast.error({
+                    title : "Wishlist",
+                    message : error.message,
+                    position : "topRight"
+                })
+            })
+            if(Number(itemCount.innerText) === 0){
+                itemCount.classList.remove("hidden")
+                 let value = Number(itemCount.innerText)
+                 value++
+                 itemCount.innerText = value
+
+            }else if(Number(itemCount.innerText) > 0){
+                let value = Number(itemCount.innerText)
+                value++
+                itemCount.innerText = value
+            }
+        }
+        function removeFromWishlist(productId,variant){
+            document.getElementById(`addWishBtn${productId}${variant}`).classList.remove("hidden")
+            let itemCount = document.getElementById("wishlistItemQty")
+            fetch(`/wishlist/remove-wishlist-item?productId=${productId}&variant=${variant}`,{method : "DELETE"})
+            .then(res => res.json())
+            .then(data => {
+                iziToast.success({
+                    title : "Wishlist",
+                    message : data.message,
+                    position : "topRight"
+                })
+            })
+            .catch(error => {
+                iziToast.error({
+                    title : "Wishlist",
+                    message : error.message,
+                    position : "topRight"
+                })
+            })
+             if(Number(itemCount.innerText) > 0){
+                let value = Number(itemCount.innerText)
+                value--
+                itemCount.innerText = value
+                if(value === 0){
+                    itemCount.classList.add("hidden")
+                }
+            }
+        }
+    </script>
     <!-- Footer -->
     <%- include("../partials/user-side/footer.ejs")%>
 

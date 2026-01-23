@@ -17,6 +17,11 @@ const cartSchema = new Schema({
         ref : "Category",
         required : true
     },
+    brandId : {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "Brand",
+        required : true
+    },
     variant : {
         type : Number,
         required : true

@@ -17,15 +17,9 @@ body {
   transition: transform 0.3s ease-in-out;
   z-index: 1;
 }
-/* Closed state */
-.sidebar-closed {
-  transform: translateX(-100%);
-}
 
-/* Open state */
-.sidebar-open {
-  transform: translateX(0);
-}
+
+
 .menu-section {
   margin-top: 20px;
 }
@@ -61,13 +55,11 @@ body {
   border-radius: 8px;
 }
 .main-content {
-    margin-left: 0px;
+    margin-left: 220px;
     margin-top: 70px;
     padding: 20px;
   }
-  .main-expanded {
-    margin-left: 220 !important;
-  }
+  
   
 .main-content-for-addProduct {
     margin-left: 8px;

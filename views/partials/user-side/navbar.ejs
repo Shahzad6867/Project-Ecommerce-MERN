@@ -28,7 +28,7 @@
 </head>
 <body class="bg-gray-100">
     <!-- Navigation Bar -->
-    <nav class="bg-green-500 shadow-md py-3 px-4 sticky top-0 z-50">
+    <nav class="bg-green-500 shadow-md py-3 px-4 sticky top-0 z-[60]">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <!-- Logo -->
             <div class="flex items-center">
@@ -37,7 +37,7 @@
             
             <!-- Search Bar -->
             <div class="flex-1 mx-8">
-                <!-- <div class="relative">
+                <div class="relative">
                    <form autocomplete="off" action="/search-product" method="post">
                     <input type="search" placeholder="Search for Products..." 
                     class="w-full py-2 px-4 pr-10 rounded-md search-bar border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-00 focus:border-transparent" data-search>
@@ -47,7 +47,7 @@
                         <i  data-feather="search" class=""></i>
                     </button>
                    </form>
-                </div> -->
+                </div>
                 <template data-product-template>
                     <div id="product-list-item" onclick="setInputForSearch()" >
                      <div class="flex-shrink-0 h-16 w-16 border-2 border-black px-1 py-1">
@@ -71,9 +71,12 @@
                     <span class="text-xs mt-1">Shop</span>
                 </a>
                 
-                <a href="/wishlist" class="flex flex-col items-center">
+                <a href="/wishlist">
+                   <div  class="flex flex-col items-center relative inline-block text-left">
                     <span class="iconify" data-icon="ri:heart-line" style="width: 26;height: 26;"></span>
                     <span class="text-xs mt-1">Wishlist</span>
+                    <span id="wishlistItemQty" class="absolute -top-1 -right-0.5 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center <%= (wishlistItemsCount === 0) ? "hidden" : '' %>"><%= wishlistItemsCount %></span>
+                   </div>
                 </a>
                 
 
@@ -390,6 +393,7 @@
             searchInput.value = product.productName
             searchInput.focus()
             productCardContainer.style.display = "none"
+            window.location.href = `/product?id=${product._id}&variant=0`
           })
         }
         

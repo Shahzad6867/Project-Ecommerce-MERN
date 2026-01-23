@@ -1,5 +1,6 @@
 const mongoose = require("mongoose")
 const Cart = require("../../models/cart.model");
+const Wishlist = require("../../models/wishlist.model");
 const Product = require("../../models/product.model");
 const User = require("../../models/user.model");
 const stripe = require("../../config/stripeConfig.js")
@@ -14,6 +15,7 @@ const getWallet = async (req,res) => {
     const user = req.session.user || req.user
     const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
     const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
+    const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
     let wallet = await Wallet.find({userId : user._id})
     if(wallet[0].transactions.length > 0){
       wallet = await Wallet.aggregate([{
@@ -45,7 +47,7 @@ const getWallet = async (req,res) => {
     }])
     }
      console.log(wallet)
-    res.render("user-view/user.wallet.ejs",{message,user,cartItems,cartItemsCount,productsFullList,wallet})
+    res.render("user-view/user.wallet.ejs",{message,user,cartItems,cartItemsCount,productsFullList,wallet,wishlistItemsCount})
   }
 
   const walletTopUp = async (req,res) => {

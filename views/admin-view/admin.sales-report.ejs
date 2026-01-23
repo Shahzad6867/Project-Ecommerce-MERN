@@ -1,0 +1,403 @@
+<!-- Header -->
+<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - Sales Report"}) %>
+<!-- Navbar -->
+<%- include("../partials/admin-side/navbar.ejs") %>
+<!-- Sidebar -->
+<%- include("../partials/admin-side/sidebar.ejs",{customerBtn : "",categoriesBtn : "",brandsBtn : "",productsBtn : "", ordersBtn : "",offersBtn : "",couponsBtn : "",reportsBtn : "active disabled"}) %>
+
+<div class="main-content p-6">
+
+  <!-- Page Title -->
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Sales Report</h1>
+  </div>
+
+  <!-- Filter Card -->
+  <div class="bg-white rounded-lg shadow p-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+
+      <div>
+        <label class="block text-sm font-medium text-gray-600 mb-1">Report Period</label>
+        <select id="dateBasedOn" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500">
+          <option value="today" <%= (reportBasedOn === "today") ? "selected" : "" %>>Today</option>
+          <option value="yesterday" <%= (reportBasedOn === "yesterday") ? "selected" : "" %>>Yesterday</option>
+          <option value="thisWeek" <%= (reportBasedOn === "thisWeek") ? "selected" : "" %>>This Week</option>
+          <option value="thisMonth" <%= (reportBasedOn === "thisMonth") ? "selected" : "" %>>This Month</option>
+          <option value="thisYear" <%= (reportBasedOn === "thisYear") ? "selected" : "" %>>This Year</option>
+          <option value="customRange" <%= (reportBasedOn === "customRange") ? "selected" : "" %>>Custom Range</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-600 mb-1">From Date</label>
+        <input type="date" id="fromDate" value="<%= fromDate.toISOString().split("T")[0] %>" class="w-full border border-gray-300 rounded-md px-3 py-2" <%= (reportBasedOn !== "customRange") ? "disabled" : "" %>>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-600 mb-1">To Date</label>
+        <input type="date" id="toDate" value="<%= toDate.toISOString().split("T")[0] %>" class="w-full border border-gray-300 rounded-md px-3 py-2" <%= (reportBasedOn !== "customRange") ? "disabled" : "" %>>
+      </div>
+
+      <div class="flex gap-2">
+          <button class="w-full btn-primary text-gray-700  px-4 py-2 rounded-md  font-bold" onclick="generateReport()">
+            Generate Report
+          </button>
+      </div>
+
+    </div>
+
+    <div class="flex justify-end gap-3 mt-4">
+      <button class="bg-red-600 flex justify-between items-center  px-2 py-2 rounded-md text-sm font-bold text-white hover:bg-red-500" onclick="getSalesReportInPdf()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+            <path fill="#fff" d="M13 9h5.5L13 3.5zM6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2m4.93 10.44c.41.9.93 1.64 1.53 2.15l.41.32c-.87.16-2.07.44-3.34.93l-.11.04l.5-1.04c.45-.87.78-1.66 1.01-2.4m6.48 3.81c.18-.18.27-.41.28-.66c.03-.2-.02-.39-.12-.55c-.29-.47-1.04-.69-2.28-.69l-1.29.07l-.87-.58c-.63-.52-1.2-1.43-1.6-2.56l.04-.14c.33-1.33.64-2.94-.02-3.6a.85.85 0 0 0-.61-.24h-.24c-.37 0-.7.39-.79.77c-.37 1.33-.15 2.06.22 3.27v.01c-.25.88-.57 1.9-1.08 2.93l-.96 1.8l-.89.49c-1.2.75-1.77 1.59-1.88 2.12c-.04.19-.02.36.05.54l.03.05l.48.31l.44.11c.81 0 1.73-.95 2.97-3.07l.18-.07c1.03-.33 2.31-.56 4.03-.75c1.03.51 2.24.74 3 .74c.44 0 .74-.11.91-.3m-.41-.71l.09.11c-.01.1-.04.11-.09.13h-.04l-.19.02c-.46 0-1.17-.19-1.9-.51c.09-.1.13-.1.23-.1c1.4 0 1.8.25 1.9.35M7.83 17c-.65 1.19-1.24 1.85-1.69 2c.05-.38.5-1.04 1.21-1.69zm3.02-6.91c-.23-.9-.24-1.63-.07-2.05l.07-.12l.15.05c.17.24.19.56.09 1.1l-.03.16l-.16.82z" stroke-width="0.5" stroke="#fff" />
+        </svg>
+        Download PDF
+      </button>
+      <button class="bg-green-600 px-2 py-2 flex justify-between items-center rounded-md text-sm font-bold text-white hover:bg-green-500" onclick="getSalesReportInExcel()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 512 512" class="mr-1" >
+            <path fill="currentColor" d="M453.547 273.449H372.12v-40.714h81.427zm0 23.264H372.12v40.714h81.427zm0-191.934H372.12v40.713h81.427zm0 63.978H372.12v40.713h81.427zm0 191.934H372.12v40.714h81.427zm56.242 80.264c-2.326 12.098-16.867 12.388-26.58 12.796H302.326v52.345h-36.119L0 459.566V52.492L267.778 5.904h34.548v46.355h174.66c9.83.407 20.648-.291 29.197 5.583c5.991 8.608 5.41 19.543 5.817 29.43l-.233 302.791c-.29 16.925 1.57 34.2-1.978 50.892m-296.51-91.256c-16.052-32.57-32.395-64.909-48.39-97.48c15.82-31.698 31.408-63.512 46.937-95.327c-13.203.64-26.406 1.454-39.55 2.385c-9.83 23.904-21.288 47.169-28.965 71.888c-7.154-23.323-16.634-45.774-25.3-68.515c-12.796.698-25.592 1.454-38.387 2.21c13.493 29.78 27.86 59.15 40.946 89.104c-15.413 29.081-29.837 58.57-44.785 87.825c12.737.523 25.475 1.047 38.212 1.221c9.074-23.148 20.357-45.424 28.267-69.038c7.096 25.359 19.135 48.798 29.023 73.051c14.017.99 27.976 1.862 41.993 2.676M484.26 79.882H302.326v24.897h46.53v40.713h-46.53v23.265h46.53v40.713h-46.53v23.265h46.53v40.714h-46.53v23.264h46.53v40.714h-46.53v23.264h46.53v40.714h-46.53v26.897H484.26z" stroke-width="13" stroke="currentColor" />
+        </svg>
+        Download Excel
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary Table -->
+   <h1 class="font-bold ml-1 mb-2 text-lg">Sales Summary</h1>
+  <div class="bg-white rounded-lg shadow mb-6 overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-green-50">
+        <tr>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Total Orders</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Items Sold</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Gross Sales</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Product Discounts</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Coupon Discounts</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Net Sales</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (totalOrdersCount === 0 && itemsSoldCount === 0 && grossSales === "$0.00" && totalProductDiscount === "$0.00" && totalCouponDiscount === "$0.00" && netSales === "$0.00") { %>
+          <tr>
+            <td colspan="6" class="px-6 py-6 text-gray-500 text-center text-sm italic">
+              No sales found for the selected period
+            </td>
+          </tr>
+        <% } else { %>
+          <tr class="text-center text-gray-700 font-medium">
+            <td class="px-6 py-4"><%= totalOrdersCount %></td>
+            <td class="px-6 py-4"><%= itemsSoldCount %></td>
+            <td class="px-6 py-4"><%= grossSales %></td>
+            <td class="px-6 py-4 text-red-600"><%= totalProductDiscount %></td>
+            <td class="px-6 py-4 text-red-600"><%= totalCouponDiscount %></td>
+            <td class="px-6 py-4 font-bold"><%= netSales %></td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Product-wise Sales Table -->
+  <h1 class="font-bold ml-1 mb-2 text-lg">Product-wise Sales Report</h1>
+  <div class="bg-white rounded-lg shadow overflow-hidden mb-2">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-green-50">
+        <tr>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">No</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Product</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Category</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Units Sold</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Revenue</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Product Discount</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Coupon Discount</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Net Revenue</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200 text-center text-sm text-gray-700">
+        <% if (salePerItem.length === 0) { %>
+          <tr>
+            <td colspan="8" class="px-6 py-6 text-gray-500 italic">
+              No sales found for the selected period
+            </td>
+          </tr>
+        <% } else { %>
+            <% for( let i = 0; i < salePerItem.length; i++ ) { %>
+              <tr>
+                <td class="px-6 py-4"><%= i + 1 %></td>
+                <% let productFullName = salePerItem[i]._id.productName +" "+ salePerItem[i]._id.productColor +" "+ salePerItem[i]._id.productSize %>
+                <% let productName = (productFullName.length > 50) ? productFullName.slice(0,50)+"..." : productFullName %>
+                <td class="px-6 py-4 font-medium flex flex-wrap text-left"><%=  productName %></td>
+                <td class="px-6 py-4"><%= salePerItem[i].categoryName %></td>
+                <td class="px-6 py-4"><%= salePerItem[i].itemsSold %></td>
+                <td class="px-6 py-4">$<%= salePerItem[i].revenue %></td>
+                <td class="px-6 py-4 <%= (salePerItem[i].productDiscount > 0) ? 'text-red-500' : '' %> ">$<%= salePerItem[i].productDiscount.toFixed(2) %></td>
+                <td class="px-6 py-4 <%= (salePerItem[i].couponDiscount > 0) ? 'text-red-500' : '' %>">$<%= salePerItem[i].couponDiscount.toFixed(2) %></td>
+                <td class="px-6 py-4 font-semibold">$<%= salePerItem[i].netRevenue.toFixed(2) %></td>
+              </tr>
+            <% } %>
+        <% } %>
+
+       
+
+        
+
+      </tbody>
+    </table>
+    
+  </div>
+  <% let i = Number(orderWisePage) > 4 ? Number(orderWisePage) - 3 : 1 %>
+  <div class="flex items-center justify-between mb-4">
+      <div class="text-sm text-gray-500">
+        Showing <span class="font-medium">1</span> to <span class="font-medium"><%= salePerItem.length %></span> of <span class="font-medium"><%= salePerItem.length %></span> results
+      </div>
+      <div class="flex space-x-2">
+        
+        <a href="/admin/reports?productWisePage=<%= Number(productWisePage) > 1 ? Number(productWisePage) - 1 : 1 %>">
+          <% if (Number(productWisePage) === 1) { %>
+            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
+              Previous
+            </button>
+          <% } else {%>
+            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" >
+              Previous
+            </button>
+            <% } %>
+        
+       </a>
+        <% let j = Number(productWisePage) > 4 ? Number(productWisePage) - 3 : 1 %>
+        <% for(;j <= pagesForProduct ; j++ ) { %>
+        <a href="/admin/reports?productWisePage=<%= j %>">
+          <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+            <%= j %>
+          </button>
+        </a>
+        <% } %>
+        <a href="/admin/reports?productWisePage=<%= Number(productWisePage) < pagesForProduct ? Number(productWisePage) + 1 : pagesForProduct %>">
+          <% if (Number(productWisePage) === pagesForProduct) { %>
+            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
+              Next
+            </button>
+          <% } else {%>
+            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" >
+              Next
+            </button>
+            <% } %>
+        
+       </a>
+      </div>
+    </div>
+ 
+
+  <h1 class="font-bold ml-1 mb-2 text-lg">Order-wise Sales Report</h1>
+  <div class="bg-white rounded-lg shadow overflow-hidden mb-2">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-green-50">
+        <tr>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">No</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Order</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Date</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Revenue</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Product Discount</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Coupon Discount</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Net Revenue</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200 text-center text-sm text-gray-700">
+        <% if (orderBasedSales.length === 0) { %>
+          <tr>
+            <td colspan="7" class="px-6 py-6 text-gray-500 italic">
+              No sales found for the selected period
+            </td>
+          </tr>
+        <% } else { %>
+            <% for( let i = 0; i < orderBasedSales.length; i++ ) { %>
+              <tr>
+                <td class="px-6 py-4"><%= i + 1 %></td>
+                <td class="px-6 py-4"><%=  orderBasedSales[i]._id %></td>
+                <td class="px-6 py-4"><%= orderBasedSales[i].orderedAt.toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"}) %></td>
+                <td class="px-6 py-4">$<%= orderBasedSales[i].revenue %></td>
+                <td class="px-6 py-4 <%= (orderBasedSales[i].productDiscount > 0) ? 'text-red-500' : '' %> ">$<%= orderBasedSales[i].productDiscount.toFixed(2) %></td>
+                <td class="px-6 py-4 <%= (orderBasedSales[i].couponDiscount > 0) ? 'text-red-500' : '' %>">$<%= orderBasedSales[i].couponDiscount.toFixed(2) %></td>
+                <td class="px-6 py-4 font-semibold">$<%= orderBasedSales[i].netRevenue.toFixed(2) %></td>
+              </tr>
+            <% } %>
+        <% } %>
+       
+
+        
+
+      </tbody>
+    </table>
+  </div>
+
+  <div class="flex items-center justify-between ">
+    <div class="text-sm text-gray-500">
+      Showing <span class="font-medium">1</span> to <span class="font-medium"><%= orderBasedSales.length %></span> of <span class="font-medium"><%= orderBasedSales.length %></span> results
+    </div>
+    <div class="flex space-x-2">
+      
+      <a href="/admin/reports?orderWisePage=<%= Number(orderWisePage) > 1 ? Number(orderWisePage) - 1 : 1 %>">
+        <% if (Number(orderWisePage) === 1) { %>
+          <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
+            Previous
+          </button>
+        <% } else {%>
+          <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" >
+            Previous
+          </button>
+          <% } %>
+      
+     </a>
+      
+      <% for(;i <= pagesForOrder ; i++ ) { %>
+      <a href="/admin/reports?orderWisePage=<%= i %>">
+        <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+          <%= i %>
+        </button>
+      </a>
+      <% } %>
+      <a href="/admin/reports?orderWisePage=<%= Number(orderWisePage) < pagesForOrder ? Number(orderWisePage) + 1 : pagesForOrder %>">
+        <% if (Number(orderWisePage) === pagesForOrder) { %>
+          <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
+            Next
+          </button>
+        <% } else {%>
+          <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" >
+            Next
+          </button>
+          <% } %>
+      
+     </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  feather.replace()
+
+  
+
+
+
+    let dateBasedOn = document.getElementById("dateBasedOn")
+    let fromDate = document.getElementById("fromDate")
+    let toDate = document.getElementById("toDate")
+    function getSalesReportInPdf() {
+      if(fromDate.value === "" ){
+        iziToast.error({
+          title : "Error",
+          message : "Please select a From Date",
+          position : "topCenter"
+        })
+        event.preventDefault()
+        return
+      }
+      if(toDate.value === "" ){
+        iziToast.error({
+          title : "Error",
+          message : "Please select a To Date",
+          position : "topCenter"
+        })
+        event.preventDefault()
+        return
+      }
+       window.location.href= `/admin/reports/sales/pdf?fromDate=${fromDate.value}&toDate=${toDate.value}`
+    }
+    function getSalesReportInExcel() {
+      if(fromDate.value === "" ){
+        iziToast.error({
+          title : "Error",
+          message : "Please select a From Date",
+          position : "topCenter"
+        })
+        event.preventDefault()
+        return
+      }
+      if(toDate.value === "" ){
+        iziToast.error({
+          title : "Error",
+          message : "Please select a To Date",
+          position : "topCenter"
+        })
+        event.preventDefault()
+        return
+      }
+       window.location.href= `/admin/reports/sales/excel?fromDate=${fromDate.value}&toDate=${toDate.value}`
+    }
+
+    function generateReport(){
+      if(fromDate.value === "" ){
+        iziToast.error({
+          title : "Error",
+          message : "Please select a From Date",
+          position : "topCenter"
+        })
+        event.preventDefault()
+        return
+      }
+      if(toDate.value === "" ){
+        iziToast.error({
+          title : "Error",
+          message : "Please select a To Date",
+          position : "topCenter"
+        })
+        event.preventDefault()
+        return
+      }
+      window.location.href= `/admin/reports?reportBasedOn=${dateBasedOn.value}&fromDate=${fromDate.value}&toDate=${toDate.value}`
+    }
+
+    dateBasedOn.addEventListener("change",function(){
+        if(dateBasedOn.value === "today"){
+            fromDate.disabled = true
+            toDate.disabled = true
+            let now = new Date()
+            let today = now.toISOString().split("T")[0]
+            fromDate.value = today
+            toDate.value = today
+        }else if(dateBasedOn.value === "yesterday"){
+            fromDate.disabled = true
+            toDate.disabled = true
+            let now = new Date()
+            let yesterday = new Date(now)
+            yesterday.setDate(yesterday.getDate() - 1)
+            yesterday = yesterday.toISOString().split("T")[0]
+            fromDate.value = yesterday
+            toDate.value = yesterday
+        }else if(dateBasedOn.value === "thisWeek"){
+            fromDate.disabled = true
+            toDate.disabled = true
+            let now = new Date()
+            let day = now.getDay()
+            let diffToMon = (day === 0) ? -6 : 1 - day
+
+            let thisWeek = new Date(now)
+            thisWeek.setDate(thisWeek.getDate() + diffToMon)
+            thisWeek = thisWeek.toISOString().split("T")[0]
+            fromDate.value = thisWeek
+            toDate.value = now.toISOString().split("T")[0]
+        }else if(dateBasedOn.value === "thisMonth"){
+            fromDate.disabled = true
+            toDate.disabled = true
+            let now = new Date()
+            let thisMonth = new Date(now.getFullYear(),now.getMonth(),2)
+            thisMonth = thisMonth.toISOString().split("T")[0]
+            fromDate.value = thisMonth
+            toDate.value = now.toISOString().split("T")[0]
+        } else if(dateBasedOn.value === "thisYear"){
+            fromDate.disabled = true
+            toDate.disabled = true
+            let now = new Date()
+            let thisYear = new Date(now.getFullYear(),0,2)
+            thisYear = thisYear.toISOString().split("T")[0]
+            fromDate.value = thisYear
+            toDate.value = now.toISOString().split("T")[0]
+        } else if(dateBasedOn.value === "customRange"){
+            fromDate.disabled = false
+            toDate.disabled = false
+        }
+    })
+</script>
+
+</body>
+</html>

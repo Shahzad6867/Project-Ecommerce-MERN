@@ -17,8 +17,8 @@ const userWalletController = require("../controllers/user.controllers/userWallet
  
 
 
-router.get("/auth/google",passport.authenticate("google",{scope : ["profile","email"]}))
-router.get("/auth/google/callback",passport.authenticate("google",{failureRedirect : "/register"}),(req,res) => {
+router.get("/auth/google",userAuth.isLogged,passport.authenticate("google",{scope : ["profile","email"]}))
+router.get("/auth/google/callback",userAuth.isLogged,passport.authenticate("google",{failureRedirect : "/register"}),(req,res) => {
     res.redirect("/")
 })
 router.get("/login",userAuth.isLogged,userLoginController.getUserLogin)
@@ -68,9 +68,7 @@ router.patch("/cart/remove-coupon",cartManagementController.removeCoupon)
 //Wishlist
 router.get("/wishlist",userAuth.checkSession,wishlistManagementController.getWishlist)
 router.post("/wishlist",wishlistManagementController.addToWishlist)
-router.get("/home/delete-wishlist-item",wishlistManagementController.deleteWishlistItemFromHome)
-router.delete("/cart/delete-wislist-item",wishlistManagementController.deleteWishlistItem)
-
+router.delete("/wishlist/remove-wishlist-item",wishlistManagementController.deleteWishlistItem)
 
 // Order Management
 router.get("/checkout",userAuth.checkSession,userAuth.isCartHavingItems,orderManagementController.getCheckout)

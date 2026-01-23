@@ -14,39 +14,32 @@ const getWishlist = async (req,res) => {
     let message = req.session.message || null
     delete req.session.message
     const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
-    const wishlistItems = await Wishlist.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
+    const wishlistItems = await Wishlist.find({userId : user._id}).populate("productId").populate("brandId").populate("productOfferId").populate("categoryOfferId")
+    const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
     const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
     const offers = await Offer.find({})
-    res.render("user-view/user.wishlist.ejs",{message,user,productsFullList,wishlistItems,offers,cartItems})
+    res.render("user-view/user.wishlist.ejs",{message,user,productsFullList,wishlistItems,offers,cartItems,wishlistItemsCount})
 }
 
 const addToWishlist = async (req,res) => {
    try {
-    const {productId,variant,quantity} = req.query
-    let cartUser = req.session.user || req.user
+    const {productId,variant} = req.query
+    let user = req.session.user || req.user
     const product = await Product.findById(productId)
-    let stock = product.variants[variant].stockQuantity 
-    if(product.isDeleted){
-        return res.status(410).json({
-            success : false,
-            message : "Product Unavailable"
-        })
-    }
     const wishlistItem = new Wishlist({
-        userId : cartUser._id,
+        userId : user._id,
         productId : productId,
         categoryId : product.categoryId,
+        brandId : product.brandId,
         variant : variant,
         categoryOfferId : product.categoryOfferId,
         productOfferId : product.variants[variant].productOfferId
         
     })
     await wishlistItem.save()
-     res.status(200).json({
+    return res.status(200).json({
         success : true,
-        message : "Product has been added to wishlist",
-        product,
-        cart : cartItem
+        message : "Product has been added to Wishlist"
     })
    } catch (error) {
     console.log(error)
@@ -60,14 +53,14 @@ const addToWishlist = async (req,res) => {
 
  const deleteWishlistItem = async (req,res) => {
     try {
-        const {wishlistItemId,productId} = req.query
+        const {productId,variant} = req.query
+        let user = req.session.user || req.user
         
-        await Wishlist.findByIdAndDelete({_id : wishlistItemId})
-        let product = await Product.findById(productId)
+        await Wishlist.findOneAndDelete({userId : user._id, productId : productId, variant : variant})
         return res.status(200).json({
             success : true,
             message : "Item have been removed from your Cart",
-            product
+
         })
        } catch (error) {
         console.log(error)
@@ -78,22 +71,10 @@ const addToWishlist = async (req,res) => {
         })
        }
 }
-const deleteWishlistItemFromHome = async (req,res) => {
-    try {
-        const {wishlistItemId} = req.query
-        await Cart.findByIdAndDelete({_id : wishlistItemId})
-        req.session.message = "Product has been removed from your Cart"
-        return res.redirect("/")
-       } catch (error) {
-        console.log(error)
-        req.session.message = "Oops! Something went wrong"
-        res.redirect("/")
-       }
-}
+
 
 module.exports = {
     getWishlist,
     addToWishlist,
-    deleteWishlistItemFromHome,
     deleteWishlistItem,
 }

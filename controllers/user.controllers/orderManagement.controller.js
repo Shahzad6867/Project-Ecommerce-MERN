@@ -5,6 +5,7 @@ const User = require("../../models/user.model.js");
 const Brand = require("../../models/brand.model.js");
 const Address = require("../../models/address.model.js");
 const Cart = require("../../models/cart.model.js");
+const Wishlist = require("../../models/wishlist.model.js");
 const Order = require("../../models/order.model.js");
 const Payment = require("../../models/payment.model.js");
 const mongoose = require("mongoose");
@@ -18,9 +19,10 @@ const getCheckout = async (req,res) => {
     delete req.session.message
     const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
     const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId").populate("couponApplied")
+    const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
     const address = await Address.find({userId : user._id,isDefault : false})
     const defaultAddress = await Address.findOne({userId : user._id,isDefault : true})
-    res.render("user-view/user.checkout-page.ejs",{user,productsFullList,cartItems,address,defaultAddress,message})
+    res.render("user-view/user.checkout-page.ejs",{user,productsFullList,cartItems,address,defaultAddress,message,wishlistItemsCount})
 }
 
 function orderIdGenerator() {
@@ -62,7 +64,7 @@ const placeOrder = async (req,res) => {
                             price_data : {
                                 currency : "usd",
                                 product_data : {name : req.body.productName[i]},
-                                unit_amount : req.body.price[i] * 100,
+                                unit_amount : req.body.offerPrice[i] * 100,
                             },
                             quantity : req.body.quantity[i],
                             tax_rates : [tax.id]
@@ -77,6 +79,7 @@ const placeOrder = async (req,res) => {
                     color : req.body.color[i],
                     size : req.body.size[i],
                     price : req.body.price[i],
+                    offerPrice : req.body.offerPrice[i],
                     productImage : req.body.productImages[i]
                   })
             }else{
@@ -104,7 +107,7 @@ const placeOrder = async (req,res) => {
                         price_data : {
                             currency : "usd",
                             product_data : {name : req.body.productName},
-                            unit_amount : req.body.price * 100,
+                            unit_amount : req.body.offerPrice * 100,
                         },
                         quantity : req.body.quantity,
                         tax_rates : [tax.id]
@@ -119,6 +122,7 @@ const placeOrder = async (req,res) => {
                 color : req.body.color,
                 size : req.body.size,
                 price : req.body.price,
+                offerPrice : req.body.offerPrice,
                 productImage : req.body.productImages
               })
         }else{
@@ -177,7 +181,8 @@ const placeOrder = async (req,res) => {
         confirmedOrder = await Order.findOne({_id : confirmedOrder._id }).populate("addressId").populate("paymentId")
         const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
         const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
-        return res.render("user-view/order-confirmation-page.ejs",{user,confirmedOrder,productsFullList,cartItems})
+        const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
+        return res.render("user-view/order-confirmation-page.ejs",{user,confirmedOrder,productsFullList,cartItems,wishlistItemsCount})
     }else if(req.body.paymentMethod === "Pay with Stripe"){
         try{
             for(let j = 0 ; j < items.length ; j++){
@@ -270,7 +275,8 @@ const placeOrder = async (req,res) => {
         confirmedOrder = await Order.findOne({_id : confirmedOrder._id }).populate("addressId").populate("paymentId")
         const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
         const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
-        return res.render("user-view/order-confirmation-page.ejs",{user,confirmedOrder,productsFullList,cartItems})
+        const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
+        return res.render("user-view/order-confirmation-page.ejs",{user,confirmedOrder,productsFullList,cartItems,wishlistItemsCount})
     }
     
 }
@@ -292,7 +298,7 @@ const retryPayment = async (req,res) => {
                         price_data : {
                             currency : "usd",
                             product_data : {name : order.items[i].productName},
-                            unit_amount : order.items[i].price * 100,
+                            unit_amount : order.items[i].offerPrice * 100,
                         },
                         quantity : order.items[i].quantity,
                         tax_rates : [tax.id]
@@ -304,7 +310,7 @@ const retryPayment = async (req,res) => {
         let session = null
         if(order.discount !== null){
             let coupon = await stripe.coupons.create({
-                amount_off : order.discount * 100,
+                amount_off :  Math.floor(Number(order.discount) * 100),
                 duration : "once",
                 currency : "usd",
                 name : order.couponCode
@@ -394,8 +400,8 @@ const getOrderConfirmationPage = async (req,res) => {
    const confirmedOrder = await Order.findOne({_id : new mongoose.Types.ObjectId(id) }).populate("addressId").populate("paymentId")
    const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
    const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
-   console.log(confirmedOrder)
-   return res.render("user-view/order-confirmation-page.ejs",{user,confirmedOrder,productsFullList,cartItems})
+   const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
+   return res.render("user-view/order-confirmation-page.ejs",{user,confirmedOrder,productsFullList,cartItems,wishlistItemsCount})
 }
 async function cancelOrderWhileOrdersListing(orderId){
     let order = await Order.findOne({_id : orderId})
@@ -434,8 +440,8 @@ const getOrders = async (req,res) => {
          await cancelOrderWhileOrdersListing(pendingPaymentOrders[i])
         }
         const orders = await Order.find({userId : user._id}).sort({createdAt : -1}).populate("paymentId")
-    
-        res.render("user-view/user.orders-listing.ejs",{user,productsFullList,cartItems,orders})
+        const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
+        res.render("user-view/user.orders-listing.ejs",{user,productsFullList,cartItems,orders,wishlistItemsCount})
     }catch(error){
         console.log(error)
     }
@@ -446,7 +452,8 @@ const getOrderDetailPage = async (req,res) => {
     const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
     const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
     const order = await Order.findOne({_id : req.params.id}).populate("addressId").populate("paymentId")
-    res.render("user-view/user.order-details-page.ejs",{user,productsFullList,cartItems,order})
+    const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
+    res.render("user-view/user.order-details-page.ejs",{user,productsFullList,cartItems,order,wishlistItemsCount})
 }
 
 const cancelItem = async (req,res) => {

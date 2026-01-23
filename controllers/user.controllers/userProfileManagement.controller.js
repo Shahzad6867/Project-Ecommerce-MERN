@@ -1,6 +1,7 @@
 const Product = require("../../models/product.model");
 const Address = require("../../models/address.model");
 const Cart = require("../../models/cart.model.js");
+const Wishlist = require("../../models/wishlist.model.js");
 const mongoose = require("mongoose")
 const cloudinary = require("../../config/cloudinaryConfig.js")
 const {extractPublicId} = require("cloudinary-build-url")
@@ -16,6 +17,7 @@ const getProfile = async (req, res) => {
   ).populate("categoryId", "categoryName");
   const cartItems = await Cart.find({userId : theUser._id}).populate("productId")
   const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(theUser._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
+  const wishlistItemsCount = await Wishlist.find({userId : theUser._id}).countDocuments()
   const address = await Address.findOne({
     userId: theUser._id,
     isDefault: false,
@@ -36,7 +38,8 @@ const getProfile = async (req, res) => {
     defaultAddress,
     cartItems,
     cartItemsCount,
-    referralUrl
+    referralUrl,
+    wishlistItemsCount
   });
 };
 
@@ -49,6 +52,7 @@ const getEditProfile = async (req, res) => {
   ).populate("categoryId", "categoryName");
   const cartItems = await Cart.find({userId : userId._id}).populate("productId")
   const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
+  const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
   let message = req.session.message || null;
   delete req.session.message;
   res.render("user-view/user.edit-profile.ejs", {
@@ -56,7 +60,8 @@ const getEditProfile = async (req, res) => {
     productsFullList,
     message,
     cartItems,
-    cartItemsCount
+    cartItemsCount,
+    wishlistItemsCount
   });
 };
 const editProfile = async (req, res) => {
@@ -126,8 +131,7 @@ const getAddress = async (req, res) => {
   } else {
     defaultAddress = null;
   }
-
-
+  const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
   const message = req.session.message || null;
   delete req.session.message;
   res.render("user-view/user.address-management.ejs", {
@@ -137,7 +141,8 @@ const getAddress = async (req, res) => {
     defaultAddress,
     message,
     cartItems,
-    cartItemsCount
+    cartItemsCount,
+    wishlistItemsCount
   });
 };
 

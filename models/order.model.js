@@ -24,6 +24,9 @@ const itemSchema = Schema({
     price : {
         type : Number
     },
+    offerPrice : {
+        type : Number
+    },
     productImage : {
         type : String
     },
@@ -101,7 +104,7 @@ const orderSchema = Schema({
     },
     discount : {
         type : Number,
-        default : null
+        default : 0
     },
     couponCode : {
         type : String,

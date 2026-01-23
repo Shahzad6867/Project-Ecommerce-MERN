@@ -206,7 +206,7 @@
                                 <div class="mt-5 text-center w-[190px]">
                                     <h3 class="font-medium">Cancelled</h3>
                                     <% if (order.statusTimeline.cancelledAt !== null) { %>
-                                        <p class="tracking-date"><%= new Date(order.statusTimeline.cancelledAt).toLocaleDateString("en-IN", {
+                                        <p class="tracking-date"><%= new Date(order.statusTimeline.cancelledAt).toLocaleDateString("en-US", {
                                             day: "numeric",
                                             month: "short",
                                             year: "numeric"
@@ -222,6 +222,76 @@
                          <% } %>
                     </div>
                 </div>
+
+
+                <% if (order.status.includes("Return Order Requested")) { %>
+                    <div class="order-card p-6 mb-6 border">
+                        <h2 class="text-xl font-bold mb-4">Return Order Status</h2>
+                        <div class="flex justify-between">
+                                <div class=" <%= (order.return.declinedAt === null) ? 'tracking-step-return active' : 'tracking-step-cancelled cancelled' %> ">
+                                    <div class="tracking-dot "></div>
+                                    <div class="mt-5 text-center">
+                                        <h3 class="font-medium">Requested</h3>
+                                        <p class="tracking-date"><%= new Date(order.return.requestedAt).toLocaleDateString("en-US", {
+                                        day: "numeric",
+                                        month: "short",
+                                        year: "numeric"
+                                    }) %> • <%= new Date(order.return.requestedAt).toLocaleTimeString('en-US', { 
+                                            hour: '2-digit', 
+                                            minute: '2-digit', 
+                                            hour12: true 
+                                        }) %></p>
+                                        <p class="text-sm text-gray-600 mt-1">Requested for Return Order</p>
+                                    </div>
+                                </div>
+                           
+                           
+                            
+                                
+                                <% if (order.return.declinedAt === null) { %>
+                                <div class="tracking-step-return <%= (order.return.approvedAt !== null) ? 'active' : '' %>">
+                                    <div class="tracking-dot "></div>
+                                    <div class="mt-5 text-center w-[190px]">
+                                        <h3 class="font-medium">Approved</h3>
+                                        <% if (order.return.approvedAt !== null) { %>
+                                            <p class="tracking-date"><%= new Date(order.return.approvedAt).toLocaleDateString("en-IN", {
+                                                day: "numeric",
+                                                month: "short",
+                                                year: "numeric"
+                                            }) %> • <%= new Date(order.return.approvedAt).toLocaleTimeString('en-US', { 
+                                                    hour: '2-digit', 
+                                                    minute: '2-digit', 
+                                                    hour12: true 
+                                                }) %></p>
+                                            <p class="text-sm text-gray-600 mt-1">Your Request has been Approved</p>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                <% } %>
+                                <% if (order.return.declinedAt !== null) { %>
+                                <div class="tracking-step-cancelled <%= (order.return.declinedAt !== null) ? 'cancelled' : '' %>">
+                                    <div class="tracking-dot"></div>
+                                    <div class="mt-5 text-center w-[190px]">
+                                        <h3 class="font-medium">Declined</h3>
+                                        
+                                            <p class="tracking-date"><%= new Date(order.return.declinedAt).toLocaleDateString("en-IN", {
+                                                day: "numeric",
+                                                month: "short",
+                                                year: "numeric"
+                                            }) %> • <%= new Date(order.return.declinedAt).toLocaleTimeString('en-US', { 
+                                                    hour: '2-digit', 
+                                                    minute: '2-digit', 
+                                                    hour12: true 
+                                                }) %></p>
+                                            <p class="text-sm text-gray-600 mt-1">Your Request has been Declined</p>
+                                       
+                                    </div>
+                                </div>
+                                <% } %>
+                        </div>
+                    </div>
+                <% } %>
+               
 
                
             </div>
@@ -264,7 +334,7 @@
                                             <p class="text-sm text-black">Color: <%= order.items[i].color %></p>
                                             <p class="text-sm text-black">Size: <%= order.items[i].size %></p>
                                             <p class="text-sm text-black mt-1">Qty: <%= order.items[i].quantity %></p>
-                                            <p class="font-medium text-black">Price : $<%= order.items[i].price %></p>
+                                            <p class="font-medium text-black">Price : $<%= order.items[i].offerPrice %></p>
                                         </div>
                                         
                                     </div>

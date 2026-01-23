@@ -204,14 +204,15 @@
                                                 <span class="text-md text-gray-600">Quantity: <span class="text-black font-bold"><%= cartItems[i].quantity %></span></span>
                                             </div>
                                             
-                                            
+                                            <input type="number" name="price" value="<%= cartItems[i].productId.variants[cartItems[i].variant].price %>" hidden>
+
                                             <div class="text-xl font-bold">$ 
                                                 <% if (offerPrice > 0 && offerPrice < cartItems[i].productId.variants[cartItems[i].variant].price ) { %>
                                                    <span ><%= offerPrice.toFixed(2) %></span> <span class="text-sm line-through text-gray-500">$ <%= cartItems[i].productId.variants[cartItems[i].variant].price.toFixed(2) %></span>
-                                                    <input type="number" name="price" value="<%= offerPrice.toFixed(2) %>" hidden>
+                                                    <input type="number" name="offerPrice" value="<%= offerPrice.toFixed(2) %>" hidden>
                                                 <% } else {%>
                                                      <span><%= cartItems[i].productId.variants[cartItems[i].variant].price %></span>
-                                                    <input type="number" name="price" value="<%= cartItems[i].productId.variants[cartItems[i].variant].price %>" hidden>
+                                                    <input type="number" name="offerPrice" value="<%= cartItems[i].productId.variants[cartItems[i].variant].price %>" hidden>
                                                 <% } %>
                                             </div>
                                         </div>
@@ -243,11 +244,20 @@
                         <!-- Order Summary -->
                         <h2 class="text-xl font-bold mb-4">Order Summary</h2>
                         <div class="space-y-3 border-gray-200 pt-4">
-                            
+                            <% let isApplied = false %>
+                            <% let discountedAmount = 0 %>
+                            <% if (cartItems[0]?.couponApplied !== null &&  subTotal >= cartItems[0]?.couponApplied.minAmount && cartItems[0]?.couponApplied.endDate >= now ) { %>
+                                <% discountedAmount = (subTotal * cartItems[0]?.couponApplied.discountValue) / 100 %>
+                                <% if (discountedAmount > cartItems[0]?.couponApplied.maxDiscountAmount) { %>
+                                    <% discountedAmount = cartItems[0]?.couponApplied.maxDiscountAmount %>
+                                <% } %>
+                                <% isApplied = true %>
+                            <% } %>
                             <div class="flex justify-between">
-                                <input type="number" name="subTotal" value="<%= Number(subTotal).toFixed(2) %>" hidden>
+                                <% subTotal = (isApplied === true) ? (subTotal - discountedAmount).toFixed(2) : subTotal.toFixed(2) %>
+                                <input type="number" name="subTotal" value="<%= subTotal %>" hidden>
                                 <span class="text-gray-600">Subtotal (<%= itemsWithStock %> items)</span>
-                                <span class="font-medium">$<%= subTotal.toFixed(2) %></span>
+                                <span class="font-medium">$<%= subTotal %></span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Shipping</span>
@@ -261,15 +271,9 @@
                                 <input type="number" name="tax" value="<%= Number(tax) %>" hidden>
                                 <span class="font-medium">$<%= tax %></span>
                             </div>
-                            <% let isApplied = false %>
-                            <% let discountedAmount = 0 %>
-                            <% let grandTotal = (Number(subTotal) + (Number(subTotal) * 0.05)).toFixed(2) %>
-                           <% if (cartItems[0]?.couponApplied !== null && cartItems[0]?.couponApplied.endDate >= now) { %>
-                            <% discountedAmount = (grandTotal * cartItems[0]?.couponApplied.discountValue) / 100 %>
-                            <% if (discountedAmount > cartItems[0]?.couponApplied.maxDiscountAmount) { %>
-                                <% discountedAmount = cartItems[0]?.couponApplied.maxDiscountAmount %>
-                            <% } %>
-                            <% isApplied = true %>
+                            
+                            
+                            <% if (isApplied === true) { %>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Discount</span>
                                 <input type="text" name="couponName" value="<%= cartItems[0].couponApplied.name %>" hidden>
@@ -279,8 +283,9 @@
                            <% } %>
                             <div class="flex justify-between text-lg font-bold pt-2">
                                 <span>Total</span>
-                                <input type="text" name="grandTotal" value="<%= (isApplied === true) ? (grandTotal - discountedAmount).toFixed(2) : grandTotal %>" hidden>
-                                <span>$<%= (isApplied === true) ? (grandTotal - discountedAmount).toFixed(2) : grandTotal %></span>
+                                <% let grandTotal = (Number(subTotal) + Number(tax)).toFixed(2) %>
+                                <input type="text" name="grandTotal" value="<%= grandTotal %>" hidden>
+                                <span>$<%= grandTotal %></span>
                             </div>
                         </div>
                         
@@ -398,7 +403,7 @@
     </div>
 
     <!-- Add Address Modal -->
-    <div id="addAddressModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="addAddressModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70]">
         <div class="bg-white rounded-lg p-6 w-full max-w-md">
             <div class="flex justify-between items-center mb-4">
                 <h2 id="addressFormHeading" class="text-xl font-bold">Add New Address</h2>

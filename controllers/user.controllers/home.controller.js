@@ -3,11 +3,12 @@ const Product = require("../../models/product.model.js");
 const User = require("../../models/user.model.js");
 const Brand = require("../../models/brand.model.js");
 const Cart = require("../../models/cart.model.js");
+const Wishlist = require("../../models/wishlist.model.js");
 const Offer = require("../../models/offer.model.js");
 const mongoose = require("mongoose")
 require("dotenv").config()
 
-const lookUpProducts = async function(query,priceQuery,limit){
+const lookUpProducts = async function(query,priceQuery,limit,skip,count){
  
   if(typeof query === "object" && typeof priceQuery === "undefined"){
     
@@ -142,7 +143,6 @@ const lookUpProducts = async function(query,priceQuery,limit){
           }])
           return products
   }else if(typeof query === "object" && typeof limit === "number"){
-    console.log("Hellp")
     const products = await Product.aggregate([{
       $match : query
     },{
@@ -209,8 +209,84 @@ const lookUpProducts = async function(query,priceQuery,limit){
       $limit : limit
     }])
     return products
+  }else if(typeof skip === "number" && typeof limit === "number"){
+    
+        const products = await Product.aggregate([{
+          $unwind : "$variants"
+        },
+        {
+          $lookup : {
+            from : "categories",
+            localField : "categoryId",
+            foreignField : "_id",
+            as : "categoryId"
+          }
+        },{
+          $lookup : {
+            from : "brands",
+            localField : "brandId",
+            foreignField : "_id",
+            as : "brandId"
+          }
+        },{
+          $lookup : {
+            from : "offers",
+            localField : "variants.productOfferId",
+            foreignField : "_id",
+            as : "variants.productOfferId"
+          }
+        },{
+          $lookup : {
+            from : "offers",
+            localField : "categoryOfferId",
+            foreignField : "_id",
+            as : "categoryOfferId"
+          }
+        },{
+          $unwind : "$categoryId"
+        },{
+          $unwind : "$brandId"
+        },{
+          $unwind : {
+            path : "$variants.productOfferId",
+          preserveNullAndEmptyArrays: true
+          }
+        },{
+          $unwind :{
+            path : "$categoryOfferId",
+          preserveNullAndEmptyArrays: true
+                  }
+        },
+        {
+          $skip : skip
+        },
+        {
+          $limit : limit
+        },{
+          $group: {
+            _id: "$_id",
+      
+            productName: { $first: "$productName" },
+            description: { $first: "$description" },
+            isDeleted: { $first: "$isDeleted" },
+            categoryId: { $first: "$categoryId" },
+            brandId: { $first: "$brandId" },
+            createdAt: { $first: "$createdAt" },
+            updatedAt: { $first: "$updatedAt" },
+            isFeatured: { $first: "$isFeatured" },
+            categoryOfferId: { $first: "$categoryOfferId" },
+            variants: { $push: "$variants" }
+          }
+        }])
+          return products
+  }else if(count && count === "count"){
+        const products = await Product.aggregate([{
+          $unwind : "$variants"
+        },{
+          $count : "products_count"
+        }])
+          return products
   }
- 
     const products = await Product.aggregate([{
       $unwind : "$variants"
     },{
@@ -284,8 +360,10 @@ const getHomepage = async(req,res) => {
     const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
     const user = req.session.user || req.user
     const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
+    const wishlistItems = await Wishlist.find({userId : user._id})
+    const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
     const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
-    res.render("user-view/user.homepage.ejs",{message,categories,products,productsFullList,user,cartItems,cartItemsCount})
+    res.render("user-view/user.homepage.ejs",{message,categories,products,productsFullList,user,cartItems,cartItemsCount,wishlistItems,wishlistItemsCount})
     } catch (error) {
       console.log(error)
     }
@@ -296,19 +374,19 @@ const getProductDetail = async(req,res) => {
     const {id,variant} = req.query
   
     const products = await lookUpProducts({_id : new mongoose.Types.ObjectId(id)})
-    console.log(products)
     const product = products[0]
     if(product.isDeleted){
       req.session.message = "Product Unavailable"
       return res.redirect("/")
     }
     const relatedProduct = await lookUpProducts({ categoryId : new mongoose.Types.ObjectId(product.categoryId._id)},"",5)
-    console.log(relatedProduct)
     const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
     const user = req.session.user || req.user
     const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
     const isProductInCart = await Cart.findOne({productId : id,variant : variant})
-    res.render("user-view/user.product-detail-page.ejs",{product,relatedProduct,productsFullList,variant,user,cartItems,isProductInCart})
+    const wishlistItems = await Wishlist.find({userId : user._id})
+    const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
+    res.render("user-view/user.product-detail-page.ejs",{product,relatedProduct,productsFullList,variant,user,cartItems,isProductInCart,wishlistItems,wishlistItemsCount})
     } catch (error) {
         console.log(error.message)
     }
@@ -318,14 +396,24 @@ const getShop = async (req,res) => {
 try {
     let message = req.session.message || null 
     delete req.session.message
+    const perPage = 8
+    const page = req.query.page || 1
     const categories = await Category.find({})
     const brands = await Brand.find({})
-    const products = await lookUpProducts()
+    const skip = (perPage * page) - perPage
+    const products = await lookUpProducts("","",perPage,skip)
+    let count = await lookUpProducts("","","","","count")
+    console.log(count)
+    count = count[0]["products_count"]
+    console.log(count)
+    const pages = Math.ceil(count / perPage)
     const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
     const user = req.session.user || req.user
     const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
     const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
-    res.render("user-view/user.shop.ejs",{categories,products,brands,productsFullList,user,cartItemsCount,cartItems})
+    const wishlistItems = await Wishlist.find({userId : user._id})
+    const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
+    res.render("user-view/user.shop.ejs",{categories,products,brands,productsFullList,user,cartItemsCount,cartItems,wishlistItems,wishlistItemsCount,pages,page,count})
     
 } catch (error) {
     console.log(error)
@@ -383,12 +471,13 @@ const shopFiltered = async (req,res) => {
      
 
   
-
+      
       const categories = await Category.find({})
       const brands = await Brand.find({})
       const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
       const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
       const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
+      const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
       if(Array.isArray(req.body.category)){
        req.body.category = req.body.category.map(value => String(value))
       }else{
@@ -407,7 +496,7 @@ const shopFiltered = async (req,res) => {
       categories,
       brands,
       productsFullList,
-      cartItems,cartItemsCount,user
+      cartItems,cartItemsCount,user,wishlistItemsCount
     });
 
   } catch (error) {

@@ -69,6 +69,8 @@ router.delete("/coupons/delete-coupons",couponManagementController.deleteCoupon)
 
 //Sales Report 
 router.get("/reports",reportsController.getSalesReport)
+router.get("/reports/sales/excel",reportsController.getSalesReportIntoExcel)
+router.get("/reports/sales/pdf",reportsController.getSalesReportIntoPdf)
 
 
 

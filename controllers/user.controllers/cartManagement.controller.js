@@ -2,6 +2,7 @@ const Product = require("../../models/product.model");
 const Address = require("../../models/address.model");
 const User = require("../../models/user.model");
 const Cart = require("../../models/cart.model")
+const Wishlist = require("../../models/wishlist.model")
 const mongoose = require("mongoose");
 const Offer = require("../../models/offer.model");
 const Coupon = require("../../models/coupon.model");
@@ -15,16 +16,18 @@ const getCart = async (req,res) => {
     const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
     const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId").populate("couponApplied")
     const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
+    const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
     const offers = await Offer.find({})
     const coupons = await Coupon.find({userId : null})
     const userCoupons = await Coupon.find({userId : user._id})
-    res.render("user-view/user.cart-management.ejs",{message,user,productsFullList,cartItems,cartItemsCount,offers,coupons,userCoupons})
+    res.render("user-view/user.cart-management.ejs",{message,user,productsFullList,cartItems,cartItemsCount,offers,coupons,userCoupons,wishlistItemsCount})
 }
 
 const addToCart = async (req,res) => {
    try {
     const {productId,variant,quantity} = req.query
     let cartUser = req.session.user || req.user
+    await Wishlist.findOneAndDelete({userId : cartUser._id,productId : productId,variant : variant})
     const product = await Product.findById(productId)
     let stock = product.variants[variant].stockQuantity 
     if(!product.isDeleted){
