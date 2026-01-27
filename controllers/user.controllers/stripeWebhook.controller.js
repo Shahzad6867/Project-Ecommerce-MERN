@@ -29,7 +29,7 @@ const webhookHandler = async (req,res) => {
     
     const session = event.data.object
 
-    if(session.metadata.for === "Wallet"){
+    if(session.metadata?.for === "Wallet"){
         if (event.type === "checkout.session.completed") {
             let user = req.session.user || req.user
            
@@ -57,7 +57,7 @@ const webhookHandler = async (req,res) => {
             payment.status = "Payment Failed"
             await payment.save()
         }
-      }else if(session.metadata.for === "Order"){
+      }else if(session.metadata?.for === "Order"){
         if (event.type === "checkout.session.completed") {
             let user = req.session.user || req.user
             console.log(user)

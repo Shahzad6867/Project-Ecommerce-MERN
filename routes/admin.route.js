@@ -47,6 +47,7 @@ router.get("/orders",orderManagementController.getOrders)
 router.get("/orders/:id",orderManagementController.getOrderDetailPage)
 router.patch("/orders/:id/update-status",orderManagementController.updateStatus)
 router.patch("/orders/:id/update-item-status",orderManagementController.updateItemStatus)
+router.patch("/orders/update-product-stock",orderManagementController.updateProductStock)
 
 
 //Offer Management

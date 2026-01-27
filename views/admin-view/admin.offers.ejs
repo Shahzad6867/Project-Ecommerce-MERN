@@ -119,10 +119,11 @@
           
                   <!-- Variant-specific details -->
                   <td class="px-6 py-2 whitespace-nowrap text-sm text-center font-large text-gray-500">
-                    <%= new Date(offers[i].startDate).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"}) %>, <%= new Date(offers[i].startDate).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>
+
+                    <%= new Date(offers[i].startDate).toLocaleDateString("en-US",{day: "numeric",month: "short",year: "numeric"}) %>, <%= new Date(offers[i].startDate).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true , timeZone : timezone}) %>
                   </td>
                   <td class="px-6 py-2 whitespace-nowrap text-sm text-center font-large text-gray-500">
-                    <%= new Date(offers[i].endDate).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"}) %>, <%= new Date(offers[i].endDate).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>
+                    <%= new Date(offers[i].endDate).toLocaleDateString("en-US", {day: "numeric",month: "short",year: "numeric"}) %>, <%= new Date(offers[i].endDate).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true, timeZone : timezone }) %>
                   </td>
                  
 
@@ -208,7 +209,6 @@
   <!-- Script.js -->
 <script>
   feather.replace()
-
   const serverMessage = document.getElementById("serverMessage").value
   if(serverMessage === "Offer Updated Successfully"){
     iziToast.success({

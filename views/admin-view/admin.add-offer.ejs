@@ -59,22 +59,30 @@
 
                 <%
                     function toDateTimeLocal(date) {
-                    const d = new Date(date);
-                    const pad = n => String(n).padStart(2, '0');
+                        let timeZoneDate = new Date(date).toLocaleDateString("en-US",{year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            timeZone : timezone}).split("/")
 
-                    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                        let timeZoneTime = new Date(date).toLocaleTimeString("en-US",{hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
+                            timeZone : timezone})
+                       return `${timeZoneDate[2]}-${timeZoneDate[0]}-${timeZoneDate[1]}T${timeZoneTime}`
                     }
                 %>
 
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                    <input type="datetime-local" id="startDate" name="startDate" value="<%= (offer !== null) ? toDateTimeLocal(offer.startDate)  : "" %>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                    <input type="datetime-local" id="startDate"  value="<%= (offer !== null) ? toDateTimeLocal(offer.startDate)  : "" %>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                    <input id="startDateIso" type="text" name="startDate" hidden>
                 </div>
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                    <input type="datetime-local" id="endDate" name="endDate" value="<%= (offer !== null) ? toDateTimeLocal(offer.endDate)  : "" %>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                    <input type="datetime-local" id="endDate"  value="<%= (offer !== null) ? toDateTimeLocal(offer.endDate)  : "" %>" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                    <input id="endDateIso" type="text" name="endDate" hidden>
                 </div>
                 
                 <div>
@@ -377,6 +385,11 @@
            const now = new Date();
            const start = new Date(startDate);
            const end = new Date(endDate);
+
+           document.getElementById('startDateIso').value = start.toISOString() 
+           document.getElementById('endDateIso').value = end.toISOString() 
+           console.log(typeof start.toISOString())
+           console.log(typeof end.toISOString() )
            
            if(offerName === ""){
                iziToast.error({
@@ -544,6 +557,7 @@
                return;
            }
            
+          
            
            
            

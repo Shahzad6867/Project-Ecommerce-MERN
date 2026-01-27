@@ -46,6 +46,9 @@
                             order.status[order.status.length - 1] === 'Return Order Requested' ? 'bg-yellow-400 text-black' :
                           order.status[order.status.length - 1] === 'Approved Return Request' ? 'bg-green-400 text-black' :
                           order.status[order.status.length - 1] === 'Declined Return Request' ? 'bg-red-400 text-black' :
+                          order.status[order.status.length - 1] === 'Item Return Requested' ? 'bg-yellow-400 text-black' :
+                          order.status[order.status.length - 1] === 'Item Return Approved' ? 'bg-green-400 text-black' :
+                          order.status[order.status.length - 1] === 'Item Return Declined' ? 'bg-red-400 text-black' :
                             'bg-gray-100 text-gray-700' %>">
                                 <%= order.status[order.status.length - 1] %>
                             </span>
@@ -79,7 +82,7 @@
                                                 <p class="text-sm text-gray-400">Color: <%= order.items[i].color %></p>
                                                 <p class="text-sm text-gray-400">Size: <%= order.items[i].size %></p>
                                                 <p class="text-sm text-gray-400 mt-1">Qty: <%= order.items[i].quantity %></p>
-                                                <p class="font-medium text-gray-400">Price : $<%= order.items[i].price %></p>
+                                                <p class="font-medium text-gray-400">Price : $<%= order.items[i].offerPrice %></p>
                                             </div>
                                         
                                         </div>
@@ -114,19 +117,33 @@
                                             
                                         </div>
                                         
-                                    <%} else if(order.status[order.status.length - 1] !== "Return Order Requested" && order.items[i].return.isRequested === true && order.items[i].return.approvedAt !== null ) {%>
-                                        <div class="flex justify-end w-full items-center ">
+                                    <%} else if(order.items[i].return.isRequested === true && order.items[i].return.approvedAt !== null ) {%>
+                                        <div class="flex justify-end flex-wrap w-full items-center ">
                                             <button type="button" class="px-3 py-1 bg-green-400 font-bold text-black rounded-full " disabled>
                                                 Return Item Request Approved
                                             </button>
+                                           <% if (order.items[i].return.productStockUpdated === false) { %>
+                                            <button type="button" class="flex items-center px-3 py-2 btn-primary mt-2 font-medium text-black rounded-lg " onclick="updateProductStock('<%= order._id %>','<%= i %>','<%= order.items[i].variant %>','<%= order.items[i].quantity %>')">
+                                                <i data-feather="plus" class="w-6 h-6 mr-1"></i>
+                                                Update Product Stock
+                                            </button>
+                                           <% } else { %>
+                                            <button type="button" class="flex items-center px-3 py-1 bg-yellow-400 mt-2 font-medium text-black rounded-full " disabled>
+                                                <i data-feather="check" class="w-6 h-6 mr-1"></i>
+                                                Updated Product Stock
+                                            </button>
+                                           <% } %>
                                         </div>
-                                    <%}  if(order.status[order.status.length - 1] !== "Return Order Requested" && order.items[i].return.isRequested === true && order.items[i].return.declinedAt !== null ) {%>
+                                        
+                                    <%} else if(order.items[i].return.isRequested === true && order.items[i].return.declinedAt !== null ) {%>
                                         <div class="flex justify-end w-full items-center ">
                                             <button type="button" class="px-3 py-1 bg-red-400 font-bold text-black rounded-full " disabled>
+                                                
                                                 Return Item Request Declined
                                             </button>
                                         </div>
                                     <% } %>
+                                    
                                     <% if(order.isCancelled || order.items[i].isCancelled) {%>
                                         <div class="flex justify-end w-[50%] items-center ">
                                             <button type="button" class="bg-red-100 text-red-500 p-2 font-bold rounded-xl" disabled>Cancelled</button>
@@ -175,9 +192,15 @@
                     </div>
 
                     <% if (order.return.isRequested === true && order.return.proof !== null) { %>
-                     <div class="w-full p-4 order-card rounded-md bg-white flex justify-center h-[30%]  items-center">
-                        <img src="<%= order.return.proof %>" class="rounded-md max-w-[100%] max-h-[100%]">
-                     </div>
+                        <div class="w-full p-4 order-card rounded-md bg-white mb-4">
+                            <div class="py-2">
+                                <h1>Order Return Proof</h1>
+                            </div>
+                           <div class="w-full pt-2 rounded-md bg-white flex justify-center   items-center">
+                              <img src="<%= order.return.proof %>" class="rounded-md max-w-[100%] max-w-64 object-contain">
+                           </div>
+                           
+                        </div>
                     <% } %>
                     <% for( let i = 0; i < order.items.length; i++ ) { %>
                         <% if (order.items[i].return.isRequested === true && order.items[i].return.proof !== null) { %>
@@ -205,7 +228,7 @@
                         <h2 class="text-xl font-bold mb-4">Update Order Status</h2>
                         <div class="flex justify-between">
                             <select id="orderUpdateStatus" name="status" class="w-[50%] px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
-                                <% if (order.status[order.status.length - 1] === "Delivered" || order.status[order.status.length - 1] === "Cancelled" ||  order.status[order.status.length - 1] === "Return Order Requested") { %>
+                                <% if (order.status[order.status.length - 1] === "Delivered" || order.status[order.status.length - 1] === "Cancelled" ||  order.status[order.status.length - 1] === "Return Order Requested" || order.status[order.status.length - 1] === "Item Return Requested" || order.status[order.status.length - 1] === "Item Return Approved" || order.status[order.status.length - 1] === "Item Return Declined") { %>
                                     <option name="" value="" id="" selected disabled><%= order.status[order.status.length - 1] %></option>
                                 <% } else { %>
                                     <option name="" value="" id="" selected ><%= order.status[order.status.length - 1] %></option>
@@ -283,6 +306,10 @@
                             <% } %>
                             <p><strong>Total Amount to be Paid:</strong> $<%= order.paymentId.amountToBePaid %></p>
                             <p><strong>Total Paid:</strong> $<%= order.paymentId.amountPaid %></p>
+                            <% if (order.paymentId.amountRefunded > 0 || order.paymentId.amountToBeRefunded > 0) { %>
+                                <p><strong>Amount to be Refunded:</strong> $<%= order.paymentId.amountToBeRefunded %></p>
+                                <p><strong>Amount Refunded:</strong> $<%= order.paymentId.amountRefunded %></p>
+                            <% } %>
                         </div>
                     </div>
                 </div>
@@ -300,6 +327,37 @@
 
     <script>
         feather.replace();
+
+        function updateProductStock(orderId,itemIndex,productVariant,quantity){
+            iziToast.question({
+                theme : "light",
+                title : "Update Stock",
+                message : "Did you recieve the item ?<br>Did you inspect the Item ?<br>Is it Saleable ?",
+                position : "topCenter",
+                overlay : true,
+                close : false,
+                id : "updateStock",
+                zindex : 9999,
+                timeout : 30000,
+                backgroundColor : "white", 
+                buttons : [
+                    ["<button>Confirm</button>",function(instance,toast){
+                        instance.hide({transitionOut : "fadeOut"},toast,'button')
+                        fetch(`/admin/orders/update-product-stock?orderId=${orderId}&itemIndex=${itemIndex}&productVariant=${productVariant}&quantity=${quantity}`,{method : "PATCH"})
+                        .then(res => window.location.href = `/admin/orders/${orderId}` )
+                        .catch(error => iziToast.error({
+                            title : error.name ,
+                            message : error.message,
+                            position : "topRight"
+                        }))
+                    }],
+                    ["<button>Cancel</button>",function(instance,toast){
+                        instance.hide({transitionOut : "fadeOut"},toast,'button')
+                        console.log("Deletion Cancelled")
+                    }]
+                ]
+            })
+        }
 
         document.getElementById("orderUpdateStatus").addEventListener("change",function () {
             if(this.value === "Decline Return Request"){
@@ -322,38 +380,7 @@
                 document.getElementById("declineItemReason").disabled = true
             }
         })
-        function cancelItem(orderId,itemId){
-            iziToast.question({
-        theme : "light",
-        title : "Delete Address",
-        message : "Are you sure you want to cancel this item ?",
-        position : "topCenter",
-        overlay : true,
-        close : false,
-        id : "cancelItem",
-        zindex : 9999,
-        timeout : 30000,
-        backgroundColor : "white", 
-        buttons : [
-            ["<button>OK</button>",function(instance,toast){
-                instance.hide({transitionOut : "fadeOut"},toast,'button')
-
-                fetch(`/orders/${orderId}/cancel-item?item=${itemId}`,{method : "PATCH"})
-                .then(res => window.location.href = `/orders/${orderId}` )
-                .catch(error => iziToast.error({
-                    title : error.name ,
-                    message : error.message,
-                    position : "topRight"
-                }))
-
-            }],
-            ["<button>Cancel</button>",function(instance,toast){
-                instance.hide({transitionOut : "fadeOut"},toast,'button')
-                console.log("Deletion Cancelled")
-            }]
-        ]
-    })
-        }
+        
 
         let serverMessage = document.getElementById("serverMessage").value
         if(serverMessage === "Status Updated Successfully"){
@@ -362,22 +389,8 @@
                 message : serverMessage,
                 position : "topRight"
             })
-        }
-
-        function reorder(cartId){
-            
-                    fetch(`/cart/reorder?orderId=${cartId}`,{method : "POST"})
-                .then(res => window.location.href = "/cart")
-                .catch(error => {
-                    iziToast({
-                        title : "Error",
-                        message : error.message,
-                        position : "topRight"
-                    })
-                    
-                })
-                
-        }
+        }  
+        
         function updateStatus(orderId){
             
           let statusToBe = document.getElementById("orderUpdateStatus").value

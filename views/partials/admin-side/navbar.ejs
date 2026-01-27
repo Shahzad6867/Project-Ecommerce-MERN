@@ -5,25 +5,7 @@
     <div class="w-full logo flex items-center justify-center text-gray-600">NovaMart</div>
     
   </nav>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const menuBtn = document.getElementById("menu-toggle");
-      const sidebar = document.getElementById("sidebar");
-      const mainContent = document.querySelector(".main-content");
   
-      sidebar.classList.add("sidebar-closed");
-      mainContent.classList.add("main-expanded");
-  
-      menuBtn.addEventListener("click", () => {
-        const isClosed = sidebar.classList.contains("sidebar-closed");
-  
-        sidebar.classList.toggle("sidebar-open");
-        sidebar.classList.toggle("sidebar-closed");
-  
-        mainContent.classList.toggle("main-expanded", !isClosed);
-      });
-    });
-  </script>
   
   
   

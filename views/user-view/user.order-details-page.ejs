@@ -65,26 +65,8 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             
             <div class="lg:col-span-3 ">
-                <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Approved Return Request")) { %>
-                    <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-blue-300 w-full mb-3">
-                        <i data-feather="info" class="w-5 h-5 mr-1"></i>
-                        <p class="text-sm text-black">
-                          Return Request has been Approved at <span class="font-bold" ><%= new Date(order.return.approvedAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
-                        }) %>, </span><span class="font-bold"><%= new Date(order.return.approvedAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>.</span>
-                          The amount has been refunded to your <strong> NovaWallet </strong>
-                         </p>
-                       </div>
-                <% } %>
-                <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Declined Return Request")) { %>
-                    <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-red-300 w-full mb-3">
-                        <i data-feather="info" class="w-5 h-5 mr-1"></i>
-                        <p class="text-sm text-black">
-                          Return Request has been Declined at <span class="font-bold" ><%= new Date(order.return.declinedAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
-                        }) %>, </span><span class="font-bold"><%= new Date(order.return.declinedAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>.</span>
-                          <strong> Reason : </strong><%= order.return.declineReason %>
-                         </p>
-                       </div>
-                <% } %>
+                
+               
                 
                 <div class="order-card p-6 mb-6 border">
                     <h2 class="text-xl font-bold mb-4">Order Tracking</h2>
@@ -224,9 +206,32 @@
                 </div>
 
 
+                <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Approved Return Request")) { %>
+                    <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-blue-300 w-full mb-3">
+                        <i data-feather="info" class="w-5 h-5 mr-1"></i>
+                        <p class="text-sm text-black">
+                          Return Request has been Approved at <span class="font-bold" ><%= new Date(order.return.approvedAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
+                        }) %>, </span><span class="font-bold"><%= new Date(order.return.approvedAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>.</span>
+                          The amount has been refunded to your <strong> NovaWallet </strong>
+                         </p>
+                       </div>
+                <% } %>
+                <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Declined Return Request")) { %>
+                    <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-red-300 w-full mb-3">
+                        <i data-feather="info" class="w-5 h-5 mr-1"></i>
+                        <p class="text-sm text-black">
+                          Return Request has been Declined at <span class="font-bold" ><%= new Date(order.return.declinedAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
+                        }) %>, </span><span class="font-bold"><%= new Date(order.return.declinedAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>.</span>
+                          <strong> Reason : </strong><%= order.return.declineReason %>
+                         </p>
+                       </div>
+                <% } %>
+
                 <% if (order.status.includes("Return Order Requested")) { %>
                     <div class="order-card p-6 mb-6 border">
+                        
                         <h2 class="text-xl font-bold mb-4">Return Order Status</h2>
+                        
                         <div class="flex justify-between">
                                 <div class=" <%= (order.return.declinedAt === null) ? 'tracking-step-return active' : 'tracking-step-cancelled cancelled' %> ">
                                     <div class="tracking-dot "></div>
@@ -310,6 +315,9 @@
                           order.status[order.status.length - 1] === 'Return Order Requested' ? 'bg-yellow-400 text-black' :
                           order.status[order.status.length - 1] === 'Approved Return Request' ? 'bg-green-400 text-black' :
                           order.status[order.status.length - 1] === 'Declined Return Request' ? 'bg-red-400 text-black' :
+                          order.status[order.status.length - 1] === 'Item Return Requested' ? 'bg-yellow-400 text-black' :
+                          order.status[order.status.length - 1] === 'Item Return Approved' ? 'bg-green-400 text-black' :
+                          order.status[order.status.length - 1] === 'Item Return Declined' ? 'bg-red-400 text-black' :
                            'bg-gray-100 text-gray-700' %>">
                             <%= order.status[order.status.length - 1] %>
                           </span>
@@ -347,13 +355,13 @@
                                             <p class="text-sm text-gray-400">Color: <%= order.items[i].color %></p>
                                             <p class="text-sm text-gray-400">Size: <%= order.items[i].size %></p>
                                             <p class="text-sm text-gray-400 mt-1">Qty: <%= order.items[i].quantity %></p>
-                                            <p class="font-medium text-gray-400">Price : $<%= order.items[i].price %></p>
+                                            <p class="font-medium text-gray-400">Price : $<%= order.items[i].offerPrice %></p>
                                         </div>
                                        
                                     </div>
                                 <% } %>
                                 <% if (order.items.length > 1) { %>
-                                    <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Delivered") && !order.status.includes("Approved Return Request") && !order.status.includes("Declined Return Request") && order.items[i].return.isRequested === false ) { %>
+                                    <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Delivered") && !order.status.includes("Approved Return Request") && !order.status.includes("Declined Return Request") && order.items[i].return.isRequested === false && order.items[i].isCancelled === false ) { %>
                                         <div class="flex justify-end w-[50%] items-center ">
                                             <button type="button" class="px-4 py-2 btn-primary font-bold text-black rounded-xl" onclick="openReturnModalForItem('<%- order._id %>','<%- i %>')">
                                                 Return Item
@@ -365,14 +373,14 @@
                                                     Return Item Requested
                                                 </button>
                                             </div>
-                                    <% }else if(order.status[order.status.length - 1] !== "Return Order Requested" && order.items[i].return.isRequested === true && order.items[i].return.approvedAt !== null) {%>
+                                    <% }else if( order.items[i].return.isRequested === true && order.items[i].return.approvedAt !== null) {%>
                                         <div class="flex justify-end w-[50%] items-center ">
                                             <button type="button" class="px-4 py-2 bg-green-400 font-bold text-black rounded-xl " >
                                                 Return Item Request Accepted
                                             </button>
                                         </div>
                                         
-                                    <% }else if(order.status[order.status.length - 1] !== "Return Order Requested"  && order.items[i].return.isRequested === true && order.items[i].return.declinedAt !== null) {%>
+                                    <% }else if( order.items[i].return.isRequested === true && order.items[i].return.declinedAt !== null) {%>
                                         <div class="flex justify-end w-[50%] items-center ">
                                             <button type="button" class="px-4 py-2 bg-red-400 font-bold text-black rounded-xl">
                                                 Return Item Request Declined
@@ -391,7 +399,7 @@
                                     </div>
                                 <% } %>    
                             </div>
-                            <% if (order.items[i].return.declinedAt !== null && !order.status.includes("Declined Return Request")) { %>
+                            <% if (order.items[i].return.declinedAt !== null) { %>
                                 <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-red-300 w-full mb-3">
                                     <i data-feather="info" class="w-5 h-5 mr-1"></i>
                                     <p class="text-sm text-black">

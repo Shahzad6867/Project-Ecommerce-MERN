@@ -73,6 +73,7 @@
           <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Gross Sales</th>
           <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Product Discounts</th>
           <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Coupon Discounts</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Refunds</th>
           <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Net Sales</th>
         </tr>
       </thead>
@@ -90,6 +91,7 @@
             <td class="px-6 py-4"><%= grossSales %></td>
             <td class="px-6 py-4 text-red-600"><%= totalProductDiscount %></td>
             <td class="px-6 py-4 text-red-600"><%= totalCouponDiscount %></td>
+            <td class="px-6 py-4 text-red-600"><%= totalRefunds %></td>
             <td class="px-6 py-4 font-bold"><%= netSales %></td>
           </tr>
         <% } %>
@@ -110,6 +112,7 @@
           <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Revenue</th>
           <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Product Discount</th>
           <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Coupon Discount</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Refunds</th>
           <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Net Revenue</th>
         </tr>
       </thead>
@@ -132,6 +135,7 @@
                 <td class="px-6 py-4">$<%= salePerItem[i].revenue %></td>
                 <td class="px-6 py-4 <%= (salePerItem[i].productDiscount > 0) ? 'text-red-500' : '' %> ">$<%= salePerItem[i].productDiscount.toFixed(2) %></td>
                 <td class="px-6 py-4 <%= (salePerItem[i].couponDiscount > 0) ? 'text-red-500' : '' %>">$<%= salePerItem[i].couponDiscount.toFixed(2) %></td>
+                <td class="px-6 py-4 <%= (salePerItem[i].amountRefunded > 0) ? 'text-red-500' : '' %>">$<%= salePerItem[i].amountRefunded.toFixed(2) %></td>
                 <td class="px-6 py-4 font-semibold">$<%= salePerItem[i].netRevenue.toFixed(2) %></td>
               </tr>
             <% } %>
@@ -199,6 +203,7 @@
           <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Revenue</th>
           <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Product Discount</th>
           <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Coupon Discount</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Refunds</th>
           <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Net Revenue</th>
         </tr>
       </thead>
@@ -218,6 +223,7 @@
                 <td class="px-6 py-4">$<%= orderBasedSales[i].revenue %></td>
                 <td class="px-6 py-4 <%= (orderBasedSales[i].productDiscount > 0) ? 'text-red-500' : '' %> ">$<%= orderBasedSales[i].productDiscount.toFixed(2) %></td>
                 <td class="px-6 py-4 <%= (orderBasedSales[i].couponDiscount > 0) ? 'text-red-500' : '' %>">$<%= orderBasedSales[i].couponDiscount.toFixed(2) %></td>
+                <td class="px-6 py-4 <%= (orderBasedSales[i].amountRefunded > 0) ? 'text-red-500' : '' %>">$<%= orderBasedSales[i].amountRefunded.toFixed(2) %></td>
                 <td class="px-6 py-4 font-semibold">$<%= orderBasedSales[i].netRevenue.toFixed(2) %></td>
               </tr>
             <% } %>

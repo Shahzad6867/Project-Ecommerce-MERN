@@ -234,14 +234,22 @@ const updateStatus = async (req,res) => {
         let user = req.session.user || req.user
         let wallet = await Wallet.findOne({userId : user._id})
         order.status.push("Approved Return Request")
+        
+       
         let amount = 0
         for(let i = 0 ; i < order.items.length ; i++){
-            if(order.items[i].return.isRequested === true && order.items[i].return.approvedAt === null && order.items[i].return.declinedAt === null){
-                 amount += (order.items[i].price * order.items[i].quantity)
+            if(order.items[i].return.isRequested === true && order.items[i].return.approvedAt === null && order.items[i].return.declinedAt === null && order.items[i].isCancelled === false){
+                if(order.discount > 0){
+                    let discountDividedByItems = order.discount / order.items.length 
+                    amount += (order.items[i].offerPrice * order.items[i].quantity) - discountDividedByItems
+                }else{
+                    amount += (order.items[i].offerPrice * order.items[i].quantity)
+                }
                 order.items[i].return.approvedAt = new Date()
                 order.items[i].return.refundedAt = new Date()
             }
         }
+        amount = Math.round(amount * 100) / 100 
         payment.amountRefunded += amount
         order.return.approvedAt = new Date()
         order.return.refundedAt = new Date()
@@ -288,15 +296,22 @@ const updateItemStatus = async (req,res) => {
         let payment = await Payment.findById(order.paymentId._id)
         let user = req.session.user || req.user
         let wallet = await Wallet.findOne({userId : user._id})
-        let priceOfItem = order.items[itemIndex].price * order.items[itemIndex].quantity
+        let discountDividedByItems = 0
+        if(order.discount > 0){
+            discountDividedByItems = order.discount / order.items.length 
+        }
+        let priceOfItem = (order.items[itemIndex].offerPrice * order.items[itemIndex].quantity) - discountDividedByItems
+        priceOfItem = Math.round(priceOfItem * 100) / 100
         payment.amountRefunded += priceOfItem 
         order.items[itemIndex].return.approvedAt = new Date()
         order.items[itemIndex].return.refundedAt = new Date()
+        order.status.push("Item Return Approved")
         wallet.walletBalance += priceOfItem
         wallet.transactions.push({
             paymentId : payment._id,
             transactionType : "Credit",
-            transactionReason : "Order Refund"
+            transactionReason : "Order Refund",
+            transactionAmount : priceOfItem
         })
         await wallet.save()
         await order.save()
@@ -304,6 +319,7 @@ const updateItemStatus = async (req,res) => {
     }else if(status === "Decline Return Request"){
         order.items[itemIndex].return.declineReason = req.body.declineReason
         order.items[itemIndex].return.declinedAt = new Date()
+        order.status.push("Item Return Declined")
         await order.save()
     }
     return res.json({
@@ -314,6 +330,24 @@ const updateItemStatus = async (req,res) => {
         console.log(error)
     }
 }
+
+const updateProductStock = async (req,res) => {
+    try {
+        const {orderId,itemIndex,productVariant,quantity} = req.query
+    const order = await Order.findOne({_id : orderId})
+    const product = await Product.findOne({_id : order.items[itemIndex].productId })
+    product.variants[productVariant].stockQuantity += Number(quantity)
+    order.items[itemIndex].return.productStockUpdated = true
+    await product.save()
+    await order.save()
+    return res.status(200).json({
+        success : true,
+        message : "Stock Updated Succesfully"
+    })
+    } catch (error) {
+      console.log(error)  
+    }
+}
  
 
 
@@ -321,5 +355,6 @@ module.exports = {
     getOrders,
     getOrderDetailPage,
     updateStatus,
-    updateItemStatus
+    updateItemStatus,
+    updateProductStock
 }

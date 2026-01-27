@@ -127,15 +127,15 @@
                   $ <%= orders[i].grandTotal %> 
                 </td>
                 <td class="px-2 py-2 whitespace-nowrap text-sm text-center font-large text-gray-500">
-                   <%= orders[i].paymentId.paymentMethod %> 
+                   <%= orders[i].paymentId?.paymentMethod %> 
                 </td>
                 <td class="px-2 py-6 text-center text-sm whitespace-nowrap">
                   <span class="px-3 py-1 rounded-full text-sm font-bold whitespace-nowrap inline-block
-                        <%= orders[i].paymentId.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
-                      orders[i].paymentId.status === 'Paid Successfully' ? 'bg-green-100 text-green-700' :
-                      orders[i].paymentId.status === 'Payment Failed' ? 'bg-red-100 text-red-700' : 
+                        <%= orders[i].paymentId?.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+                      orders[i].paymentId?.status === 'Paid Successfully' ? 'bg-green-100 text-green-700' :
+                      orders[i].paymentId?.status === 'Payment Failed' ? 'bg-red-100 text-red-700' : 
                       'bg-gray-100 text-gray-700' %>">
-                        <%= orders[i].paymentId.status %>
+                        <%= orders[i].paymentId?.status %>
                    </span>
                 </td>
         
@@ -152,12 +152,16 @@
                               orders[i].status[orders[i].status.length - 1] === 'Delivered' ? 'bg-green-100 text-green-700' : 
                             orders[i].status[orders[i].status.length - 1] === 'Cancelled' ? 'bg-red-100 text-red-700' :
                             orders[i].status[orders[i].status.length - 1] === 'Return Order Requested' ? 'bg-yellow-400  text-black' :
+                            orders[i].status[orders[i].status.length - 1] === 'Approved Return Request' ? 'bg-green-400  text-black' :
+                            orders[i].status[orders[i].status.length - 1] === 'Declined Return Request' ? 'bg-red-400  text-black' :
+                            orders[i].status[orders[i].status.length - 1] === 'Item Return Requested' ? 'bg-yellow-400  text-black' :
+                            orders[i].status[orders[i].status.length - 1] === 'Item Return Approved' ? 'bg-green-400  text-black' :
+                            orders[i].status[orders[i].status.length - 1] === 'Item Return Declined' ? 'bg-red-400  text-black' :
                              'bg-gray-100 text-gray-700' %>">
                               <%= orders[i].status[orders[i].status.length - 1] %>
                     </span>
                 
                 </td>
-        
                 <!-- Actions only once -->
                 <td class="px-2 py-4 text-center text-sm text-gray-500 w-[110px] whitespace-nowrap">
                     <a href="/admin/orders/<%= orders[i]._id %>">

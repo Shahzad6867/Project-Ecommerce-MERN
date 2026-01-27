@@ -36,7 +36,7 @@ const itemSchema = Schema({
     },
     refundOnCancelled : {
         refundId : {type : String , default : null},
-        status : {type : String , enum : ["Initiated","Refunded"]},
+        status : {type : String , enum : ["Initiated","Refunded"], default : null},
         amount : {type : Number , default : 0},
         refundedAt : {type : Date , default : null}
     },
@@ -48,7 +48,8 @@ const itemSchema = Schema({
         requestedAt: {type: Date, default : null },
         approvedAt: {type: Date, default : null },
         declinedAt: {type: Date, default : null },
-        refundedAt: {type: Date, default : null }
+        refundedAt: {type: Date, default : null },
+        productStockUpdated : {type : Boolean , default : false}
       }
 
 })

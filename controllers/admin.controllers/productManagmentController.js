@@ -38,7 +38,6 @@ const getProducts = async (req,res) => {
           return res.redirect("/admin/products")
       }
       if(!req.files || req.files.length < 3){
-        console.log(!req.files || req.files.length < 3)
         req.session.message = "Minimum 3 Images required"
         return res.redirect("/admin/add-product")
       }

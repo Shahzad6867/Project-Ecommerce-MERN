@@ -40,7 +40,6 @@ const placeOrder = async (req,res) => {
     })
     let coupon = null
     if(req.body.discount && req.body.paymentMethod === "Pay with Stripe"){
-        console.log(req.body.discount * 100)
         coupon = await stripe.coupons.create({
             amount_off : Math.floor(Number(req.body.discount) * 100),
             duration : "once",
@@ -469,16 +468,15 @@ const cancelItem = async (req,res) => {
         for(let i = 0 ; i < order.items.length ; i++){
             if(String(order.items[i]._id) === String(itemId)){
                 let amount = 0
-                if(order.discount !== null){
+                if(order.discount > 0){
                     let discountDividedByItems = order.discount / order.items.length 
-                    amount = (order.items[i].price  * order.items[i].quantity) - discountDividedByItems
-                    order.discount -= discountDividedByItems
+                    amount = (order.items[i].offerPrice  * order.items[i].quantity) - discountDividedByItems
                  }else{
-                    amount = (order.items[i].price * order.items[i].quantity)
+                    amount = order.items[i].offerPrice * order.items[i].quantity
                  }
+                 amount = Math.round(amount * 100) / 100
                 let product = await Product.findOne({_id : order.items[i].productId })
                 product.variants[order.items[i].variant].stockQuantity += order.items[i].quantity
-                await product.save()
                 if (payment.paymentMethod === "Pay with NovaWallet" && order.items[i].isCancelled === false) {
                     let wallet = await Wallet.findOne({userId : user._id})
                     wallet.walletBalance += amount
@@ -486,37 +484,38 @@ const cancelItem = async (req,res) => {
                         paymentId : payment._id,
                         transactionType : "Credit",
                         transactionReason : "Order Refund",
-                        transactionAmount : (order.items[i].price * order.items[i].quantity)
+                        transactionAmount : amount
                     })
                     await wallet.save()
-                    payment.amountRefunded += (order.items[i].price * order.items[i].quantity)
+                    payment.amountRefunded += amount
                 }else if (payment.paymentMethod === "Pay with Stripe" && order.items[i].isCancelled === false) {
                     payment.amountToBeRefunded += amount
                     let refund = await stripe.refunds.create({
                         payment_intent : payment.paymentIntentId,
-                        amount : amount,
+                        amount : amount * 100,
                         reason : "requested_by_customer"
                     })
                     
                     order.items[i].refundOnCancelled = {
                         refundId : refund.id,
-                        amount : refund.amount,
+                        amount : amount,
                         status : "Initiated",
                         refundedAt : null
                     }
-                }else if(payment.paymentMethod === "Cash on Delivery"){
-                    payment.amountToBePaid = order.grandTotal
+                }
+
+                
+                if(payment.paymentMethod === "Cash on Delivery"){
+                    const amountToBePaid = order.subTotal - amount 
+                    payment.amountToBePaid = amountToBePaid + order.tax
                 }
                 
-                order.subTotal = (order.subTotal -  (order.items[i].price * order.items[i].quantity)).toFixed(2) 
-                if(order.discount !== null){
-                    order.grandTotal = (order.subTotal + order.tax - order.discount).toFixed(2)
-                }else{
-                    order.grandTotal = (order.subTotal + order.tax).toFixed(2)
-                }
+                
+               
                
                 
                 order.items[i].isCancelled = true
+                await product.save()
                 await order.save()
                 await payment.save()
             }
@@ -560,49 +559,55 @@ const cancelOrder = async (req,res) => {
     let user = req.session.user || req.user
     let wallet = await Wallet.findOne({userId : user._id})
     if(order.status[order.status.length - 1] === "Pending" ){
-        let amount = 0
+        let sumOfAmounts = 0
         for(let i = 0 ; i < order.items.length ; i++){
+            let amount = 0
             if(order.items[i].isCancelled === false && (payment.paymentMethod === "Pay with NovaWallet" || payment.paymentMethod === "Pay with Stripe")){
-                if(order.discount !== null){
+                if(order.discount > 0){
                     let discountDividedByItems = order.discount / order.items.length 
-                    amount += (order.items[i].price  * order.items[i].quantity) - discountDividedByItems
+                    amount += ((order.items[i].offerPrice  * order.items[i].quantity) - discountDividedByItems)
                  }else{
-                    amount += (order.items[i].price  * order.items[i].quantity)
+                    amount += (order.items[i].offerPrice  * order.items[i].quantity)
                  }
-            }
-            let product = await Product.findOne({_id : order.items[i].productId })
-            product.variants[order.items[i].variant].stockQuantity += order.items[i].quantity
-            await product.save()
-            
-            if (payment.paymentMethod === "Pay with Stripe" && order.items[i].isCancelled === false) {
-                payment.amountToBeRefunded += amount
-                let refund = await stripe.refunds.create({
-                    payment_intent : payment.paymentIntentId,
-                    amount : amount,
-                    reason : "requested_by_customer"
-                })
-               
+                
+                amount = Math.round(amount * 100) / 100
+                sumOfAmounts += amount
                 order.items[i].refundOnCancelled = {
-                    refundId : refund.id,
-                    amount : refund.amount,
+                    refundId : null,
+                    amount : amount,
                     status : "Initiated",
                     refundedAt : null
                 }
-              }
-              order.items[i].isCancelled = true
-                
+                let product = await Product.findOne({_id : order.items[i].productId })
+                product.variants[order.items[i].variant].stockQuantity += order.items[i].quantity
+                await product.save()
+            }    
             }
-
+                if (payment.paymentMethod === "Pay with Stripe") {
+                    payment.amountToBeRefunded += sumOfAmounts
+                    let refund = await stripe.refunds.create({
+                        payment_intent : payment.paymentIntentId,
+                        amount : sumOfAmounts * 100,
+                        reason : "requested_by_customer"
+                    })
+                    order.items.forEach(item => {
+                        if(item.isCancelled === false){
+                            item.refundOnCancelled.refundId = refund.id
+                            item.isCancelled = true
+                        }
+                    })
+                }
+            
                if(payment.paymentMethod === "Pay with NovaWallet"){
-                 wallet.walletBalance += amount
+                 wallet.walletBalance += sumOfAmounts
                  wallet.transactions.push({
                     paymentId : payment._id,
                     transactionType : "Credit",
                     transactionReason : "Order Refund",
-                    transactionAmount : amount
+                    transactionAmount : sumOfAmounts
                  })
                  await wallet.save()
-                 payment.amountRefunded += amount
+                 payment.amountRefunded += sumOfAmounts
                }
                
                 
@@ -613,6 +618,8 @@ const cancelOrder = async (req,res) => {
                 order.status.push("Cancelled")
                 order.statusTimeline.cancelledAt = new Date()
                 order.willBeCancelledAt = null
+                
+               
                 await order.save()
                 await payment.save()
             
@@ -706,9 +713,11 @@ const returnOrder = async(req,res) => {
         const {id} = req.params
     let order = await Order.findById(id)
     for(let i = 0 ; i < order.items.length ; i++){
-        order.items[i].return.isRequested = true
-        order.items[i].return.reason = (order.items[i].return.reason === null) ? req.body.returnReason : order.items[i].return.reason
-        order.return.requestedAt = (order.items[i].return.requestedAt === null) ? new Date() : order.items[i].return.requestedAt
+        if(order.items[i].isCancelled === false && order.items[i].return.isRequested === false){
+         order.items[i].return.isRequested = true
+         order.items[i].return.reason = req.body.returnReason 
+         order.items[i].return.requestedAt = new Date() 
+        }
     }
     result = await cloudinary.uploader.upload(req.file.path,{
         folder : "return-order-proofs",
@@ -719,8 +728,8 @@ const returnOrder = async(req,res) => {
     order.return.requestedAt = new Date()
     order.status.push("Return Order Requested")
     order.return.proof = result.secure_url
-    order.save()
-    res.redirect(`/orders/${id}`)
+    await order.save()
+    return res.redirect(`/orders/${id}`)
     } catch (error) {
         console.log(error)
     }
@@ -743,7 +752,7 @@ const returnItem = async (req,res) => {
 
     let counter = 0
     for(let i = 0 ; i < order.items.length ; i++){
-        if(order.items[i].return.isRequested === true){
+        if(order.items[i].return.isRequested === true || order.items[i].isCancelled === true){
             counter++
         }
     }
@@ -752,8 +761,11 @@ const returnItem = async (req,res) => {
         order.return.reason = req.body.returnReason
         order.return.requestedAt = new Date()
         order.status.push("Return Order Requested")
+    }else{
+        order.status.push("Item Return Requested")
     }
-    order.save()
+    
+    await order.save()
     res.redirect(`/orders/${id}`)
     } catch (error) {
         console.log(error)

@@ -7,15 +7,17 @@ const Cart = require("../../models/cart.model.js")
 const Offer = require("../../models/offer.model.js")
 
 const getOffers = async(req,res) => {
+    
     const perPage = req.session.itemsPerPage || 5 
     const page = req.query.page || 1
     const offers = await Offer.find({}).skip(perPage * page - perPage).limit(perPage)
     const count = await Offer.countDocuments({})
     const productsFullList = await Product.aggregate().project({productName : 1,_id : 0})
     const pages = Math.ceil(count / perPage)
+    const timezone = req.cookies.tz
      const message = req.session.message || null
     delete req.session.message
-    res.render("admin-view/admin.offers.ejs",{message,offers,count,page,pages,productsFullList})
+    res.render("admin-view/admin.offers.ejs",{message,offers,count,page,pages,productsFullList,timezone})
 }
 const getAddOffer = async(req,res) => {
     const message = req.session.message || null
@@ -27,8 +29,9 @@ const getEditOffer = async(req,res) => {
     const offerId = req.query.id
     const offer = await Offer.findOne({_id : offerId }).populate("productId").populate("categoryId")
     const message = req.session.message || null
+    const timezone = req.cookies.tz
     delete req.session.message
-    res.render("admin-view/admin.add-offer.ejs",{message,offer})
+    res.render("admin-view/admin.add-offer.ejs",{message,offer,timezone})
 }
 const addOffer = async (req,res) => {
    try {
@@ -59,8 +62,8 @@ const addOffer = async (req,res) => {
          productId : selectedTarget,
          productVariant : selectedTargetVariant,
          description,
-         startDate,
-         endDate,
+         startDate : new Date(startDate),
+         endDate : new Date(endDate),
          discountType,
          discountValue,
          bannerImage : imageUrl
@@ -72,8 +75,8 @@ const addOffer = async (req,res) => {
          categoryId : selectedTarget,
          productVariant : selectedTargetVariant,
          description,
-         startDate,
-         endDate,
+         startDate : new Date(startDate),
+         endDate : new Date(endDate),
          discountType,
          discountValue,
          productMinPrice : req.body.productMinPrice,
@@ -86,8 +89,8 @@ const addOffer = async (req,res) => {
          categoryId : selectedTarget,
          productVariant : selectedTargetVariant,
          description,
-         startDate,
-         endDate,
+         startDate : new Date(startDate),
+         endDate : new Date(endDate),
          discountType,
          discountValue,
          maxDiscountAmount : req.body.maxDiscountAmount,
@@ -114,7 +117,7 @@ const addOffer = async (req,res) => {
     }else{
          let product = await Product.findOne({categoryId : savedOffer.categoryId})
  
-         if(product.categoryOfferId !== null){
+         if(product?.categoryOfferId !== null){
              await Offer.findOneAndDelete({_id : product.categoryOfferId})
              await Product.updateMany({categoryOfferId : product.categoryOfferId },{categoryOfferId : savedOffer._id})
              await Cart.updateMany({categoryOfferId : product.categoryOfferId},{categoryOfferId : savedOffer._id})
@@ -132,10 +135,10 @@ const addOffer = async (req,res) => {
 
 const editOffer = async (req,res) => {
     try {
-        console.log(req.body)
+       
         const {offerName,offerType,selectedTarget,selectedTargetVariant,description,startDate,endDate,discountType,discountValue} = req.body
         let offer = await Offer.findOne({_id : req.query.id })
-        console.log(offer)
+        console.log(startDate + " " + endDate)
         let imageUrl = null
         if(req.file){
             
@@ -261,7 +264,8 @@ const editOffer = async (req,res) => {
 }
 
 const deleteOffer = async(req,res) => {
-    let offerId = req.query.id
+    try {
+        let offerId = req.query.id
     let offer = await Offer.findById(offerId)
     if(offer.applicableOn === "product"){
         let product = await Product.findOne({_id : offer.productId})
@@ -271,7 +275,7 @@ const deleteOffer = async(req,res) => {
             await product.save()
        }else{
             let product = await Product.findOne({categoryId : offer.categoryId})
-             await Offer.findOneAndDelete({_id : product.categoryOfferId})
+             await Offer.findOneAndDelete({_id : offerId})
              await Product.updateMany({categoryId : offer.categoryId },{categoryOfferId : null})
              await Cart.updateMany({categoryId : offer.categoryId},{categoryOfferId : null})
        }
@@ -279,6 +283,9 @@ const deleteOffer = async(req,res) => {
         success : true,
         message : "Offer has been Deleted Succesfully"
        })
+    } catch (error) {
+        console.log(error)
+    }
   
 }
 const searchProducts = async(req,res) => {

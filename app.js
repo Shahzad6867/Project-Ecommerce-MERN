@@ -7,6 +7,7 @@ const userRoute = require("./routes/user.route");
 const path = require("path");
 const webhookHandler = require("./controllers/user.controllers/stripeWebhook.controller.js")
 require("dotenv").config();
+const cookieParser = require("cookie-parser")
 const app = express();
 
 app.set("view-engine", "ejs");
@@ -40,6 +41,7 @@ app.post("/webhook/stripe",express.raw({type : "application/json"}),webhookHandl
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
+app.use(cookieParser())
 app.use("/admin", adminRoute);
 app.use("/", userRoute);
 app.use((req, res, next) => {
