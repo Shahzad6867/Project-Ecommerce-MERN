@@ -12,6 +12,7 @@ const orderManagementController = require("../controllers/admin.controllers/orde
 const offerManagementController = require("../controllers/admin.controllers/offerManagementController.js")
 const couponManagementController = require("../controllers/admin.controllers/couponManagementController.js")
 const reportsController = require("../controllers/admin.controllers/reportsController.js")
+const dashboardController = require("../controllers/admin.controllers/dashboardController.js")
 const adminAuth = require("../middlewares/admin.auth.js")
 const upload = require("../config/multerConfig.js")
 
@@ -73,6 +74,9 @@ router.get("/reports",reportsController.getSalesReport)
 router.get("/reports/sales/excel",reportsController.getSalesReportIntoExcel)
 router.get("/reports/sales/pdf",reportsController.getSalesReportIntoPdf)
 
+//Admin Dashboard
+router.get("/dashboard",dashboardController.getAdminDashboard)
+router.get("/dashboard/get-chart-details",dashboardController.getRevenueChartDetails)
 
 
 
