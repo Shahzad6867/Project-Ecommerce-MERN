@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/images/novamart.png" type="image/icon-x" />
   <title>Processing Payment - Novamart</title>
-  <link rel="stylesheet" href="/styles/style1.css" />
   <style>
     body {
   margin: 0;
@@ -51,7 +51,7 @@ p {
   </style>
 </head>
 <body>
-  <input type="text" value="<%= orderId %>" hidden>
+  <input type="text" value="<%= (orderId) ? orderId : null %>" hidden>
   <div>
     <div class="container">
       <div class="loader"></div>
@@ -69,8 +69,9 @@ p {
 <script>
 
 const orderId = document.querySelector("input").value
-
-function checkPaymentStatus() {
+let checkPaymentStatus = null
+if(orderId){
+  checkPaymentStatus = function () {
   fetch(`/order-status/${orderId}`,{method : "GET"})
   .then(res => res.json())
   .then(data => {
@@ -80,6 +81,22 @@ function checkPaymentStatus() {
   })
   .catch(error => console.log(error))
 }
+}else{
+  checkPaymentStatus = function () {
+  fetch(`/payment-status/<%- paymentId %>`,{method : "GET"})
+  .then(res => res.json())
+  .then(data => {
+    if(data.message === "Paid Successfully"){
+      window.location.href = `/payment-successful`
+    }else if(data.message === "Payment Failed"){
+       window.location.href = `/payment-failed`
+    }
+  })
+  .catch(error => console.log(error))
+}
+}
+
+
 
 // Poll every 3 seconds
 setInterval(checkPaymentStatus, 3000);

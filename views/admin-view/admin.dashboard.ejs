@@ -1,0 +1,284 @@
+<!-- Header -->
+<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - Dashboard"}) %>
+<!-- Navbar -->
+<%- include("../partials/admin-side/navbar.ejs") %>
+<!-- Sidebar -->
+<%- include("../partials/admin-side/sidebar.ejs",{dashboardBtn : "active disabled" ,customerBtn : "",categoriesBtn : "",brandsBtn : "",productsBtn : "", ordersBtn : "",offersBtn : "",couponsBtn : "",reportsBtn : ""}) %>
+
+<div class="main-content p-6">
+
+  <!-- Page Title -->
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+  </div>
+
+  <div class="flex items-center w-full h-[100px] mb-8 gap-2">
+    <div class="bg-white w-[33%] h-[90px]  rounded-lg shadow ">
+      <div class=" bg-green-300 h-[40%] flex items-center justify-center rounded-tr-lg rounded-tl-lg">
+        <p class="text-sm font-bold text-gray-800">Total Customers</p>
+      </div>
+      
+      <h2 class="text-2xl font-medium text-gray-700 mt-2.5 text-center"><%= totalCustomersCount %></h2>
+    </div>
+    <div class="bg-white w-[33%] h-[90px]  rounded-lg shadow ">
+      <div class=" bg-green-300 h-[40%] flex items-center justify-center rounded-tr-lg rounded-tl-lg">
+        <p class="text-sm font-bold text-gray-800">Total Orders</p>
+      </div>
+      
+      <h2 class="text-2xl font-medium text-gray-700 mt-2.5 text-center"><%= totalOrdersCount %></h2>
+    </div>
+
+    <div class="bg-white w-[33%] h-[90px]  rounded-lg shadow">
+      <div class=" bg-green-300 h-[40%] flex items-center justify-center rounded-tr-lg rounded-tl-lg">
+        <p class="text-sm font-bold text-gray-800">Total Revenue</p>
+      </div>
+      
+      <h2 class="text-2xl font-medium text-gray-700 mt-2.5 text-center"><%= grossSales %></h2>
+    </div>
+    
+   
+
+  </div>
+  <div class="flex items-center w-full h-[100px] mb-8 gap-2">
+    
+    <div class="bg-white w-[25%] h-[90px]  rounded-lg shadow ">
+      <div class=" bg-green-300 h-[40%] flex items-center justify-center rounded-tr-lg rounded-tl-lg">
+        <p class="text-sm font-bold text-gray-800">Total Product Discounts</p>
+      </div>
+      
+      <h2 class="text-2xl font-medium text-red-600 mt-2.5 text-center"><%= totalProductDiscount %></h2>
+    </div>
+
+    <div class="bg-white w-[25%] h-[90px]  rounded-lg shadow ">
+      <div class=" bg-green-300 h-[40%] flex items-center justify-center rounded-tr-lg rounded-tl-lg">
+        <p class="text-sm font-bold text-gray-800">Total Coupon Discounts</p>
+      </div>
+      
+      <h2 class="text-2xl font-medium text-red-600 mt-2.5 text-center"><%= totalCouponDiscount %></h2>
+    </div>
+
+    <div class="bg-white w-[25%] h-[90px]  rounded-lg shadow ">
+      <div class=" bg-green-300 h-[40%] flex items-center justify-center rounded-tr-lg rounded-tl-lg">
+        <p class="text-sm font-bold text-gray-800">Total Refunds</p>
+      </div>
+      
+      <h2 class="text-2xl font-medium text-red-600 mt-2.5 text-center"><%= totalRefunds %></h2>
+    </div>
+
+    <div class="bg-white w-[25%] h-[90px]  rounded-lg shadow">
+      <div class=" bg-green-300 h-[40%] flex items-center justify-center rounded-tr-lg rounded-tl-lg">
+        <p class="text-sm font-bold text-gray-800">Net Profit</p>
+      </div>
+      
+      <h2 class="text-2xl font-medium text-gray-700 mt-2.5 text-center"><%= netSales %></h2>
+    </div>
+
+  </div>
+
+  <div class=" mb-8">
+
+    <!-- Sales Chart -->
+    <div class="lg:col-span-2 bg-white p-5 rounded-lg shadow">
+      <div class="flex justify-between items-center h-[50px] mb-2">
+        <select id="basedOn" class="border px-2 py-1 rounded-lg">
+          <option value="last24Hours">Last 24 Hours</option>
+          <option value="last7Days">Last 7 Days</option>
+          <option value="last30Days">Last 30 Days</option>
+          <option value="last12Months">Last 12 Months</option>
+        </select>
+        <h3 class="text-lg font-semibold text-gray-700 ">Revenue Analysis</h3>
+        <button type="button" class="btn-primary px-4 py-1  rounded-lg flex items-center" onclick="getRevenueAnalysisChart()">
+          <i data-feather="rotate-ccw" class="mr-1"></i>
+          Refresh Data
+        </button>
+      </div>
+      <canvas id="salesChart" height="110"></canvas>
+    </div>
+
+
+  </div>
+
+  <div class="w-[100%] flex justify-between gap-3">
+    <div class="w-[50%]">
+      <h1 class="font-bold ml-1 mb-2 text-lg">Top 10 Products</h1>
+      <div class="bg-white rounded-lg shadow overflow-hidden mb-2">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-green-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase">Product</th>
+              <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Units Sold</th>
+              <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Revenue</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 text-center text-sm text-gray-700">
+            
+            <% if (top10Products?.length === 0) { %>
+              <tr>
+                <td colspan="8" class="px-6 py-6 text-gray-500 italic">
+                  No products to display yet
+                </td>
+              </tr>
+            <% } else { %>
+                <% for( let i = 0; i < top10Products?.length; i++ ) { %>
+                  <tr>
+                    <% let productFullName = top10Products[i]._id.productName +" "+ top10Products[i]._id.productColor +" "+ top10Products[i]._id.productSize %>
+                    <% let productName = (productFullName.length > 50) ? productFullName.slice(0,50)+"..." : productFullName %>
+                    <td class="px-6 py-4 font-medium flex flex-wrap text-left"><%=  productName %></td>
+                    <td class="px-6 py-4"><%= top10Products[i].itemsSold %></td>
+                    <td class="px-6 py-4">$<%= top10Products[i].revenue %></td>
+                  </tr>
+                <% } %>
+            <% } %>
+    
+           
+    
+            
+    
+          </tbody>
+        </table>
+        
+      </div>
+    </div>
+    <div class="w-[50%]">
+      <h1 class="font-bold ml-1 mb-2 text-lg">Top 10 Categories</h1>
+      <div class="bg-white rounded-lg shadow overflow-hidden mb-2">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-green-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-green-800 uppercase">Category</th>
+              <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Units Sold</th>
+              <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Revenue</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 text-center text-sm text-gray-700">
+            
+            <% if (top10Categories?.length === 0) { %>
+              <tr>
+                <td colspan="3" class="px-6 py-6 text-gray-500 italic">
+                  No categories to display yet
+                </td>
+              </tr>
+            <% } else { %>
+                <% for( let i = 0; i < top10Categories?.length; i++ ) { %>
+                  <tr>
+                    <% let categoryFullName = top10Categories[i]._id %>
+                    <% let categoryName = (categoryFullName.length > 50) ? categoryFullName.slice(0,50)+"..." : categoryFullName %>
+                    <td class="px-6 py-4 font-medium flex flex-wrap text-left"><%=  categoryName %></td>
+                    <td class="px-6 py-4"><%= top10Categories[i].itemsSold %></td>
+                    <td class="px-6 py-4">$<%= top10Categories[i].revenue %></td>
+                  </tr>
+                <% } %>
+            <% } %>
+    
+           
+    
+            
+    
+          </tbody>
+        </table>
+        
+      </div>
+    </div>
+  </div>
+
+  
+
+ 
+
+  <h1 class="font-bold ml-1 mb-2 text-lg">Top 10 Brands</h1>
+  <div class="bg-white rounded-lg shadow overflow-hidden mb-2 w-[50%]">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-green-50">
+        <tr>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Brand</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Units Sold</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Revenue</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200 text-center text-sm text-gray-700">
+        <% if (top10Brands.length === 0) { %>
+          <tr>
+            <td colspan="3" class="px-6 py-6 text-gray-500 italic">
+              No brands to display yet
+            </td>
+          </tr>
+        <% } else { %>
+            <% for( let i = 0; i < top10Brands.length; i++ ) { %>
+              <tr>
+                <td class="px-6 py-4"><%=  top10Brands[i]._id %></td>
+                <td class="px-6 py-4"><%=  top10Brands[i].itemsSold %></td>
+                <td class="px-6 py-4">$<%= top10Brands[i].revenue %></td>
+              </tr>
+            <% } %>
+        <% } %>
+       
+
+        
+
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+  feather.replace()
+  let basedOn = "last24Hours"
+  document.getElementById("basedOn").addEventListener("change", function(){
+    basedOn = document.getElementById("basedOn").value
+  })
+
+  let chartRendered = null
+  function getRevenueAnalysisChart(){
+
+    fetch(`/admin/dashboard/get-chart-details?basedOn=${basedOn}`,{method : "GET"})
+    .then(res => res.json())
+    .then(data => {
+
+      if(chartRendered !== null){
+        chartRendered.destroy()
+      }
+
+      const ctx = document.getElementById("salesChart");
+
+     chartRendered = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: data.details.date,
+          datasets: [{
+            label: "Sales",
+            data: data.details.revenue,
+            tension: 0.4,
+            fill: true,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              min: 0
+            }
+          }
+        },
+        
+      });
+    })
+    .catch(error => {
+      iziToast.error({
+        title : "Error",
+        message : error.message,
+        position : "topRight"
+      })
+    })
+  }
+
+    
+
+ getRevenueAnalysisChart()
+</script>
+
+</body>
+</html>

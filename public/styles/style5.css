@@ -4,6 +4,9 @@
     padding: 30px;
     height: auto;
 }
+.navbar-color {
+ background: #2ce16b; 
+}
 .edit-profile-content {
     width: 100%;
     padding: 30px;
@@ -207,10 +210,8 @@
     transition: background 0.6s ease-in-out; /* slow smooth hover animation */
   
   }
-  .offerBtn:hover {
-    background: linear-gradient(135deg, #013562 20%, #0057FF 100%);
-
-  }
+  
+  
   .payBtn { 
    border: 1px solid black;
    color: black;
@@ -298,21 +299,7 @@
   justify-content: center;
   margin: 0 auto;
 }
-.order-card {
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-}
-.status-badge {
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-}
-.status-delivered {
-  background: #ecfdf5;
-  color: #065f46;
-}
+
 .tracking-step {
   position: relative;
   padding-right: 30px;
@@ -341,10 +328,33 @@
   width: 1100px;
   background: #e5e7eb;
 }
+
+.tracking-step-return {
+  position: relative;
+  padding-right: 30px;
+  margin-bottom: 20px;
+}
+.tracking-step-return:before {
+  content: '';
+  position: absolute;
+  left: 5.7rem;
+  top: 8px;
+  height: 2px;
+  width: 1100px;
+  background: #e5e7eb;
+}
+
+
 .tracking-step:last-child:before {
   display: none;
 }
 .tracking-step.active:before {
+  background: #2eec71;
+}
+.tracking-step-return:last-child:before {
+  display: none;
+}
+.tracking-step-return.active:before {
   background: #2eec71;
 }
 .tracking-step-cancelled:last-child:before {
@@ -366,6 +376,9 @@
 }
 
 .tracking-step.active .tracking-dot {
+  background: #2eec71;
+}
+.tracking-step-return.active .tracking-dot {
   background: #2eec71;
 }
 .tracking-step-cancelled.cancelled .tracking-dot {
@@ -445,4 +458,25 @@
   border: none;
   padding: 8px 14px;
   cursor: pointer;
+}
+.wallet-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+.transaction-item {
+  transition: all 0.3s;
+}
+.transaction-item:hover {
+  background: #f8f8f8;
+}
+.wallet-balance {
+  background: linear-gradient(180deg, #2eec71 0%, #3c5445 100%);
+  color: white;
+}
+.credit {
+  color: #2eec71;
+}
+.debit {
+  color: #ef4444;
 }

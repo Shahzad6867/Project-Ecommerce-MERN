@@ -38,7 +38,6 @@ const getProducts = async (req,res) => {
           return res.redirect("/admin/products")
       }
       if(!req.files || req.files.length < 3){
-        console.log(!req.files || req.files.length < 3)
         req.session.message = "Minimum 3 Images required"
         return res.redirect("/admin/add-product")
       }
@@ -107,7 +106,7 @@ const getProducts = async (req,res) => {
   const editProduct = async (req, res) => {
     try {
       const { id} = req.query;
-      const { productName, description, brandId, categoryId,imageInsertType } = req.body;
+      const { productName, description, brandId, categoryId,imageInsertType,isFeatured} = req.body;
       const variants = req.body.variants;
   
      
@@ -125,8 +124,9 @@ const getProducts = async (req,res) => {
         
       
       const variantEntries = Object.keys(variants).map(async (index) => {
-        const variant = variants[index];
         
+        const variant = variants[index];
+        console.log(product.variants[index])
         const filesOfVariant = req.files.filter(
          
           (file) => file.fieldname === `variants[${index}][productImages]`
@@ -257,6 +257,7 @@ const getProducts = async (req,res) => {
           stockQuantity: variant.stockQuantity,
           stockStatus: variant.stockStatus,
           productImages: imageUrls,
+          productOfferId : product.variants[index].productOfferId
         };
       });
   
@@ -267,7 +268,8 @@ const getProducts = async (req,res) => {
       description,
       brandId,
       categoryId,
-      variants : finalVariants
+      variants : finalVariants,
+      isFeatured
       }})
   
   

@@ -12,6 +12,11 @@ const cartSchema = new Schema({
         ref : "Product",
         required : true
     },
+    categoryId : {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "Category",
+        required : true
+    },
     variant : {
         type : Number,
         required : true
@@ -19,6 +24,21 @@ const cartSchema = new Schema({
     quantity : {
         type : Number,
         required : true,
+    },
+    categoryOfferId : {
+        type :  mongoose.Schema.Types.ObjectId,
+        ref : "Offer",
+        default : null
+    },
+    productOfferId : {
+        type :  mongoose.Schema.Types.ObjectId,
+        ref : "Offer",
+        default : null
+    },
+    couponApplied : {
+        type :  mongoose.Schema.Types.ObjectId,
+        ref : "Coupon",
+        default : null
     }
 },{timestamps : true})
 

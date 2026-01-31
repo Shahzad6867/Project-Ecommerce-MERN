@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NovaMart - Online Shopping</title>
+    <title><%- title %></title>
+    <link rel="icon" href="/images/novamart.png" type="image/icon-x" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
@@ -27,16 +28,16 @@
 </head>
 <body class="bg-gray-100">
     <!-- Navigation Bar -->
-    <nav class="bg-green-500 shadow-md py-3 px-4 sticky top-0 z-50">
+    <nav class="navbar-color shadow-md py-3 px-4 sticky top-0 z-[60]">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <!-- Logo -->
             <div class="flex items-center">
-                <a id="nav-logo" href="/" class="text-2xl font-bold text-black" >NovaMart</a>
+                <a id="nav-logo" href="/" class="text-2xl font-bold text-gray-700" >NovaMart</a>
             </div>
-            <input type="hidden" id="serverMessageNavbar"  value="<%= typeof message !== 'undefined' ? message : '' %>">
+            
             <!-- Search Bar -->
             <div class="flex-1 mx-8">
-                <!-- <div class="relative">
+                <div class="relative">
                    <form autocomplete="off" action="/search-product" method="post">
                     <input type="search" placeholder="Search for Products..." 
                     class="w-full py-2 px-4 pr-10 rounded-md search-bar border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-00 focus:border-transparent" data-search>
@@ -46,7 +47,7 @@
                         <i  data-feather="search" class=""></i>
                     </button>
                    </form>
-                </div> -->
+                </div>
                 <template data-product-template>
                     <div id="product-list-item" onclick="setInputForSearch()" >
                      <div class="flex-shrink-0 h-16 w-16 border-2 border-black px-1 py-1">
@@ -70,9 +71,12 @@
                     <span class="text-xs mt-1">Shop</span>
                 </a>
                 
-                <a href="#" class="flex flex-col items-center">
+                <a href="/wishlist">
+                   <div  class="flex flex-col items-center relative inline-block text-left">
                     <span class="iconify" data-icon="ri:heart-line" style="width: 26;height: 26;"></span>
                     <span class="text-xs mt-1">Wishlist</span>
+                    <span id="wishlistItemQty" class="absolute -top-1 -right-0.5 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center <%= (wishlistItemsCount === 0) ? "hidden" : '' %>"><%= wishlistItemsCount %></span>
+                   </div>
                 </a>
                 
 
@@ -96,10 +100,95 @@
                             <div id="cartItemsDiv" class="w-[100%] max-h-[26rem]   overflow-scroll">
                                 <% let subTotal =  0 %>
                                 <% let itemsWithStock = 0 %>
+                                <% let now = new Date() %>
                               <% for( let i = 0; i < cartItems.length; i++ ) { %>
+                                <% let offerPrice = 0 %>
+                                <% let categoryOfferPrice = 0 %>
+                                <% let productOfferPrice = 0 %>
                                 <% if (!cartItems[i].productId.isDeleted ) { %>
                                   <% if (cartItems[i].productId.variants[cartItems[i].variant].stockQuantity !== 0 && cartItems[i].productId.variants[cartItems[i].variant].stockStatus !== "Out of Stock") { %>
-                                    <% subTotal =  (cartItems[i].productId.variants[cartItems[i].variant].price  * cartItems[i].quantity) + subTotal %>
+                                    <%
+
+                                    /* ================================
+                                    Base values
+                                    ================================ */
+                                    const price = cartItems[i].productId.variants[cartItems[i].variant].price
+                                    const quantity = cartItems[i].quantity
+            
+                                    let offerPrice = price
+                                    let productOfferPrice = null
+                                    let categoryOfferPrice = null
+            
+                                    /* ================================
+                                    Normalize offers (IMPORTANT)
+                                    Expired / upcoming => null
+                                    ================================ */
+                                    const productOffer =
+                                    cartItems[i].productOfferId &&
+                                    cartItems[i].productOfferId.startDate <= now &&
+                                    cartItems[i].productOfferId.endDate >= now
+                                        ? cartItems[i].productOfferId
+                                        : null
+            
+                                    const categoryOffer =
+                                    cartItems[i].categoryOfferId &&
+                                    cartItems[i].categoryOfferId.startDate <= now &&
+                                    cartItems[i].categoryOfferId.endDate >= now
+                                        ? cartItems[i].categoryOfferId
+                                        : null
+            
+                                    /* ================================
+                                    Product offer price
+                                    ================================ */
+                                    if (productOffer) {
+                                    if (productOffer.discountType === "percentage") {
+                                        productOfferPrice =
+                                        price - (price * productOffer.discountValue) / 100
+                                    } else if (productOffer.discountType === "flat") {
+                                        productOfferPrice =
+                                        price - productOffer.discountValue
+                                    }
+                                    }
+            
+                                    /* ================================
+                                    Category offer price
+                                    ================================ */
+                                    if (categoryOffer) {
+                                    if (categoryOffer.discountType === "percentage") {
+                                        const percentPrice =
+                                        price - (price * categoryOffer.discountValue) / 100
+            
+                                        const maxPrice =
+                                        price - categoryOffer.maxDiscountAmount
+            
+                                        categoryOfferPrice = Math.max(percentPrice, maxPrice)
+            
+                                    } else if (categoryOffer.discountType === "flat") {
+                                        if (price > categoryOffer.productMinPrice) {
+                                        categoryOfferPrice =
+                                            price - categoryOffer.discountValue
+                                        }
+                                    }
+                                    }
+            
+                                    /* ================================
+                                    Decide final offer price
+                                    ================================ */
+                                    if (productOfferPrice !== null && categoryOfferPrice !== null) {
+                                    offerPrice = Math.min(productOfferPrice, categoryOfferPrice)
+            
+                                    } else if (productOfferPrice !== null) {
+                                    offerPrice = productOfferPrice
+            
+                                    } else if (categoryOfferPrice !== null) {
+                                    offerPrice = categoryOfferPrice
+                                    }
+            
+                                    /* ================================
+                                    Add to subtotal
+                                    ================================ */
+                                    subTotal += offerPrice * quantity
+                                 %>
                                     <% itemsWithStock += cartItems[i].quantity %>
                                     <div  id="cartItem<%= cartItems[i].productId._id %><%= cartItems[i].variant %>" href="/product?id=<%= cartItems[i].productId._id %>&variant=<%= cartItems[i].variant %>">
                                         <input type="text" value="<%= cartItems[i]._id %>" hidden>
@@ -118,7 +207,12 @@
                                                     <p class="text-sm text-gray-600 mt-[0.1rem]">Quantity : <strong class="text-black" id="cartItemQty<%= cartItems[i].productId._id %><%= cartItems[i].variant %>"><%= cartItems[i].quantity %></strong></p>
                                                   </a>
                                                 <div class="flex justify-between items-center mt-1">
-                                                    <h2 class="text-lg text-black font-bold ">$ <%= cartItems[i].productId.variants[cartItems[i].variant].price %></h2>
+                                                    <% if (offerPrice > 0 && offerPrice < cartItems[i].productId.variants[cartItems[i].variant].price ) { %>
+                                                        <h2 class="text-lg text-black font-bold ">$ <span id="price<%= cartItems[i]._id %><%= cartItems[i].variant %>" ><%= offerPrice.toFixed(2) %></span></h2>
+                                                    <% } else {%>
+                                                        <h2 class="text-lg text-black font-bold ">$ <span id="price<%= cartItems[i]._id %><%= cartItems[i].variant %>" ><%= cartItems[i].productId.variants[cartItems[i].variant].price %></span></h2>
+                                                    <% } %>
+                                                    
                                                    
                                                     <button type="button" class="text-sm flex items-center justify-center rounded-lg hover:text-red-500  px-1 z-50  text-black" onclick="deleteItemFromCart('<%- cartItems[i]._id %>','<%- cartItems[i].productId._id %>','<%= cartItems[i].variant %>')">
                                                         <i data-feather="trash-2" class="w-5 h-5 mr-1"></i>
@@ -308,6 +402,7 @@
             searchInput.value = product.productName
             searchInput.focus()
             productCardContainer.style.display = "none"
+            window.location.href = `/product?id=${product._id}&variant=0`
           })
         }
         
@@ -316,27 +411,7 @@
 
        
 
-       if(serverMessageNavbar === "Product Unavailable"){
-                iziToast.info({
-                    title : "Cart",
-                    message : serverMessageNavbar,
-                    position : "topRight"
-                })
-       }
-       if(serverMessageNavbar === "Product has been added to Cart"){
-                iziToast.info({
-                    title : "Cart",
-                    message : serverMessageNavbar,
-                    position : "topRight"
-                })
-       }
-       if(serverMessageNavbar === "Product has been removed from your Cart"){
-                iziToast.info({
-                    title : "Cart",
-                    message : serverMessageNavbar,
-                    position : "topRight"
-                })
-       }
+      
 
 
     </script>
