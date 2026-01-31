@@ -132,7 +132,7 @@
                 <td class="px-6 py-4 font-medium flex flex-wrap text-left"><%=  productName %></td>
                 <td class="px-6 py-4"><%= salePerItem[i].categoryName %></td>
                 <td class="px-6 py-4"><%= salePerItem[i].itemsSold %></td>
-                <td class="px-6 py-4">$<%= salePerItem[i].revenue %></td>
+                <td class="px-6 py-4">$<%= salePerItem[i].revenue.toFixed(2) %></td>
                 <td class="px-6 py-4 <%= (salePerItem[i].productDiscount > 0) ? 'text-red-500' : '' %> ">$<%= salePerItem[i].productDiscount.toFixed(2) %></td>
                 <td class="px-6 py-4 <%= (salePerItem[i].couponDiscount > 0) ? 'text-red-500' : '' %>">$<%= salePerItem[i].couponDiscount.toFixed(2) %></td>
                 <td class="px-6 py-4 <%= (salePerItem[i].amountRefunded > 0) ? 'text-red-500' : '' %>">$<%= salePerItem[i].amountRefunded.toFixed(2) %></td>
@@ -156,7 +156,7 @@
       </div>
       <div class="flex space-x-2">
         
-        <a href="/admin/reports?productWisePage=<%= Number(productWisePage) > 1 ? Number(productWisePage) - 1 : 1 %>">
+        <a href="/admin/reports?reportBasedOn=<%= reportBasedOn %>&fromDate=<%= fromDate.toISOString().split("T")[0] %>&toDate=<%= toDate.toISOString().split("T")[0]  %>&productWisePage=<%= Number(productWisePage) > 1 ? Number(productWisePage) - 1 : 1 %>">
           <% if (Number(productWisePage) === 1) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Previous
@@ -170,13 +170,13 @@
        </a>
         <% let j = Number(productWisePage) > 4 ? Number(productWisePage) - 3 : 1 %>
         <% for(;j <= pagesForProduct ; j++ ) { %>
-        <a href="/admin/reports?productWisePage=<%= j %>">
+        <a href="/admin/reports?reportBasedOn=<%= reportBasedOn %>&fromDate=<%= fromDate.toISOString().split("T")[0] %>&toDate=<%= toDate.toISOString().split("T")[0]  %>&productWisePage=<%= j %>">
           <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
             <%= j %>
           </button>
         </a>
         <% } %>
-        <a href="/admin/reports?productWisePage=<%= Number(productWisePage) < pagesForProduct ? Number(productWisePage) + 1 : pagesForProduct %>">
+        <a href="/admin/reports?reportBasedOn=<%= reportBasedOn %>&fromDate=<%= fromDate.toISOString().split("T")[0] %>&toDate=<%= toDate.toISOString().split("T")[0]  %>&productWisePage=<%= Number(productWisePage) < pagesForProduct ? Number(productWisePage) + 1 : pagesForProduct %>">
           <% if (Number(productWisePage) === pagesForProduct) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Next
@@ -220,7 +220,7 @@
                 <td class="px-6 py-4"><%= i + 1 %></td>
                 <td class="px-6 py-4"><%=  orderBasedSales[i]._id %></td>
                 <td class="px-6 py-4"><%= orderBasedSales[i].orderedAt.toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"}) %></td>
-                <td class="px-6 py-4">$<%= orderBasedSales[i].revenue %></td>
+                <td class="px-6 py-4">$<%= orderBasedSales[i].revenue.toFixed(2) %></td>
                 <td class="px-6 py-4 <%= (orderBasedSales[i].productDiscount > 0) ? 'text-red-500' : '' %> ">$<%= orderBasedSales[i].productDiscount.toFixed(2) %></td>
                 <td class="px-6 py-4 <%= (orderBasedSales[i].couponDiscount > 0) ? 'text-red-500' : '' %>">$<%= orderBasedSales[i].couponDiscount.toFixed(2) %></td>
                 <td class="px-6 py-4 <%= (orderBasedSales[i].amountRefunded > 0) ? 'text-red-500' : '' %>">$<%= orderBasedSales[i].amountRefunded.toFixed(2) %></td>
@@ -242,7 +242,7 @@
     </div>
     <div class="flex space-x-2">
       
-      <a href="/admin/reports?orderWisePage=<%= Number(orderWisePage) > 1 ? Number(orderWisePage) - 1 : 1 %>">
+      <a href="/admin/reports?reportBasedOn=<%= reportBasedOn %>&fromDate=<%= fromDate.toISOString().split("T")[0] %>&toDate=<%= toDate.toISOString().split("T")[0]  %>&orderWisePage=<%= Number(orderWisePage) > 1 ? Number(orderWisePage) - 1 : 1 %>">
         <% if (Number(orderWisePage) === 1) { %>
           <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
             Previous
@@ -256,13 +256,13 @@
      </a>
       
       <% for(;i <= pagesForOrder ; i++ ) { %>
-      <a href="/admin/reports?orderWisePage=<%= i %>">
+      <a href="/admin/reports?reportBasedOn=<%= reportBasedOn %>&fromDate=<%= fromDate.toISOString().split("T")[0] %>&toDate=<%= toDate.toISOString().split("T")[0]  %>&orderWisePage=<%= i %>">
         <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
           <%= i %>
         </button>
       </a>
       <% } %>
-      <a href="/admin/reports?orderWisePage=<%= Number(orderWisePage) < pagesForOrder ? Number(orderWisePage) + 1 : pagesForOrder %>">
+      <a href="/admin/reports?reportBasedOn=<%= reportBasedOn %>&fromDate=<%= fromDate.toISOString().split("T")[0] %>&toDate=<%= toDate.toISOString().split("T")[0]  %>&orderWisePage=<%= Number(orderWisePage) < pagesForOrder ? Number(orderWisePage) + 1 : pagesForOrder %>">
         <% if (Number(orderWisePage) === pagesForOrder) { %>
           <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
             Next
