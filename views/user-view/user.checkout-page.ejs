@@ -263,16 +263,21 @@
                                 <% isApplied = true %>
                             <% } %>
                             <div class="flex justify-between">
-                                <% subTotal = (isApplied === true) ? (subTotal - discountedAmount).toFixed(2) : subTotal.toFixed(2) %>
-                                <input type="number" name="subTotal" value="<%= subTotal %>" hidden>
+                               
                                 <span class="text-gray-600">Subtotal (<%= itemsWithStock %> items)</span>
                                 <span class="font-medium">$<%= subTotal %></span>
+                                <% subTotal = (isApplied === true) ? (subTotal - discountedAmount).toFixed(2) : subTotal.toFixed(2) %>
+                                <input type="number" name="subTotal" value="<%= subTotal %>" hidden>
                             </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Shipping</span>
-                                <input type="number" name="shipping" value="10" hidden>
-                                <span class="font-medium">$10</span>
-                            </div>
+                            <% if (isApplied === true) { %>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Discount</span>
+                                    <input type="text" name="couponName" value="<%= cartItems[0].couponApplied.name %>" hidden>
+                                    <input type="text" name="couponId" value="<%= cartItems[0].couponApplied._id %>" hidden>
+                                    <input type="number" name="discount" value="<%= discountedAmount.toFixed(2) %>" hidden>
+                                    <span class="font-medium">$<%= discountedAmount.toFixed(2) %></span>
+                                </div>
+                               <% } %>
                             <div class="flex justify-between">
                                 
                                 <span class="text-gray-600">Tax</span>
@@ -282,14 +287,12 @@
                             </div>
                             
                             
-                            <% if (isApplied === true) { %>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Discount</span>
-                                <input type="text" name="couponName" value="<%= cartItems[0].couponApplied.name %>" hidden>
-                                <input type="number" name="discount" value="<%= discountedAmount.toFixed(2) %>" hidden>
-                                <span class="font-medium">$<%= discountedAmount.toFixed(2) %></span>
-                            </div>
-                           <% } %>
+                            
+                           <div class="flex justify-between">
+                            <span class="text-gray-600">Shipping</span>
+                            <input type="number" name="shipping" value="10" hidden>
+                            <span class="font-medium">$10</span>
+                          </div>
                             <div class="flex justify-between text-lg font-bold pt-2">
                                 <span>Total</span>
                                 <% let grandTotal = (Number(subTotal) + Number(tax) + Number(10)).toFixed(2) %>

@@ -6,6 +6,7 @@ const Brand = require("../../models/brand.model.js");
 const Address = require("../../models/address.model.js");
 const Cart = require("../../models/cart.model.js");
 const Wishlist = require("../../models/wishlist.model.js");
+const Coupon = require("../../models/coupon.model.js");
 const Order = require("../../models/order.model.js");
 const Payment = require("../../models/payment.model.js");
 const mongoose = require("mongoose");
@@ -35,7 +36,7 @@ function orderIdGenerator() {
 const placeOrder = async (req,res) => {
     
     let coupon = null
-    
+    let user = req.session.user || req.user
     if( req.body.paymentMethod === "Pay with Stripe"){
        if(req.body.discount){
         coupon = await stripe.coupons.create({
@@ -44,14 +45,22 @@ const placeOrder = async (req,res) => {
             currency : "usd",
             name : req.body.couponName
         })
+        
        }
     }
+    if(req.body.discount){
+        let referralCoupon = await Coupon.findOne({_id : new mongoose.Types.ObjectId(req.body.couponId)})
+        if(referralCoupon.userId !== null && String(referralCoupon.userId) === String(user._id)){
+            await Coupon.findByIdAndDelete(referralCoupon._id)
+        }
+       }
+    
 
     const items = []
     const lineItems = []
     const stockUnavailable = []
 
-    let user = req.session.user || req.user
+    
     let grandTotalForCashOnDelivery = 0
     if(Array.isArray(req.body.productId)){
         for(let i = 0 ; i < req.body.productId.length ; i++){
@@ -341,7 +350,7 @@ const retryPayment = async (req,res) => {
             
         }
         let session = null
-        if(order.discount !== null){
+        if(order.discount > 0){
             let coupon = await stripe.coupons.create({
                 amount_off :  Math.floor(Number(order.discount) * 100),
                 duration : "once",

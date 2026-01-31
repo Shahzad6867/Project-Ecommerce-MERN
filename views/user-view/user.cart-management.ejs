@@ -316,17 +316,8 @@
                 <div class="space-y-4 mt-2">
                     <div class="flex justify-between">
                         <span class="text-gray-600 font-bold">Subtotal (<span id="subTotalItemsInCart"><%= itemsWithStock || 0%></span> items)</span>
-                        <% subTotal = (isApplied === true) ? (subTotal - discountedAmount).toFixed(2) : subTotal.toFixed(2) %>
                         <span  class="font-bold">$ <span id="subTotalInCart"><%= subTotal %></span></span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600 font-bold">Shipping</span>
-                        <span class="font-medium">$10</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600 font-bold">Tax</span>
-                        <% let tax = (subTotal * 0.05).toFixed(2) %>
-                        <span  class="font-bold">$ <span id="tax"><%= tax %></span></span>
+                        <% subTotal = (isApplied === true) ? (subTotal - discountedAmount).toFixed(2) : subTotal.toFixed(2) %>
                     </div>
                     <% if (isApplied === true) { %>
                         <div class="flex justify-between">
@@ -334,10 +325,22 @@
                             <span  class="font-bold">$ <span id="discountedValue"><%= discountedAmount.toFixed(2) %></span></span>
                         </div>
                     <% } %>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 font-bold">Tax</span>
+                        <% let tax = (subTotal * 0.05).toFixed(2) %>
+                        <span  class="font-bold">$ <span id="tax"><%= tax %></span></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 font-bold">Shipping</span>
+                        <% let shipping = (cartItems.length === 0) ? Number(0) : Number(10) %>
+                        <span class="font-bold">$<%= shipping.toFixed(2) %></span>
+                    </div>
+                    
+                    
                     <div class="border-t border-gray-200 pt-4">
                         <div class="flex justify-between">
                             <span class="text-lg font-bold">Total</span>
-                            <% let grandTotal = (Number(subTotal) + Number(tax) + Number(10)).toFixed(2) %>
+                            <% let grandTotal = (Number(subTotal) + Number(tax) + Number(shipping)).toFixed(2) %>
                             <span class="text-lg font-bold">$ <span id="grandTotal" ><%= grandTotal %></span></span>
                         </div>
                     </div>
