@@ -33,19 +33,18 @@ function orderIdGenerator() {
   
 
 const placeOrder = async (req,res) => {
-    let tax = await stripe.taxRates.create({
-        display_name : "VAT",
-        percentage : 5,
-        inclusive : false
-    })
+    
     let coupon = null
-    if(req.body.discount && req.body.paymentMethod === "Pay with Stripe"){
+    
+    if( req.body.paymentMethod === "Pay with Stripe"){
+       if(req.body.discount){
         coupon = await stripe.coupons.create({
             amount_off : Math.floor(Number(req.body.discount) * 100),
             duration : "once",
             currency : "usd",
             name : req.body.couponName
         })
+       }
     }
 
     const items = []
@@ -53,6 +52,7 @@ const placeOrder = async (req,res) => {
     const stockUnavailable = []
 
     let user = req.session.user || req.user
+    let grandTotalForCashOnDelivery = 0
     if(Array.isArray(req.body.productId)){
         for(let i = 0 ; i < req.body.productId.length ; i++){
             let product = await Product.findById(req.body.productId[i])
@@ -66,7 +66,7 @@ const placeOrder = async (req,res) => {
                                 unit_amount : req.body.offerPrice[i] * 100,
                             },
                             quantity : req.body.quantity[i],
-                            tax_rates : [tax.id]
+                            tax_rates : ["txr_1SvBzlBUciUB3yZurNMc9lzT"]
         
                     })
                 }
@@ -81,6 +81,7 @@ const placeOrder = async (req,res) => {
                     offerPrice : req.body.offerPrice[i],
                     productImage : req.body.productImages[i]
                   })
+                  grandTotalForCashOnDelivery += (Number(req.body.offerPrice[i]) * Number(req.body.quantity[i]))
             }else{
                 if(product.variants[req.body.variants[i]].stockQuantity > 0 && product.variants[req.body.variants[i]].stockQuantity < req.body.quantity[i]){
                     stockUnavailable.push(`${product.productName}-${req.body.size[i]} has only Limited Stock, The maximum quantity you can order is ${product.variants[req.body.variants[i]].stockQuantity}, Please update the quantity in cart and proceed to Checkout_`)
@@ -109,7 +110,7 @@ const placeOrder = async (req,res) => {
                             unit_amount : req.body.offerPrice * 100,
                         },
                         quantity : req.body.quantity,
-                        tax_rates : [tax.id]
+                        tax_rates : ["txr_1SvBzlBUciUB3yZurNMc9lzT"]
     
                 })
             }
@@ -124,6 +125,7 @@ const placeOrder = async (req,res) => {
                 offerPrice : req.body.offerPrice,
                 productImage : req.body.productImages
               })
+              grandTotalForCashOnDelivery += (Number(req.body.offerPrice) * Number(req.body.quantity))
         }else{
             if(product.variants[req.body.variants].stockQuantity > 0 && product.variants[req.body.variants].stockQuantity < req.body.quantity){
                 stockUnavailable.push(`${product.productName}-${req.body.size} has only Limited Stock, The maximum quantity you can order is ${product.variants[req.body.variants].stockQuantity}, Please update the quantity in cart and proceed to Checkout_`)
@@ -138,13 +140,22 @@ const placeOrder = async (req,res) => {
             return res.redirect("/cart")
       }    
     }
+    grandTotalForCashOnDelivery += Number(req.body.tax)
+    grandTotalForCashOnDelivery -= Number(req.body.discount) || 0
+    console.log(grandTotalForCashOnDelivery)
     if(req.body.paymentMethod === "Cash on Delivery"){
-        for(let j = 0 ; j < items.length ; j++){
-            let product = await Product.findById(items[j].productId)
-                product.variants[items[j].variant].stockQuantity -=  items[j].quantity
-                await product.save()
-                await Cart.findOneAndDelete({userId : user._id, productId : items[j].productId,variant : items[j].variant})
+        if(grandTotalForCashOnDelivery < 100){
+            req.session.message = "Order amount should be greater than $100 to be eligible for Cash on Delivery"
+            return res.redirect("/checkout")
+        }else{
+            for(let j = 0 ; j < items.length ; j++){
+                let product = await Product.findById(items[j].productId)
+                    product.variants[items[j].variant].stockQuantity -=  items[j].quantity
+                    await product.save()
+                    await Cart.findOneAndDelete({userId : user._id, productId : items[j].productId,variant : items[j].variant})
+            }
         }
+       
     }
     
     
@@ -154,8 +165,9 @@ const placeOrder = async (req,res) => {
         addressId : req.body.addressId,
         items : items,
         subTotal : req.body.subTotal,
+        shipping : req.body.shipping,
         tax : req.body.tax,
-        discount : req.body.discount || null,
+        discount : req.body.discount || 0,
         couponCode : req.body.couponName || null,
         grandTotal : req.body.grandTotal,
         paymentId : null,
@@ -198,6 +210,19 @@ const placeOrder = async (req,res) => {
                     mode : "payment",
                     line_items : lineItems,
                     discounts : [{coupon : coupon.id}],
+                    shipping_options : [
+                        {
+                            shipping_rate_data : {
+                                type : "fixed_amount",
+                                fixed_amount : {amount : 1000, currency : "usd" },
+                                display_name : "Ground Shipping",
+                                delivery_estimate: {
+                                    minimum: {unit: 'business_day', value: 5},
+                                    maximum: {unit: 'business_day', value: 7},
+                                  }
+                            }
+                        }
+                    ],
                     success_url : `http://localhost:1348/checkout/payment-processing/${confirmedOrder._id}`,
                     cancel_url : `http://localhost:1348/order-confirmation/${confirmedOrder._id}?paymentId=${savedPayment._id}&status=Cancelled`,
                     customer_email : user.email,
@@ -218,6 +243,19 @@ const placeOrder = async (req,res) => {
                 session = await stripe.checkout.sessions.create({
                     mode : "payment",
                     line_items : lineItems,
+                    shipping_options : [
+                        {
+                            shipping_rate_data : {
+                                type : "fixed_amount",
+                                fixed_amount : {amount : 1000, currency : "usd" },
+                                display_name : "Ground Shipping",
+                                delivery_estimate: {
+                                    minimum: {unit: 'business_day', value: 5},
+                                    maximum: {unit: 'business_day', value: 7},
+                                  }
+                            }
+                        }
+                    ],
                     success_url : `http://localhost:1348/checkout/payment-processing/${confirmedOrder._id}`,
                     cancel_url : `http://localhost:1348/order-confirmation/${confirmedOrder._id}?paymentId=${savedPayment._id}&status=Cancelled`,
                     customer_email : user.email,
@@ -282,11 +320,7 @@ const placeOrder = async (req,res) => {
 const retryPayment = async (req,res) => {
     try {
         let user = req.session.user || req.user
-        let tax = await stripe.taxRates.create({
-            display_name : "VAT",
-            percentage : 5,
-            inclusive : false
-        })
+        
         const {id} = req.params
         const lineItems = []
         const order = await Order.findById(id)
@@ -300,7 +334,7 @@ const retryPayment = async (req,res) => {
                             unit_amount : order.items[i].offerPrice * 100,
                         },
                         quantity : order.items[i].quantity,
-                        tax_rates : [tax.id]
+                        tax_rates : ["txr_1SvBzlBUciUB3yZurNMc9lzT"]
         
                 })
             }
@@ -321,6 +355,19 @@ const retryPayment = async (req,res) => {
                     coupon : coupon.id
                 }
                 ],
+                shipping_options : [
+                    {
+                        shipping_rate_data : {
+                            type : "fixed_amount",
+                            fixed_amount : {amount : 1000, currency : "usd" },
+                            display_name : "Ground Shipping",
+                            delivery_estimate: {
+                                minimum: {unit: 'business_day', value: 5},
+                                maximum: {unit: 'business_day', value: 7},
+                              }
+                        }
+                    }
+                ],
                 success_url : `http://localhost:1348/checkout/payment-processing/${order._id}`,
                 cancel_url : `http://localhost:1348/order-confirmation/${order._id}?paymentId=${order.paymentId}&status=Cancelled`,
                 customer_email : user.email,
@@ -339,6 +386,19 @@ const retryPayment = async (req,res) => {
             session = await stripe.checkout.sessions.create({
                 mode : "payment",
                 line_items : lineItems,
+                shipping_options : [
+                    {
+                        shipping_rate_data : {
+                            type : "fixed_amount",
+                            fixed_amount : {amount : 1000, currency : "usd" },
+                            display_name : "Ground Shipping",
+                            delivery_estimate: {
+                                minimum: {unit: 'business_day', value: 5},
+                                maximum: {unit: 'business_day', value: 7},
+                              }
+                        }
+                    }
+                ],
                 success_url : `http://localhost:1348/checkout/payment-processing/${order._id}`,
                 cancel_url : `http://localhost:1348/order-confirmation/${order._id}?paymentId=${order.paymentId}&status=Cancelled`,
                 customer_email : user.email,

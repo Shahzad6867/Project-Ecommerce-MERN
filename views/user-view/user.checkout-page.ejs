@@ -100,79 +100,88 @@
                                 <% let productOfferPrice = 0 %>
                                <% if (!cartItems[i].productId.isDeleted) { %>
                                  <% if (cartItems[i].productId.variants[cartItems[i].variant].stockQuantity !== 0 && cartItems[i].productId.variants[cartItems[i].variant].stockStatus !== "Out of Stock") { %>
-                                    <% if (cartItems[i].productOfferId !== null && cartItems[i].categoryOfferId !== null && (cartItems[i].productOfferId.startDate <= now && cartItems[i].productOfferId.endDate >= now) && (cartItems[i].categoryOfferId.startDate <= now && cartItems[i].categoryOfferId.endDate >= now) ) { %>
-                                        <% if (cartItems[i].productOfferId.discountType === "percentage") { %>
-                                         <%  productOfferPrice = cartItems[i].productId.variants[cartItems[i].variant].price - ((cartItems[i].productId.variants[cartItems[i].variant].price * cartItems[i].productOfferId.discountValue ) / 100) %>
-                                        <% } else if(cartItems[i].productOfferId.discountType === "flat") {%>
-                                         <%  productOfferPrice = cartItems[i].productId.variants[cartItems[i].variant].price - cartItems[i].productOfferId.discountValue %>
-                                        <% } %>
-             
-                                        <% if (cartItems[i].categoryOfferId.discountType === "percentage") { %>
-                                             <% let tempPrice1 = cartItems[i].productId.variants[cartItems[i].variant].price - ((cartItems[i].productId.variants[cartItems[i].variant].price * cartItems[i].categoryOfferId.discountValue ) / 100) %>
-                                             <% let tempPrice2 = cartItems[i].productId.variants[cartItems[i].variant].price - cartItems[i].categoryOfferId.maxDiscountAmount  %>
-                                             <% if (tempPrice2 > tempPrice1) { %>
-                                                 <% categoryOfferPrice = tempPrice2 %>
-                                             <% } else {%>
-                                                 <% categoryOfferPrice = tempPrice1 %>
-                                             <% } %>
-                                             
-                                        <% } else if(cartItems[i].categoryOfferId.discountType === "flat") {%>
-                                          <% if (cartItems[i].productId.variants[cartItems[i].variant].price > cartItems[i].categoryOfferId.productMinPrice) { %>
-                                             <% categoryOfferPrice = cartItems[i].productId.variants[cartItems[i].variant].price - cartItems[i].categoryOfferId.discountValue %>
-                                           <% } %>
-                                        <% } %>
-             
-                                        <% offerPrice = (categoryOfferPrice < productOfferPrice) ? categoryOfferPrice : productOfferPrice %>
-                                        <% subTotal += (offerPrice * cartItems[i].quantity) %>
-                                 <% } else if(cartItems[i].productOfferId !== null && cartItems[i].categoryOfferId !== null && (cartItems[i].productOfferId.startDate <= now && cartItems[i].productOfferId.endDate >= now) && cartItems[i].categoryOfferId.startDate > now ){%>
-                                     <% if (cartItems[i].productOfferId.discountType === "percentage") { %>
-                                         <%  offerPrice = cartItems[i].productId.variants[cartItems[i].variant].price - ((cartItems[i].productId.variants[cartItems[i].variant].price * cartItems[i].productOfferId.discountValue ) / 100) %>
-                                     <% } else if(cartItems[i].productOfferId.discountType === "flat") {%>
-                                         <%  offerPrice = cartItems[i].productId.variants[cartItems[i].variant].price - cartItems[i].productOfferId.discountValue %>
-                                     <% } %>
-                                     <% subTotal += (offerPrice * cartItems[i].quantity) %>
-                                 <% } else if(cartItems[i].productOfferId !== null && cartItems[i].categoryOfferId !== null && (cartItems[i].categoryOfferId.startDate <= now && cartItems[i].categoryOfferId.endDate >= now) && cartItems[i].productOfferId.startDate > now ){%>
-                                         <% if (cartItems[i].categoryOfferId.discountType === "percentage") { %>
-                                                 <% let tempPrice1 = cartItems[i].productId.variants[cartItems[i].variant].price - ((cartItems[i].productId.variants[cartItems[i].variant].price * cartItems[i].categoryOfferId.discountValue ) / 100) %>
-                                                 <% let tempPrice2 = cartItems[i].productId.variants[cartItems[i].variant].price - cartItems[i].categoryOfferId.maxDiscountAmount  %>
-                                                 <% if (tempPrice2 > tempPrice1) { %>
-                                                     <% offerPrice = tempPrice2 %>
-                                                 <% } else {%>
-                                                     <% offerPrice = tempPrice1 %>
-                                                 <% } %>
-                                                 
-                                         <% } else if(cartItems[i].categoryOfferId.discountType === "flat") {%>
-                                             <% if (cartItems[i].productId.variants[cartItems[i].variant].price > cartItems[i].categoryOfferId.productMinPrice) { %>
-                                                 <% offerPrice = cartItems[i].productId.variants[cartItems[i].variant].price - cartItems[i].categoryOfferId.discountValue %>
-                                             <% } %>
-                                         <% } %>
-                                         <% subTotal += (offerPrice * cartItems[i].quantity) %>
-                                 <% } else if(cartItems[i].productOfferId !== null && cartItems[i].categoryOfferId === null && (cartItems[i].productOfferId.startDate <= now && cartItems[i].productOfferId.endDate >= now) ){%>
-                                     <% if (cartItems[i].productOfferId.discountType === "percentage") { %>
-                                         <%  offerPrice = cartItems[i].productId.variants[cartItems[i].variant].price - ((cartItems[i].productId.variants[cartItems[i].variant].price * cartItems[i].productOfferId.discountValue ) / 100) %>
-                                     <% } else if(cartItems[i].productOfferId.discountType === "flat") {%>
-                                         <%  offerPrice = cartItems[i].productId.variants[cartItems[i].variant].price - cartItems[i].productOfferId.discountValue %>
-                                     <% } %>
-                                     <% subTotal += (offerPrice * cartItems[i].quantity) %>
-                                 <% } else if(cartItems[i].productOfferId === null && cartItems[i].categoryOfferId !== null && (cartItems[i].categoryOfferId.startDate <= now && cartItems[i].categoryOfferId.endDate >= now) ){%>
-                                     <% if (cartItems[i].categoryOfferId.discountType === "percentage") { %>
-                                         <% let tempPrice1 = cartItems[i].productId.variants[cartItems[i].variant].price - ((cartItems[i].productId.variants[cartItems[i].variant].price * cartItems[i].categoryOfferId.discountValue ) / 100) %>
-                                         <% let tempPrice2 = cartItems[i].productId.variants[cartItems[i].variant].price - cartItems[i].categoryOfferId.maxDiscountAmount  %>
-                                         <% if (tempPrice2 > tempPrice1) { %>
-                                             <% offerPrice = tempPrice2 %>
-                                         <% } else {%>
-                                             <% offerPrice = tempPrice1 %>
-                                         <% } %>
-                                         
-                                     <% } else if(cartItems[i].categoryOfferId.discountType === "flat") {%>
-                                         <% if (cartItems[i].productId.variants[cartItems[i].variant].price > cartItems[i].categoryOfferId.productMinPrice) { %>
-                                             <% offerPrice = cartItems[i].productId.variants[cartItems[i].variant].price - cartItems[i].categoryOfferId.discountValue %>
-                                         <% } %>
-                                     <% } %>
-                                     <% subTotal += (offerPrice * cartItems[i].quantity) %>
-                                 <% } else {%>
-                                     <% subTotal += (cartItems[i].productId.variants[cartItems[i].variant].price * cartItems[i].quantity ) %>
-                                 <% } %>
+                                    <%
+
+                        /* ================================
+                        Base values
+                        ================================ */
+                        const price = cartItems[i].productId.variants[cartItems[i].variant].price
+                        const quantity = cartItems[i].quantity
+
+                        let offerPrice = price
+                        let productOfferPrice = null
+                        let categoryOfferPrice = null
+
+                        /* ================================
+                        Normalize offers (IMPORTANT)
+                        Expired / upcoming => null
+                        ================================ */
+                        const productOffer =
+                        cartItems[i].productOfferId &&
+                        cartItems[i].productOfferId.startDate <= now &&
+                        cartItems[i].productOfferId.endDate >= now
+                            ? cartItems[i].productOfferId
+                            : null
+
+                        const categoryOffer =
+                        cartItems[i].categoryOfferId &&
+                        cartItems[i].categoryOfferId.startDate <= now &&
+                        cartItems[i].categoryOfferId.endDate >= now
+                            ? cartItems[i].categoryOfferId
+                            : null
+
+                        /* ================================
+                        Product offer price
+                        ================================ */
+                        if (productOffer) {
+                        if (productOffer.discountType === "percentage") {
+                            productOfferPrice =
+                            price - (price * productOffer.discountValue) / 100
+                        } else if (productOffer.discountType === "flat") {
+                            productOfferPrice =
+                            price - productOffer.discountValue
+                        }
+                        }
+
+                        /* ================================
+                        Category offer price
+                        ================================ */
+                        if (categoryOffer) {
+                        if (categoryOffer.discountType === "percentage") {
+                            const percentPrice =
+                            price - (price * categoryOffer.discountValue) / 100
+
+                            const maxPrice =
+                            price - categoryOffer.maxDiscountAmount
+
+                            categoryOfferPrice = Math.max(percentPrice, maxPrice)
+
+                        } else if (categoryOffer.discountType === "flat") {
+                            if (price > categoryOffer.productMinPrice) {
+                            categoryOfferPrice =
+                                price - categoryOffer.discountValue
+                            }
+                        }
+                        }
+
+                        /* ================================
+                        Decide final offer price
+                        ================================ */
+                        if (productOfferPrice !== null && categoryOfferPrice !== null) {
+                        offerPrice = Math.min(productOfferPrice, categoryOfferPrice)
+
+                        } else if (productOfferPrice !== null) {
+                        offerPrice = productOfferPrice
+
+                        } else if (categoryOfferPrice !== null) {
+                        offerPrice = categoryOfferPrice
+                        }
+
+                        /* ================================
+                        Add to subtotal
+                        ================================ */
+                        subTotal += offerPrice * quantity
+                     %>
                                     <div class="py-4 px-2 mr-2 mb-2 border border-black rounded-md w-[49%] flex items-center">
                                         <input type="text" name="productId" value="<%= cartItems[i].productId._id %>" hidden>
 
@@ -261,8 +270,8 @@
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Shipping</span>
-                                <input type="text" name="shipping" value="Free" hidden>
-                                <span class="font-medium">Free</span>
+                                <input type="number" name="shipping" value="10" hidden>
+                                <span class="font-medium">$10</span>
                             </div>
                             <div class="flex justify-between">
                                 
@@ -283,8 +292,8 @@
                            <% } %>
                             <div class="flex justify-between text-lg font-bold pt-2">
                                 <span>Total</span>
-                                <% let grandTotal = (Number(subTotal) + Number(tax)).toFixed(2) %>
-                                <input type="text" name="grandTotal" value="<%= grandTotal %>" hidden>
+                                <% let grandTotal = (Number(subTotal) + Number(tax) + Number(10)).toFixed(2) %>
+                                <input type="number" id="grandTotal" name="grandTotal" value="<%= grandTotal %>" hidden>
                                 <span>$<%= grandTotal %></span>
                             </div>
                         </div>
@@ -364,12 +373,7 @@
                             </button>
 
                             <div class="mt-6">
-                                <label class="flex items-start">
-                                    <!-- <input type="checkbox" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-1" name="terms"> -->
-                                    <!-- <span class="ml-2 block text-sm text-gray-700">
-                                        I agree to the <a href="#" class="text-blue-600 hover:text-blue-800">Terms and Conditions</a> and <a href="#" class="text-blue-600 hover:text-blue-800">Refund Policy</a>
-                                    </span> -->
-                                </label>
+                                
                                 <% if (itemsWithStock === 0) { %>
                                     <button id="placeOrderBtn" type="submit" class="w-full mt-4 py-3 px-4 bg-gray-200 text-gray-400 font-bold rounded-full transition duration-300 flex items-center justify-center hidden" disabled>
                                         <span>Place Order</span>
@@ -723,12 +727,21 @@
     <script>
         let serverMessage = document.getElementById("serverMessage").value
         document.getElementById("cashOnDeliveryBtn").addEventListener("click",function(){
-            document.getElementById("placeOrderBtn").classList.remove("hidden")
+            let grandTotal = Number(document.getElementById("grandTotal").value)
 
-            setTimeout(function(){
-                document.getElementById("placeOrderBtn").classList.add("hidden") 
-            },10000)
-            
+            if(grandTotal > 100){
+                document.getElementById("placeOrderBtn").classList.remove("hidden")
+
+                setTimeout(function(){
+                    document.getElementById("placeOrderBtn").classList.add("hidden") 
+                },10000)
+            }else{
+                iziToast.info({
+                title : "Order",
+                message : "Order amount should be greater than $100 to be eligible for Cash on Delivery",
+                position : "topRight"
+                })
+            } 
         })
         
       document.getElementById("payWithCardBtn").addEventListener("click",function(){
@@ -736,7 +749,6 @@
         document.getElementById("payWithCardBtn").type = "submit"
         document.getElementById("placeOrderBtn").type = "button"
         document.getElementById("payWithWalletBtn").type = "button"
-        // document.getElementById("orderForm").action = "/create-checkout-session"
         document.getElementById("orderForm").submit()
       })
       document.getElementById("placeOrderBtn").addEventListener("click",function(){
@@ -744,7 +756,6 @@
         document.getElementById("payWithCardBtn").type = "button"
         document.getElementById("placeOrderBtn").type = "submit"
         document.getElementById("payWithWalletBtn").type = "button"
-        // document.getElementById("orderForm").action = "/create-checkout-session"
         document.getElementById("orderForm").submit()
       })
       document.getElementById("payWithWalletBtn").addEventListener("click",function(){
@@ -752,7 +763,6 @@
         document.getElementById("payWithCardBtn").type = "button"
         document.getElementById("placeOrderBtn").type = "button"
         document.getElementById("payWithWalletBtn").type = "submit"
-        // document.getElementById("orderForm").action = "/create-checkout-session"
         document.getElementById("orderForm").submit()
       })
 
@@ -771,8 +781,15 @@
             document.getElementById("closeAddAddressModalBtn").classList.add("hidden")
         }
         if(serverMessage === "Insufficient Balance in NovaWallet, Please Top-up the wallet or Pay with Card"){
-            iziToast.error({
+            iziToast.info({
                 title : "Wallet",
+                message : serverMessage,
+                position : "topRight"
+            })
+        }
+        if(serverMessage === "Order amount should be greater than $100 to be eligible for Cash on Delivery"){
+            iziToast.info({
+                title : "Order",
                 message : serverMessage,
                 position : "topRight"
             })

@@ -100,6 +100,9 @@ const orderSchema = Schema({
     subTotal : {
         type : Number
     },
+    shipping : {
+        type : Number
+    },
     tax : {
         type : Number
     },

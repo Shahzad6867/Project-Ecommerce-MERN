@@ -321,7 +321,7 @@
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600 font-bold">Shipping</span>
-                        <span class="font-medium">Free</span>
+                        <span class="font-medium">$10</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600 font-bold">Tax</span>
@@ -337,7 +337,7 @@
                     <div class="border-t border-gray-200 pt-4">
                         <div class="flex justify-between">
                             <span class="text-lg font-bold">Total</span>
-                            <% let grandTotal = (Number(subTotal) + Number(tax)).toFixed(2) %>
+                            <% let grandTotal = (Number(subTotal) + Number(tax) + Number(10)).toFixed(2) %>
                             <span class="text-lg font-bold">$ <span id="grandTotal" ><%= grandTotal %></span></span>
                         </div>
                     </div>
