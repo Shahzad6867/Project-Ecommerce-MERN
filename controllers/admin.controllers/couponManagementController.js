@@ -15,7 +15,8 @@ const getCoupons = async(req,res) => {
     const pages = Math.ceil(count / perPage)
      const message = req.session.message || null
     delete req.session.message
-    res.render("admin-view/admin.coupons.ejs",{message,coupons,count,page,pages,productsFullList})
+    const timezone = req.cookies.tz
+    res.render("admin-view/admin.coupons.ejs",{message,coupons,count,page,pages,productsFullList,timezone})
 }
 const getAddCoupon = async(req,res) => {
     const message = req.session.message || null
@@ -28,7 +29,8 @@ const getEditCoupon = async(req,res) => {
     const coupon = await Coupon.findOne({_id : couponId })
     const message = req.session.message || null
     delete req.session.message
-    res.render("admin-view/admin.add-coupon.ejs",{message,coupon})
+    const timezone = req.cookies.tz
+    res.render("admin-view/admin.add-coupon.ejs",{message,coupon,timezone})
 }
 const addCoupon = async (req,res) => {
    try {

@@ -35,10 +35,16 @@
 
                 <%
                     function toDateTimeLocal(date) {
-                    const d = new Date(date);
-                    const pad = n => String(n).padStart(2, '0');
+                        let timeZoneDate = new Date(date).toLocaleDateString("en-US",{year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            timeZone : timezone}).split("/")
 
-                    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                        let timeZoneTime = new Date(date).toLocaleTimeString("en-US",{hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
+                            timeZone : timezone})
+                       return `${timeZoneDate[2]}-${timeZoneDate[0]}-${timeZoneDate[1]}T${timeZoneTime}`
                     }
                 %>
 
