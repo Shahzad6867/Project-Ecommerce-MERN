@@ -3,16 +3,21 @@
 <!-- Navbar -->
 <%- include("../partials/admin-side/navbar.ejs") %>
 <!-- Sidebar -->
-<%- include("../partials/admin-side/sidebar.ejs",{customerBtn : "active disabled",
-categoriesBtn : "",
-brandsBtn : "",
-productsBtn : "",
-isDisabled : "disabled"}) %>
+<%- include("../partials/admin-side/sidebar.ejs",{dashboardBtn : "",customerBtn : "active disabled",categoriesBtn : "",brandsBtn : "",productsBtn : "",ordersBtn : "",offersBtn : "",couponsBtn : "",reportsBtn : ""} ) %>
 
   <!-- Main Content -->
   <div class="main-content">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold text-gray-800">Results</h1>
+      <div class="relative">
+        <form autocomplete="off" action="/admin/users" method="post">
+            <input type="search" placeholder="Whom are you looking for ?" name="search" value="<%= search %>"
+               class="search-bar border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" data-search>
+             <div id="searchResult-box" data-user-card-container>  
+             </div>
+        <i id="search-icon" class="fas fa-search absolute right-3 top-3 text-gray-500"></i>
+        </form>
+      </div>
       <div class="relative">
         <a href="/admin/users">
           <button  class="btn-primary w-full font-bold text-gray-700 py-2 px-4 rounded-lg  transition duration-300">
@@ -20,7 +25,15 @@ isDisabled : "disabled"}) %>
         </button>  </a> 
       </div>
     </div>
-
+    <template data-user-template>
+      <div id="list-item" onclick="setInputForSearch()" >
+       <div class="flex-shrink-0 h-10 w-10">
+        <img class="h-10 w-10 rounded-full" src="/images/user.jpg" alt="" data-avatar>
+       </div>
+       <span class="ml-2 font-semibold" data-header ></span>
+       <span class="ml-2" data-body ></span>
+      </div>
+    </template> 
     <div class="bg-white rounded-lg shadow overflow-hidden">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-green-50">
@@ -98,41 +111,6 @@ isDisabled : "disabled"}) %>
   </div>
 
  
-   <script>
-       feather.replace();
-    document.addEventListener('DOMContentLoaded', () => {
-        let userLog = document.getElementById("userLogged")?.value
-    console.log(userLog)
-    if(userLog){
-        iziToast.show({
-        title : "Notification",
-        message: userLog,
-        messageColor: '#ffffff !important',
-        position: 'topCenter',
-        backgroundColor: "#4f46e5", 
-        titleColor: '#ffffff',
-        
-     })
-    }
-
-    });
-    function blockUser(id){
-        if(confirm("Are you sure ? Do you Want to block the User ?")){
-            window.location.href = "/admin/block-user?id="+id
-        }
-    }
-    function unblockUser(id){
-        if(confirm("Are you sure ? Do you Want to Unblock the User ?")){
-            window.location.href = "/admin/unblock-user?id="+id
-        }
-    }
-    function areYouSure(id){
-        if(confirm("Are you sure ? Do you Want to delete the User ?")){
-            window.location.href = "/admin/delete-user?id="+id
-        }
-    }
-    
-    
- </script>
-</body>
-</html>
+  <!-- Script.js -->
+<%- include("../../public/javascript/admin-javascript/usersPageScript.ejs")%>
+   

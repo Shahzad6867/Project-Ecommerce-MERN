@@ -8,14 +8,14 @@ const Payment = require("../../models/payment.model.js")
 const getOrders = async(req,res) => {
     const perPage = req.session.itemsPerPage || 5 
     const page = req.query.page || 1
-    const productsFullList = await Product.aggregate().project({productName : 1,_id : 0})
+    const ordersFullList = await Order.find({},{ _id : 0,orderId : 1 })
      const orders = await Order.find({}).populate("userId").populate("paymentId").sort({createdAt : -1}).skip(perPage * page - perPage).limit(perPage)
      const count = await Order.countDocuments({})
     const pages = Math.ceil(count / perPage)
     const message = req.session.message || null
     delete req.session.message
     console.log(orders)
-    res.render("admin-view/admin.orders.ejs",{message,orders,page,pages,count,productsFullList})
+    res.render("admin-view/admin.orders.ejs",{message,orders,page,pages,count,ordersFullList})
 }
 const getOrderDetailPage = async (req,res) => {
     let user = req.session.user || req.user

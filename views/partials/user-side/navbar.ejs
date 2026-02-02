@@ -28,7 +28,7 @@
 </head>
 <body class="bg-gray-100">
     <!-- Navigation Bar -->
-    <nav class="navbar-color shadow-md py-3 px-4 sticky top-0 z-[60]">
+    <nav class="navbar-color shadow-md py-3 px-4 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <!-- Logo -->
             <div class="flex items-center">
@@ -109,9 +109,7 @@
                                   <% if (cartItems[i].productId.variants[cartItems[i].variant].stockQuantity !== 0 && cartItems[i].productId.variants[cartItems[i].variant].stockStatus !== "Out of Stock") { %>
                                     <%
 
-                                    /* ================================
-                                    Base values
-                                    ================================ */
+                                   
                                     const price = cartItems[i].productId.variants[cartItems[i].variant].price
                                     const quantity = cartItems[i].quantity
             
@@ -119,10 +117,7 @@
                                     let productOfferPrice = null
                                     let categoryOfferPrice = null
             
-                                    /* ================================
-                                    Normalize offers (IMPORTANT)
-                                    Expired / upcoming => null
-                                    ================================ */
+                                   
                                     const productOffer =
                                     cartItems[i].productOfferId &&
                                     cartItems[i].productOfferId.startDate <= now &&
@@ -137,9 +132,7 @@
                                         ? cartItems[i].categoryOfferId
                                         : null
             
-                                    /* ================================
-                                    Product offer price
-                                    ================================ */
+                                    
                                     if (productOffer) {
                                     if (productOffer.discountType === "percentage") {
                                         productOfferPrice =
@@ -150,9 +143,7 @@
                                     }
                                     }
             
-                                    /* ================================
-                                    Category offer price
-                                    ================================ */
+                                    
                                     if (categoryOffer) {
                                     if (categoryOffer.discountType === "percentage") {
                                         const percentPrice =
@@ -171,9 +162,7 @@
                                     }
                                     }
             
-                                    /* ================================
-                                    Decide final offer price
-                                    ================================ */
+                                    
                                     if (productOfferPrice !== null && categoryOfferPrice !== null) {
                                     offerPrice = Math.min(productOfferPrice, categoryOfferPrice)
             
@@ -184,9 +173,7 @@
                                     offerPrice = categoryOfferPrice
                                     }
             
-                                    /* ================================
-                                    Add to subtotal
-                                    ================================ */
+                                    
                                     subTotal += offerPrice * quantity
                                  %>
                                     <% itemsWithStock += cartItems[i].quantity %>

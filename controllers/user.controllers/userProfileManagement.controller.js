@@ -284,7 +284,7 @@ const deleteAddress = async (req, res) => {
       { $set: { isDefault: true } }
     );
   }
-  if(req.body.redirect === "/checkout"){
+  if(req.body?.redirect && req.body.redirect === "/checkout"){
     return res.redirect("/checkout");
   }
   req.session.message = "Address deleted Successfully";

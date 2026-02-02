@@ -5,7 +5,10 @@
         <div class="max-w-7xl mx-auto flex justify-center overflow-x-auto space-x-6 py-2 hide-scrollbar">
             <% for( let i = 0; i < categories.length; i++ ) { %>
                 <% if (!categories[i].isDeleted) { %>
-            <a href="#" class="category whitespace-nowrap hover:text-blue-600 "><%= categories[i].categoryName %></a>
+                    <form action="/shop/filter" method="post">
+                        <input type="text" name="category" value="<%= categories[i]._id %>" hidden>
+                        <button type="submit" class="category whitespace-nowrap hover:text-blue-600 "><%= categories[i].categoryName %></button>
+                    </form>
               <% } %>
             <% } %>
         </div>
@@ -75,12 +78,34 @@
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 <% for( let i = 0; i < categories.length; i++ ) { %>
                     <% if (!categories[i].isDeleted) { %>
-                <a href="#" class="category-card bg-white rounded-lg shadow-sm p-4 text-center hover:shadow-md transition-all">
-                    <div class="h-32 mb-3 overflow-hidden">
-                        <img src="<%= categories[i].categoryImage %>" alt="Electronics" class="w-full h-full object-contain transition-transform">
-                    </div>
-                    <h3 class="category"><%= categories[i].categoryName  %></h3>
-                </a>    
+                        <form action="/shop/filter" method="post">
+                            <input type="hidden" name="category" value="<%= categories[i]._id %>">
+                          
+                            <button
+                              type="submit"
+                              class="category-card
+                                     bg-white rounded-lg shadow-sm
+                                     p-4 text-center
+                                     hover:shadow-md transition-all
+                                     w-44 h-56
+                                     flex flex-col items-center justify-between"
+                            >
+                              <!-- Image wrapper (fixed size) -->
+                              <div class="h-32 w-full flex items-center justify-center overflow-hidden">
+                                <img
+                                  src="<%= categories[i].categoryImage %>"
+                                  alt="<%= categories[i].categoryName %>"
+                                  class="max-h-full max-w-full object-contain"
+                                >
+                              </div>
+                          
+                              <!-- Category name (fixed height) -->
+                              <h3 class="category text-sm font-bold mt-2 text-center line-clamp-2">
+                                <%= categories[i].categoryName %>
+                              </h3>
+                            </button>
+                          </form>
+                          
                   <% } %>
                 <% } %>
             </div>
@@ -100,9 +125,7 @@
                         <% for( let j = 0; j < products[i].variants.length; j++ ) { %>
                             <% if ( products[i].variants[j].stockQuantity !== 0 && products[i].variants[j].stockStatus !== "Out of Stock" ) { %>
                                 <%
-                                /* ================================
-                                   Base values
-                                ================================ */
+                               
                                 const now = new Date()
                                 const price = products[i].variants[j].price
                                 const productOffer = products[i].variants[j].productOfferId
@@ -112,9 +135,7 @@
                                 let productOfferPrice = null
                                 let categoryOfferPrice = null
                                 
-                                /* ================================
-                                   Check offer activeness
-                                ================================ */
+                                
                                 const isProductOfferActive =
                                   productOffer &&
                                   productOffer.startDate <= now &&
@@ -125,9 +146,7 @@
                                   categoryOffer.startDate <= now &&
                                   categoryOffer.endDate >= now
                                 
-                                /* ================================
-                                   Calculate product offer price
-                                ================================ */
+                                
                                 if (isProductOfferActive) {
                                   if (productOffer.discountType === "percentage") {
                                     productOfferPrice =
@@ -138,9 +157,7 @@
                                   }
                                 }
                                 
-                                /* ================================
-                                   Calculate category offer price
-                                ================================ */
+                              
                                 if (isCategoryOfferActive) {
                                   if (categoryOffer.discountType === "percentage") {
                                     const percentPrice =
@@ -149,7 +166,7 @@
                                     const maxPrice =
                                       price - categoryOffer.maxDiscountAmount
                                 
-                                    // Apply max discount cap
+                                    
                                     categoryOfferPrice = Math.max(percentPrice, maxPrice)
                                 
                                   } else if (categoryOffer.discountType === "flat") {
@@ -160,22 +177,20 @@
                                   }
                                 }
                                 
-                                /* ================================
-                                   Decide final offer price
-                                ================================ */
+                            
                                 if (productOfferPrice !== null && categoryOfferPrice !== null) {
-                                  // Both active → choose better discount
+                                 
                                   offerPrice = Math.min(productOfferPrice, categoryOfferPrice)
                                 
                                 } else if (productOfferPrice !== null) {
-                                  // Only product offer active
+                                 
                                   offerPrice = productOfferPrice
                                 
                                 } else if (categoryOfferPrice !== null) {
-                                  // Only category offer active
+                                 
                                   offerPrice = categoryOfferPrice
                                 }
-                                // Else → no active offer, original price remains
+                                
                                 %>
                                 
                             
@@ -309,9 +324,7 @@
                            
                         <% if ( products[i].variants[j].stockQuantity !== 0 && products[i].variants[j].stockStatus !== "Out of Stock" ) { %>
                             <%
-                                /* ================================
-                                   Base values
-                                ================================ */
+                               
                               
                                 const price = products[i].variants[j].price
                                 const productOffer = products[i].variants[j].productOfferId
@@ -321,9 +334,7 @@
                                 let productOfferPrice = null
                                 let categoryOfferPrice = null
                                 
-                                /* ================================
-                                   Check offer activeness
-                                ================================ */
+                              
                                 const isProductOfferActive =
                                   productOffer &&
                                   productOffer.startDate <= now &&
@@ -334,9 +345,7 @@
                                   categoryOffer.startDate <= now &&
                                   categoryOffer.endDate >= now
                                 
-                                /* ================================
-                                   Calculate product offer price
-                                ================================ */
+                                
                                 if (isProductOfferActive) {
                                   if (productOffer.discountType === "percentage") {
                                     productOfferPrice =
@@ -347,9 +356,7 @@
                                   }
                                 }
                                 
-                                /* ================================
-                                   Calculate category offer price
-                                ================================ */
+                                
                                 if (isCategoryOfferActive) {
                                   if (categoryOffer.discountType === "percentage") {
                                     const percentPrice =
@@ -358,7 +365,7 @@
                                     const maxPrice =
                                       price - categoryOffer.maxDiscountAmount
                                 
-                                    // Apply max discount cap
+                                   
                                     categoryOfferPrice = Math.max(percentPrice, maxPrice)
                                 
                                   } else if (categoryOffer.discountType === "flat") {
@@ -369,22 +376,20 @@
                                   }
                                 }
                                 
-                                /* ================================
-                                   Decide final offer price
-                                ================================ */
+                                
                                 if (productOfferPrice !== null && categoryOfferPrice !== null) {
-                                  // Both active → choose better discount
+                                 
                                   offerPrice = Math.min(productOfferPrice, categoryOfferPrice)
                                 
                                 } else if (productOfferPrice !== null) {
-                                  // Only product offer active
+                                  
                                   offerPrice = productOfferPrice
                                 
                                 } else if (categoryOfferPrice !== null) {
-                                  // Only category offer active
+                                  
                                   offerPrice = categoryOfferPrice
                                 }
-                                // Else → no active offer, original price remains
+                                
                                 %>
                             <div class="product-card mr-2 bg-white rounded-lg shadow-sm p-4 transition-all w-[240px] flex-shrink-0">
                                 <div class="h-40 mb-3 relative">

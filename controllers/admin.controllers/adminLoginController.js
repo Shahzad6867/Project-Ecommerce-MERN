@@ -22,7 +22,7 @@ const adminLogin = async (req,res) => {
     }
     req.session.admin = isAdmin
     req.session.message = `Welcome ${isAdmin.firstName}`
-    return res.redirect("/admin/users")
+    return res.redirect("/admin/dashboard")
     } catch (error) {
         console.error(error)
     }

@@ -6,7 +6,6 @@
     const productCardContainer = document.querySelector("[data-product-container]")
     const searchInput = document.querySelector("[data-search]")
 
-
    const productsString = '<%- JSON.stringify(productsFullList) %>' ;
    const productData = JSON.parse(productsString)
    
@@ -28,6 +27,7 @@
      if(product.productName.toLowerCase().includes(value)){
        const listItem = productCardTemplate.content.cloneNode(true).children[0]
        listItem.querySelector("[data-header]").textContent = product.productName
+       listItem.style.cursor = "pointer"
        productCardContainer.appendChild(listItem)
        
        listItem.addEventListener("click",() => {

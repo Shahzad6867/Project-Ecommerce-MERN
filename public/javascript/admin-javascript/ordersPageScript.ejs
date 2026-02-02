@@ -1,0 +1,47 @@
+<script>
+    feather.replace();
+
+
+    const orderCardTemplate = document.querySelector("[data-order-template]")
+    const orderCardContainer = document.querySelector("[data-order-container]")
+    const searchInput = document.querySelector("[data-search]")
+
+   const ordersString = '<%- JSON.stringify(ordersFullList) %>' ;
+   const orderData = JSON.parse(ordersString)
+
+  
+   orderCardContainer.innerHTML = ""
+    searchInput.addEventListener("input",(e) => {
+     const value = e.target.value.toUpperCase()
+     orderCardContainer.style.display = "block"
+       orderCardContainer.innerHTML = ""
+     
+     if(!value){
+     document.getElementById("search-icon").classList.remove("hidden")
+     orderCardContainer.style.display = "none"
+     return;
+    }else{
+     document.getElementById("search-icon").classList.add("hidden")
+    }
+    console.log(orderData)
+    orderData.forEach(order => {
+     if(order.orderId.includes(value)){
+       const listItem = orderCardTemplate.content.cloneNode(true).children[0]
+       listItem.querySelector("[data-header]").textContent = order.orderId
+       listItem.style.cursor = "pointer"
+       orderCardContainer.appendChild(listItem)
+       
+       listItem.addEventListener("click",() => {
+         searchInput.value = order.orderId
+         searchInput.focus()
+         orderCardContainer.style.display = "none"
+       })
+     }
+     
+    });
+    })
+
+ 
+</script>
+</body>
+</html>

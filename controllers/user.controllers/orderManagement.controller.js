@@ -726,6 +726,7 @@ const reorder = async (req,res) => {
                     const cartItem = new Cart({
                         userId : user._id,
                         productId : order.items[i].productId,
+                        categoryId : product.categoryId,
                         variant : order.items[i].variant,
                         quantity : stock
                     })
@@ -734,6 +735,7 @@ const reorder = async (req,res) => {
                     const cartItem = new Cart({
                         userId : user._id,
                         productId : order.items[i].productId,
+                        categoryId : product.categoryId,
                         variant : order.items[i].variant,
                         quantity : order.items[i].quantity
                     })

@@ -417,45 +417,6 @@
     </div>
 </div>
 
-<script>
 
-const serverMessage = document.getElementById("serverMessage").value
-if(serverMessage === "Address added successfully!"){
-    iziToast.success({
-        title : "Success",
-        message : "Address added successfully!",
-        position : "topRight"
-    })
-}
-if(serverMessage === "Oops! some error has occured"){
-    iziToast.error({
-        title : "Error",
-        message :"Oops! some error has occured",
-        position : "topRight"
-    })
-}
-if(serverMessage === "Address updated Successfully"){
-    iziToast.success({
-        title : "Success",
-        message :"Address updated Successfully",
-        position : "topRight"
-    })
-}
-if(serverMessage === "Address deleted Successfully"){
-    iziToast.success({
-        title : "Success",
-        message :"Address deleted Successfully",
-        position : "topRight"
-    })
-}
-
-if(serverMessage === "Your Default address has been Updated" ){
-    iziToast.success({
-        title : "Success",
-        message :"Your Default address has been Updated",
-        position : "topRight"
-    })
-}
-</script>
-<%- include("../partials/user-side/footer.ejs")%>
 <%- include("../../public/javascript/user-javascript/address-management.ejs")%>
+<%- include("../partials/user-side/footer.ejs")%>

@@ -1,0 +1,456 @@
+            <script>
+            feather.replace();
+            let fileList = {}
+            // Variant template
+            const variantTemplate = (index,size,color,price,stockQuantity,stockStatus) => `
+            <div class="variant-item" data-index="${index}"  data-size="${size}" data-color="${color}" data-price="${price}" data-stockQuantity="${stockQuantity}" data-stockStatus="${stockStatus}">
+                <span class="remove-variant" onclick="removeVariant(this)"><i data-feather="x"></i></span>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Size</label>
+                        <input type="text" name="variants[${index}][size]" value="${size}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                        <input  type="text" name="variants[${index}][color]" value="${color}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+                        <input   type="number" step="0.01" name="variants[${index}][price]" value="${price}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
+                        <input   type="number" name="variants[${index}][stockQuantity]" value="${stockQuantity}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Stock Status</label>
+                        <select  name="variants[${index}][stockStatus]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" >
+                            <option value="">Select Stock Status</option>
+                            <option value="In Stock" ${stockStatus === 'In Stock' ? 'selected' : ""}>In Stock</option>
+                            <option value="Out of Stock" ${stockStatus === 'Out of Stock' ? 'selected' : ""}>Out of Stock</option>
+                            <option value="Pre Order" ${stockStatus === 'Pre Order' ? 'selected' : ""}>Pre-Order</option>
+                        </select>
+                    </div>
+                    <div class="lg:col-span-4">
+                    <div class="flex justify-start align-items-center">
+                        <label for="productImages${index}" class=" addBtn-primary bg-white py-3 px-3 rounded-md shadow-sm text-xl leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 cursor-pointer">Upload Images</label>
+                        <span class="ml-2 text-lg font-medium "><strong>(Minimum 3 and Maximum 10 Images)</strong></span>
+                        <input id="productImages${index}" type="file" name="variants[${index}][productImages]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 hidden" multiple accept="image/*"  onchange="previewImages(this, ${index})">
+                        </div>
+                        
+                        <div id="uploadedImagesPreview-${index}" class="flex border rounded-lg flex-wrap gap-2  mt-2 pl-2 pb-2">
+                            <div  class="w-[100%] my-2 ml-3">
+                            <h1 class="text-lg font-semibold">Uploaded Images</h1>
+                            </div>
+                        </div>
+                        <div id="imageInsertTypeDiv-${index}" class=" border rounded-lg mt-2 pl-2 pb-2" hidden>
+                            <div  class="w-[100%] my-2 ml-3" >
+                            <h1 class="text-lg font-semibold">How should new images be added?</h1>
+                            </div>
+                            <select id="imageInsertType" name="imageInsertType" class="p-2 border border-black rounded-lg">
+                                    <option value="Deleted First">
+                                        Fill deleted image positions first
+                                    </option>
+                                    <option value="Add Normally">
+                                        Add new images after existing images
+                                    </option>
+                                    <option value="Not Applicable" selected>
+                                        Not Applicable (No Images to Upload)
+                                    </option>
+                                </select>
+                        </div>
+                        <div id="imagePreview-${index}" class="flex border rounded-lg flex-wrap gap-2  mt-2 pl-2 pb-2" hidden>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+
+            // Add variant
+            let variantCount = 0;
+            document.getElementById('addVariantBtn').addEventListener('click', function() {
+                const variants = JSON.parse('<%- JSON.stringify( product[0].variants)%>')
+                if (variants[variantCount]) {
+                    const variantSize = variants[variantCount].size 
+                    const variantColor = variants[variantCount].color
+                    const variantPrice = variants[variantCount].price
+                    const variantStockQty = variants[variantCount].stockQuantity
+                    const variantStockStatus = variants[variantCount].stockStatus
+                    const variantProductImages = variants[variantCount].productImages
+                    
+                    document.getElementById('variantsContainer').insertAdjacentHTML('beforeend', variantTemplate(variantCount,variantSize,variantColor,variantPrice,variantStockQty,variantStockStatus));        
+                    const previewContainer = document.getElementById(`uploadedImagesPreview-${variantCount}`)
+                    let count = 0;
+                    for(let i = 0 ; i < variantProductImages.length ; i++){
+                        
+                        const imgBox = document.createElement('div');
+                        imgBox.className = 'inline-block min-w-[25%] max-w-[25%] min-h-[25%] max-h-[25%]  border rounded-md overflow-auto relative'
+                        imgBox.id = `imgCount${count}`
+                        count++
+                        imgBox.innerHTML = `
+                        <button type="button" id="Delet${variantCount}Btn${i}" class="absolute bg-neutral-200 hover:bg-neutral-300 text-white py-(0.5) px-(0.5) mt-2  border border-black rounded-lg" style="margin-left:276px;" onclick="setToDeleteImage(event,${variantCount},${i})">
+                            <i data-feather="trash-2" class="m-1 text-black"></i>
+                            </button>
+                            <img src="${variantProductImages[i]}" class="w-full h-full object-cover" alt="Preview">`
+                        previewContainer.appendChild(imgBox)
+                    }
+                
+                }else{
+                    document.getElementById('variantsContainer').insertAdjacentHTML('beforeend', variantTemplate(variantCount,"","","","",""));       
+                }
+                
+                
+            
+                feather.replace();
+                variantCount++;
+            });
+
+            // Remove variant
+            function removeVariant(el) {
+                el.closest('.variant-item').remove();
+            }
+
+            // Setting the Image for deletion
+            function setToDeleteImage(event,variantIndex,imageIndex){
+                let wantsToDelete = confirm("Are you sure you want to delete this image?")
+                if(wantsToDelete){
+                    event.currentTarget.closest(`#imgCount${imageIndex}`).remove()
+                    let hrefLink = document.querySelector("form").action
+                    
+                    hrefLink = hrefLink.split("&")
+                    if(hrefLink.length > 1){
+                        document.getElementById(`imageInsertTypeDiv-${variantIndex}`).hidden = false
+                        let variant = hrefLink[1]
+                        hrefLink[1] = `&${variant},${variantIndex}`
+                        let image = hrefLink[2]
+                        hrefLink[2] = `&${image},${imageIndex}`
+                        document.querySelector("form").action = hrefLink.join("")
+                        
+                    }else{
+                        let selectOptionDiv = document.getElementById(`imageInsertTypeDiv-${variantIndex}`)
+                        selectOptionDiv.hidden = false
+                        selectOptionDiv.querySelector('option[value="Not Applicable"]').disabled = true
+                        selectOptionDiv.querySelector('option[value="Add Normally"]').selected = true
+                        hrefLink[0] = hrefLink[0] + `&variant=${variantIndex}&image=${imageIndex}`
+                        document.querySelector("form").action = hrefLink[0]
+                        iziToast.warning({
+                            title : "Warning",
+                            message : "Choose how new images should be placed before uploading.",
+                            position: "topRight",
+                            timeout : 10000
+                        })
+                    }
+                }
+
+            console.log(document.querySelector("form").action)
+            }
+
+
+            // Image preview function
+
+
+            function previewImages(input, index) {
+                const previewContainer = document.getElementById(`imagePreview-${index}`);
+                previewContainer.hidden = false
+                
+                previewContainer.innerHTML = `<div class="w-[100%] my-2 ml-3" > 
+                    <h1 class="text-lg font-semibold">Images to be Uploaded</h1>
+                    <div class="w-[25%] border rounded-lg border-yellow-400 bg-yellow-200 p-3">
+                                <h3 class="text-md font-medium"><svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="12"
+                                    height="12"
+                                    fill="currentColor"
+                                    class="bi bi-info-circle inline-block"
+                                    viewBox="0 0 16 16"
+                                    style="margin-top : -2.4px"
+                                    >
+                                    <path
+                                        d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"
+                                    />
+                                    <path
+                                        d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"
+                                    />
+                                    </svg>
+                                INFO :</h3>
+                            <ul class="text-lg pl-10 list-disc font-medium">
+                                
+                                <li class="text-sm">Click on the Image to Crop it</li>
+                                <li class="text-sm">Re-upload the entire Image group to Update or Delete any Image</li>
+                                </ul>
+                        </div>
+                    </div>`;
+
+            
+                if (input.files.length > 20) {
+                    iziToast.warning({
+                        title: 'Warning',
+                        message: 'You can upload a maximum of 20 images',
+                        position: 'topCenter'
+                    });
+                    input.value = '';
+                    return;
+                }
+                
+                fileList[index] = new DataTransfer()
+
+                for (let i = 0; i < input.files.length; i++) {
+                    fileList[index].items.add(input.files[i])
+                }
+
+                input.files = fileList[index].files
+                let count = 0
+                for (let i = 0; i < input.files.length; i++) {
+                    const reader = new FileReader();
+                    const file = input.files[i]
+                    reader.onload = function(e) {
+                        
+                        const imgBox = document.createElement('div');
+                        imgBox.className = 'cursor-pointer inline-block  min-w-[25%] max-w-[25%] min-h-[25%] max-h-[25%]  border rounded-md overflow-auto relative';
+                        imgBox.id = `imgCount${count}`
+                        count++
+                        imgBox.innerHTML = `
+                            <img src="${e.target.result}" class="w-full h-full object-cover" alt="Preview">
+                        
+                        `;
+                        previewContainer.appendChild(imgBox);
+
+                        let cropperModal = document.getElementById("cropperModal")
+                        let cropperModalImg = document.getElementById("cropperImagePreview")
+                        let cropBtn = document.getElementById("crop-btn")
+                        let cancelBtn = document.getElementById("cancel-btn")
+                        let closeXBtn = document.getElementById("close-x-btn")
+                        imgBox.addEventListener("click",() => {
+                            cropperModal.classList.remove("hidden")
+                            cropperModalImg.src  = `${e.target.result}`
+
+                            let cropper = new Cropper(cropperModalImg,{
+                                aspectRatio : 1,
+                                viewMode : 1,
+                                guides : true,
+                                background : true,
+                                autoCropArea : 1,
+                                zoomable : true
+                            })
+                            cancelBtn.addEventListener("click", () => {
+                            cropper.destroy()
+                            cropperModal.classList.add("hidden")
+                            })
+                            closeXBtn.addEventListener("click",() => {
+                                cropper.destroy()
+                                cropperModal.classList.add("hidden")
+                            })
+                            cropBtn.addEventListener("click", async () => {
+
+                                let croppedCanvas = cropper.getCroppedCanvas()
+                                if(croppedCanvas){
+                                const fileName = file.name
+                                const blob = await new Promise(res => croppedCanvas.toBlob(res,"image/jpeg"))
+                                const croppedFile = new File([blob],fileName,{type : "image/jpeg"})
+                                
+                                const newList = new DataTransfer()
+                                for(let j = 0 ; j < fileList[index].files.length ; j++){
+                                    const existingFile = fileList[index].files[j]
+
+                                    if(existingFile.name === fileName){
+                                        newList.items.add(croppedFile)
+                                    }else{
+                                        newList.items.add(existingFile)
+                                    }
+
+                                    
+                                }
+                                fileList[index] = newList
+                                    input.files = newList.files
+                                    imgBox.querySelector("img").src =  croppedCanvas.toDataURL("image/png")
+                                }
+
+                                cropper.destroy()
+                                cropperModal.classList.add("hidden")
+                            })
+                        })
+
+
+                    
+
+
+                    };
+                    reader.readAsDataURL(input.files[i]);
+                    
+                        
+                }
+
+                
+            }
+
+
+
+
+            // Form submission
+            const productArrayString = '<%- JSON.stringify(products.map((product) => product.productName.toUpperCase().trim(),[])) %>';
+            let productNames =  JSON.parse(productArrayString)
+            // Function to check if a form has been modified
+            function hasChanges(variantItem) {
+            const index = variantItem.getAttribute("data-index");
+            const initialSize = variantItem.getAttribute("data-size");
+            const initialColor = variantItem.getAttribute("data-color");
+            const initialPrice = variantItem.getAttribute("data-price");
+            const initialStockQuantity = variantItem.getAttribute("data-stockQuantity");
+            const initialStockStatus = variantItem.getAttribute("data-stockStatus");
+
+            // If initialSize is null, it's a new variant, so it's considered changed
+            if (initialSize === null) {
+            return true;
+            }
+
+            const size = variantItem.querySelector(`[name="variants[${index}][size]"]`).value;
+            const color = variantItem.querySelector(`[name="variants[${index}][color]"]`).value;
+            const price = variantItem.querySelector(`[name="variants[${index}][price]"]`).value;
+            const stockQuantity = variantItem.querySelector(`[name="variants[${index}][stockQuantity]"]`).value;
+            const stockStatus = variantItem.querySelector(`[name="variants[${index}][stockStatus]"]`).value;
+            const productImages = variantItem.querySelector(`[name="variants[${index}][productImages]"]`);
+
+            // Check if new files were selected
+            const isImageChanged = productImages.files && productImages.files.length > 0;
+
+            return (
+            initialSize.toUpperCase().trim() !== size.toUpperCase().trim() ||
+            initialColor.toUpperCase().trim() !== color.toUpperCase().trim() ||
+            parseFloat(initialPrice) !== parseFloat(price) ||
+            parseInt(initialStockQuantity, 10) !== parseInt(stockQuantity, 10) ||
+            initialStockStatus !== stockStatus ||
+            isImageChanged
+            );
+            }
+
+            // Variant Validation
+            function validateVariant(variantItem) {
+            const index = variantItem.getAttribute("data-index");
+            const size = variantItem.querySelector(`[name="variants[${index}][size]"]`);
+            const color = variantItem.querySelector(`[name="variants[${index}][color]"]`);
+            const price = variantItem.querySelector(`[name="variants[${index}][price]"]`);
+            const stockQuantity = variantItem.querySelector(`[name="variants[${index}][stockQuantity]"]`);
+            const stockStatus = variantItem.querySelector(`[name="variants[${index}][stockStatus]"]`);
+            const productImages = variantItem.querySelector(`[name="variants[${index}][productImages]"]`);
+
+            // Basic required field validation
+            if (!size.value) {
+            iziToast.error({ title: "Error", message: `Variant ${parseInt(index) + 1}: Please provide a size.`, position: "topRight" });
+            return false;
+            }
+            if (!color.value) {
+            iziToast.error({ title: "Error", message: `Variant ${parseInt(index) + 1}: Please provide a color.`, position: "topRight" });
+            return false;
+            }
+            if (!price.value || parseFloat(price.value) <= 0) {
+            iziToast.error({ title: "Error", message: `Variant ${parseInt(index) + 1}: Please provide a valid price above 0`, position: "topRight" });
+            return false;
+            }
+            if (!stockQuantity.value || parseInt(stockQuantity.value, 10) < 0) {
+            iziToast.error({ title: "Error", message: `Variant ${parseInt(index) + 1}: Please provide a valid stock quantity (0 or above)`, position: "topRight" });
+            return false;
+            }
+            if (!stockStatus.value) {
+            iziToast.error({ title: "Error", message: `Variant ${parseInt(index) + 1}: Please select a stock status`, position: "topRight" });
+            return false;
+            }
+
+            // New image check logic
+            const existingImageCount = variantItem.querySelectorAll('#uploadedImagesPreview-' + index + ' img').length;
+            if (productImages.files.length + existingImageCount < 3) {
+            iziToast.error({
+                title: "Error",
+                message: `Variant ${parseInt(index) + 1}: Please select at least 3 Images for the Product`,
+                position: "topRight"
+            });
+            return false;
+            }
+
+            return true;
+            }
+
+            // Overall Form Validation
+            function validateForm(initialProductName) {
+            const productName = document.getElementById("productName").value.toUpperCase().trim();
+            const category = document.getElementById("category");
+            const brand = document.getElementById("brand");
+            const description = document.getElementById("description");
+
+            if (!productName) {
+            iziToast.error({ title: "Error", message: "Please provide a name for the product", position: "topRight" });
+            return false;
+            } else {
+            if (productName !== initialProductName.toUpperCase().trim() && productNames.includes(productName)) {
+                iziToast.error({ title: "Error", message: "Product already exists", position: "topRight" });
+                return false;
+            }
+            }
+
+            if (!category.value) {
+            iziToast.error({ title: "Error", message: "Select a category", position: "topRight" });
+            return false;
+            }
+            if (!brand.value) {
+            iziToast.error({ title: "Error", message: "Select a brand", position: "topRight" });
+            return false;
+            }
+            if (!description.value) {
+            iziToast.error({ title: "Error", message: "Provide a description", position: "topRight" });
+            return false;
+            }
+
+            const variantItems = document.querySelectorAll(".variant-item");
+            if (variantItems.length === 0) {
+            iziToast.error({ title: "Error", message: "Please add at least one variant", position: "topRight" });
+            return false;
+            }
+
+            // Check for any changes in existing variants
+            let anyVariantChanged = false;
+            for (const variantItem of variantItems) {
+            if (hasChanges(variantItem)) {
+                anyVariantChanged = true;
+                break;
+            }
+            }
+
+            if (
+            !anyVariantChanged &&
+            productName === initialProductName.toUpperCase().trim() &&
+            category.value === '<%= product[0].categoryId._id %>' &&
+            brand.value === '<%= product[0].brandId._id %>' &&
+            description.value.trim() === '<%= product[0].description.trim() %>'
+            ) {
+            iziToast.error({
+                title: "Error",
+                message: "No changes have been made. Modify at least one field before saving.",
+                position: "topRight"
+            });
+            return false;
+            }
+
+
+            // Validate individual variants for data integrity
+            let allVariantsValid = true;
+            for (const variantItem of variantItems) {
+            if (!validateVariant(variantItem)) {
+                allVariantsValid = false;
+                break;
+            }
+            }
+
+            if (!allVariantsValid) {
+            return false;
+            }
+
+            return true;
+            }
+
+
+            // Add initial variant
+            const variantLen = Number('<%- product[0].variants.length %>')
+            for(let j = 0 ; j < variantLen ; j++){
+            document.getElementById("addVariantBtn").click()
+            }
+</script>
