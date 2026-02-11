@@ -4,12 +4,52 @@
     feather.replace();
 
  function restoreCategory(id){
-    window.location.href = "/admin/restore-category?id="+id
+  fetch(`/admin/restore-category?id=${id}`,{method : "PATCH"})
+                .then(res => res.json() )
+                .then(data => {
+                    window.location.href = "/admin/categories"   
+                })
+                .catch(error => iziToast.error({
+                    title : error.name ,
+                    message : error.message,
+                    position : "topRight"
+                }))
  }
  function areYouSure(id){
-     if(confirm("Are you sure ? Do you Want to delete the Category ?")){
-         window.location.href = "/admin/delete-category?id="+id
-     }
+  iziToast.question({
+        theme : "light",
+        title : "Category",
+        message : "Are you sure you want to block the Category ?",
+        position : "topCenter",
+        overlay : true,
+        close : false,
+        id : "blockCategory",
+        zindex : 9999,
+        timeout : 30000,
+        backgroundColor : "white", 
+        buttons : [
+            ["<button>OK</button>",function(instance,toast){
+                instance.hide({transitionOut : "fadeOut"},toast,'button')
+
+                fetch(`/admin/delete-category?id=${id}`,{method : "PATCH"})
+                .then(res => res.json() )
+                .then(data => {
+                    window.location.href = "/admin/categories"   
+                })
+                .catch(error => iziToast.error({
+                    title : error.name ,
+                    message : error.message,
+                    position : "topRight"
+                }))
+
+            }],
+            ["<button>Cancel</button>",function(instance,toast){
+                instance.hide({transitionOut : "fadeOut"},toast,'button')
+                
+            }]
+        ]
+    })
+       
  }
 
  function previewImage(input,index){
@@ -142,13 +182,13 @@
      })
    }else if(serverMessage === "Category Restored Successfully"){
      iziToast.success({
-         title : "Success",
+         title : "Category",
          message: serverMessage,
        position: 'topRight'
        })
-   }else if(serverMessage === "Category Deleted"){
+   }else if(serverMessage === "Category has been successfully Blocked"){
      iziToast.error({
-       title : "Deleted",
+       title : "Category",
        message : serverMessage,
        position : "topRight"
      })

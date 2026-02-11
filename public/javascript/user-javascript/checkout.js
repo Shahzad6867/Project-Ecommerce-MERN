@@ -2,7 +2,7 @@
         document.getElementById("cashOnDeliveryBtn").addEventListener("click",function(){
             let grandTotal = Number(document.getElementById("grandTotal").value)
 
-            if(grandTotal > 100){
+            if(grandTotal < 100){
                 document.getElementById("placeOrderBtn").classList.remove("hidden")
 
                 setTimeout(function(){
@@ -11,7 +11,7 @@
             }else{
                 iziToast.info({
                 title : "Order",
-                message : "Order amount should be greater than $100 to be eligible for Cash on Delivery",
+                message : "Order amount greater than $100 will not be eligible for Cash on Delivery",
                 position : "topRight"
                 })
             } 
@@ -60,7 +60,7 @@
                 position : "topRight"
             })
         }
-        if(serverMessage === "Order amount should be greater than $100 to be eligible for Cash on Delivery"){
+        if(serverMessage === "Order amount greater than $100 will not be eligible for Cash on Delivery"){
             iziToast.info({
                 title : "Order",
                 message : serverMessage,

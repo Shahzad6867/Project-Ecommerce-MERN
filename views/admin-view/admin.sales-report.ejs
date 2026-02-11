@@ -75,12 +75,15 @@
           <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Coupon Discounts</th>
           <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Refunds</th>
           <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Net Sales</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Tax</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Shipping</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Total Order Value</th>
         </tr>
       </thead>
       <tbody>
         <% if (totalOrdersCount === 0 && itemsSoldCount === 0 && grossSales === "$0.00" && totalProductDiscount === "$0.00" && totalCouponDiscount === "$0.00" && netSales === "$0.00") { %>
           <tr>
-            <td colspan="6" class="px-6 py-6 text-gray-500 text-center text-sm italic">
+            <td colspan="10" class="px-6 py-6 text-gray-500 text-center text-sm italic">
               No sales found for the selected period
             </td>
           </tr>
@@ -92,7 +95,10 @@
             <td class="px-6 py-4 text-red-600"><%= totalProductDiscount %></td>
             <td class="px-6 py-4 text-red-600"><%= totalCouponDiscount %></td>
             <td class="px-6 py-4 text-red-600"><%= totalRefunds %></td>
-            <td class="px-6 py-4 font-bold"><%= netSales %></td>
+            <td class="px-6 py-4 "><%= netSales %></td>
+            <td class="px-6 py-4 "><%= totalTax %></td>
+            <td class="px-6 py-4 "><%= totalShipping %></td>
+            <td class="px-6 py-4 "><%= totalOrderValue %></td>
           </tr>
         <% } %>
       </tbody>
@@ -193,7 +199,7 @@
  
 
   <h1 class="font-bold ml-1 mb-2 text-lg">Order-wise Sales Report</h1>
-  <div class="bg-white rounded-lg shadow overflow-hidden mb-2">
+  <div class="bg-white rounded-lg shadow overflow-x-auto mb-2">
     <table class="min-w-full divide-y divide-gray-200">
       <thead class="bg-green-50">
         <tr>
@@ -205,12 +211,15 @@
           <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Coupon Discount</th>
           <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Refunds</th>
           <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Net Revenue</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Tax</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Shipping</th>
+          <th class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase">Total Order Value</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200 text-center text-sm text-gray-700">
         <% if (orderBasedSales.length === 0) { %>
           <tr>
-            <td colspan="7" class="px-6 py-6 text-gray-500 italic">
+            <td colspan="11" class="px-6 py-6 text-gray-500 italic">
               No sales found for the selected period
             </td>
           </tr>
@@ -219,12 +228,15 @@
               <tr>
                 <td class="px-6 py-4"><%= i + 1 %></td>
                 <td class="px-6 py-4"><%=  orderBasedSales[i]._id %></td>
-                <td class="px-6 py-4"><%= orderBasedSales[i].orderedAt.toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"}) %></td>
+                <td class="px-6 py-4 whitespace-nowrap"><%= orderBasedSales[i].orderedAt.toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"}) %></td>
                 <td class="px-6 py-4">$<%= orderBasedSales[i].revenue.toFixed(2) %></td>
                 <td class="px-6 py-4 <%= (orderBasedSales[i].productDiscount > 0) ? 'text-red-500' : '' %> ">$<%= orderBasedSales[i].productDiscount.toFixed(2) %></td>
                 <td class="px-6 py-4 <%= (orderBasedSales[i].couponDiscount > 0) ? 'text-red-500' : '' %>">$<%= orderBasedSales[i].couponDiscount.toFixed(2) %></td>
                 <td class="px-6 py-4 <%= (orderBasedSales[i].amountRefunded > 0) ? 'text-red-500' : '' %>">$<%= orderBasedSales[i].amountRefunded.toFixed(2) %></td>
-                <td class="px-6 py-4 font-semibold">$<%= orderBasedSales[i].netRevenue.toFixed(2) %></td>
+                <td class="px-6 py-4">$<%= orderBasedSales[i].netRevenue.toFixed(2) %></td>
+                <td class="px-6 py-4">$<%= orderBasedSales[i].tax.toFixed(2) %></td>
+                <td class="px-6 py-4">$<%= orderBasedSales[i].shipping.toFixed(2) %></td>
+                <td class="px-6 py-4">$<%= orderBasedSales[i].totalOrderValue.toFixed(2) %></td>
               </tr>
             <% } %>
         <% } %>

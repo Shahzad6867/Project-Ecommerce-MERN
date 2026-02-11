@@ -18,12 +18,10 @@ const emailAuth = async (req,res) => {
 try {
     let {email} = req.body
     const userData = await User.findOne({email : email})
-    console.log(userData)
     if(!userData){
     return  res.render("user-view/user.email-auth.ejs",{message :  "User does not Exist - Will be redirected to Signup" })
     }else{
     let generatedOtp = otpGenerator();
-    console.log(generatedOtp)
     const emailSent = await mailer.sendVerificationEmail(userData.email, generatedOtp);
     const now = new Date()
     const newOtp = new Otp({
@@ -32,7 +30,6 @@ try {
         createdAt : new Date(now.getTime() + (3 * 60 * 1000))
     });
     let savedOtp = await newOtp.save();
-    console.log(savedOtp)
     console.log(generatedOtp);
     console.log("Otp Sent");
     req.session.otpUser = userData;
@@ -72,9 +69,7 @@ try {
         createdAt : new Date(now.getTime() + (3 * 60 * 1000))
     });
     let savedOtp = await newOtp.save();
-    console.log(savedOtp)
     console.log(generatedOtp);
-    console.log("Otp Sent");
     req.session.otp = savedOtp
     req.session.message = 'OTP has been sent to your New Mail Id! Check your email'
     return res.redirect("/otp-verification-for-new-email");

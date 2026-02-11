@@ -49,14 +49,55 @@
 
  
 
- function restoreProduct(id){
-    window.location.href = "/admin/restore-product?id="+id
+ function restoreProduct(id,variant){ 
+            fetch(`/admin/restore-product?id=${id}&variant=${variant}`,{method : "PATCH"})
+                .then(res => res.json() )
+                .then(data => {
+                    window.location.href = "/admin/products"   
+                })
+                .catch(error => iziToast.error({
+                    title : error.name ,
+                    message : error.message,
+                    position : "topRight"
+                }))
  }
- function areYouSure(id){
-     if(confirm("Are you sure ? Do you Want to delete the Product ?")){
-         window.location.href = "/admin/delete-product?id="+id
-     }
- }
+ function areYouSure(id,variant){
+    iziToast.question({
+        theme : "light",
+        title : "Block Product",
+        message : "Are you sure you want to block the Product ?",
+        position : "topCenter",
+        overlay : true,
+        close : false,
+        id : "deleteProduct",
+        zindex : 9999,
+        timeout : 30000,
+        backgroundColor : "white", 
+        buttons : [
+            ["<button>OK</button>",function(instance,toast){
+                instance.hide({transitionOut : "fadeOut"},toast,'button')
+
+                fetch(`/admin/delete-product?id=${id}&variant=${variant}`,{method : "PATCH"})
+                .then(res => res.json() )
+                .then(data => {
+                    window.location.href = "/admin/products"   
+                })
+                .catch(error => iziToast.error({
+                    title : error.name ,
+                    message : error.message,
+                    position : "topRight"
+                }))
+
+            }],
+            ["<button>Cancel</button>",function(instance,toast){
+                instance.hide({transitionOut : "fadeOut"},toast,'button')
+                console.log("Deletion Cancelled")
+            }]
+        ]
+    })
+  }
+     
+ 
  
  let serverMessage = '<%- message %>'
 if(serverMessage){
@@ -84,9 +125,9 @@ if(serverMessage === "Product Created Successfully"){
       message: serverMessage,
     position: 'topRight'
     })
-}else if(serverMessage === "Product Deleted"){
+}else if(serverMessage === "Product has been succesfully Blocked"){
   iziToast.error({
-    title : "Deleted",
+    title : "Product",
     message : serverMessage,
     position : "topRight"
   })
@@ -103,6 +144,12 @@ if(serverMessage === "Product Created Successfully"){
       message: serverMessage,
     position: 'topCenter'
     })
+}else if(serverMessage === "Something went wrong. Please try again later"){
+  iziToast.error({
+    title: "Error",
+      message: serverMessage,
+      position: "topCenter",
+  })
 }
 }
  

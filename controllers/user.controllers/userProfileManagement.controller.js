@@ -8,25 +8,11 @@ const {extractPublicId} = require("cloudinary-build-url")
 const fs = require("fs")
 const User = require("../../models/user.model");
 require("dotenv").config()
+const profileService = require("../../services/user-services/profileService.js")
 
 const getProfile = async (req, res) => {
   const theUser = req.session.user || req.user;
-  const productsFullList = await Product.find(
-    {},
-    { productName: 1, variants: 1, categoryId: 1 }
-  ).populate("categoryId", "categoryName");
-  const cartItems = await Cart.find({userId : theUser._id}).populate("productId")
-  const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(theUser._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
-  const wishlistItemsCount = await Wishlist.find({userId : theUser._id}).countDocuments()
-  const address = await Address.findOne({
-    userId: theUser._id,
-    isDefault: false,
-  });
-  const defaultAddress = await Address.findOne({
-    userId: theUser._id,
-    isDefault: true,
-  });
-  const user = await User.findOne({ _id: theUser._id });
+  const {productsFullList,cartItems,cartItemsCount,wishlistItemsCount,address,defaultAddress,user}  = await profileService.getUserDetails(theUser._id)
   const referralUrl = process.env.APP_BASE_URL + `?ref=${user.referralCode}`
   let message = req.session.message || null;
   delete req.session.message;
@@ -45,14 +31,7 @@ const getProfile = async (req, res) => {
 
 const getEditProfile = async (req, res) => {
     let userId = req.session.user || req.user
-   let user = await User.findOne({_id : userId._id})
-  let productsFullList = await Product.find(
-    {},
-    { productName: 1, variants: 1, categoryId: 1 }
-  ).populate("categoryId", "categoryName");
-  const cartItems = await Cart.find({userId : userId._id}).populate("productId")
-  const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
-  const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
+  const {productsFullList,cartItems,cartItemsCount,wishlistItemsCount,user}  = await profileService.getUserDetails(userId)
   let message = req.session.message || null;
   delete req.session.message;
   res.render("user-view/user.edit-profile.ejs", {
@@ -74,25 +53,10 @@ const editProfile = async (req, res) => {
             return res.redirect("/profile")
         } 
         if(req.files.length > 0){
-            let file = req.files[0]
-            const imageUpload = async (file) => {
-            
-                const result = await cloudinary.uploader.upload(file.path,{
-                    folder : "user-profile-images"
-                })
-                fs.unlinkSync(file.path)
-            return result.secure_url
-            }
-        const imageUrl = await imageUpload(file)
+        const imageUrl = await profileService.uploadToCloudinary(req.files[0].path)
         if(user.profileImage !== null){
             let publicId = extractPublicId(user.profileImage)
-            await cloudinary.uploader.destroy(publicId,(error,result) => {
-                if(error){
-                    console.log(error)
-                }else{
-                    console.log(result)
-                }
-            })
+            await profileService.deleteImageFromCloudinary(publicId)
         }
             await User.findByIdAndUpdate({_id : user._id},{$set : {profileImage : imageUrl }})
         }
@@ -116,28 +80,19 @@ const editProfile = async (req, res) => {
 };
 
 const getAddress = async (req, res) => {
-  const user = req.session.user || req.user;
-  const productsFullList = await Product.find(
-    {},
-    { productName: 1, variants: 1, categoryId: 1 }
-  ).populate("categoryId", "categoryName");
-  const cartItems = await Cart.find({userId : user._id}).populate("productId")
-  const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
-  let id = req.session.user?._id || req.user?._id;
-  const addressList = await Address.find({ userId: id, isDefault: false });
-  let defaultAddress = await Address.find({ userId: id, isDefault: true });
+  const theUser = req.session.user || req.user
+  const {productsFullList,cartItems,cartItemsCount,wishlistItemsCount,address,defaultAddress,user}  = await profileService.getUserDetails(theUser._id)
   if (defaultAddress.length > 0) {
     defaultAddress = defaultAddress[0];
   } else {
     defaultAddress = null;
   }
-  const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
   const message = req.session.message || null;
   delete req.session.message;
   res.render("user-view/user.address-management.ejs", {
     productsFullList,
     user,
-    addressList,
+    addressList : address,
     defaultAddress,
     message,
     cartItems,
@@ -159,44 +114,8 @@ const addAddress = async (req, res) => {
       address,
       isDefault,
     } = req.body;
-    let isDefaultToSave = null;
-    console.log(isDefault)
-    if (isDefault === undefined) {
-      let id = req.session.user?._id || req.user?._id;
-      let isThereDefaultAddress = await Address.findOne({
-        userId: id,
-        isDefault: true,
-      });
-
-      if (isThereDefaultAddress === null) {
-        isDefaultToSave = true;
-      } else {
-        isDefaultToSave = false;
-      }
-    } else {
-      isDefaultToSave = true;
-      let id = req.session.user?._id || req.user?._id;
-      await Address.findOneAndUpdate(
-        { userId: id, isDefault: true },
-        { $set: { isDefault: false } }
-      );
-    }
-
-    let userId = req.session.user?._id || req.user?._id;
-
-    const addressToBeSaved = new Address({
-      firstName,
-      lastName,
-      country,
-      state,
-      city,
-      address,
-      pincode,
-      mobileNo,
-      userId,
-      isDefault: isDefaultToSave,
-    });
-    await addressToBeSaved.save();
+    const user = req.session.user || req.user
+    await profileService.addNewAddress(user._id,firstName,lastName,country,state,city,pincode,mobileNo,address,isDefault)
     if(req.body.redirect === "/checkout"){
       return res.redirect("/checkout");
     }
@@ -277,7 +196,6 @@ const deleteAddress = async (req, res) => {
   const idOfUser = req.query.userId;
 
   const addressToBeDeleted = await Address.findOneAndDelete({ _id: id });
-  console.log(addressToBeDeleted);
   if (addressToBeDeleted?.isDefault === true) {
     await Address.findOneAndUpdate(
       { userId: idOfUser },

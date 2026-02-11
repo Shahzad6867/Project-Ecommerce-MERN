@@ -7,11 +7,12 @@ const Wishlist = require("../../models/wishlist.model.js");
 const Offer = require("../../models/offer.model.js");
 const mongoose = require("mongoose")
 require("dotenv").config()
+const homeService = require("../../services/user-services/homeService.js")
 
 const lookUpProducts = async function(query,priceQuery,limit,skip,count){
  
   if(typeof query === "object" && typeof priceQuery === "undefined"){
-    
+    console.log("fromQueryAndPriceQueryUndefined")
     const products = await Product.aggregate([{
       $match : query
     },{
@@ -77,6 +78,7 @@ const lookUpProducts = async function(query,priceQuery,limit,skip,count){
     }])
     return products
   }else if(typeof query === "object" && typeof priceQuery === "object" ){
+    console.log("fromQueryAndPriceQuery")
           const products = await Product.aggregate([{
             $match : query
           },{
@@ -143,6 +145,7 @@ const lookUpProducts = async function(query,priceQuery,limit,skip,count){
           }])
           return products
   }else if(typeof query === "object" && typeof limit === "number"){
+    console.log("fromQueryAndLimit")
     const products = await Product.aggregate([{
       $match : query
     },{
@@ -210,7 +213,7 @@ const lookUpProducts = async function(query,priceQuery,limit,skip,count){
     }])
     return products
   }else if(typeof skip === "number" && typeof limit === "number"){
-    
+    console.log("fromSkipAndLimit")
         const products = await Product.aggregate([{
           $unwind : "$variants"
         },
@@ -280,6 +283,7 @@ const lookUpProducts = async function(query,priceQuery,limit,skip,count){
         }])
           return products
   }else if(count && count === "count"){
+    console.log("fromCount")
         const products = await Product.aggregate([{
           $unwind : "$variants"
         },{
@@ -287,82 +291,19 @@ const lookUpProducts = async function(query,priceQuery,limit,skip,count){
         }])
           return products
   }
-    const products = await Product.aggregate([{
-      $unwind : "$variants"
-    },{
-      $lookup : {
-        from : "categories",
-        localField : "categoryId",
-        foreignField : "_id",
-        as : "categoryId"
-      }
-    },{
-      $lookup : {
-        from : "brands",
-        localField : "brandId",
-        foreignField : "_id",
-        as : "brandId"
-      }
-    },{
-      $lookup : {
-        from : "offers",
-        localField : "variants.productOfferId",
-        foreignField : "_id",
-        as : "variants.productOfferId"
-      }
-    },{
-      $lookup : {
-        from : "offers",
-        localField : "categoryOfferId",
-        foreignField : "_id",
-        as : "categoryOfferId"
-      }
-    },{
-      $unwind : "$categoryId"
-    },{
-      $unwind : "$brandId"
-    },{
-      $unwind : {
-        path : "$variants.productOfferId",
-      preserveNullAndEmptyArrays: true
-      }
-    },{
-      $unwind :{
-        path : "$categoryOfferId",
-      preserveNullAndEmptyArrays: true
-              }
-    },{
-      $group: {
-        _id: "$_id",
-
-        productName: { $first: "$productName" },
-        description: { $first: "$description" },
-        isDeleted: { $first: "$isDeleted" },
-        categoryId: { $first: "$categoryId" },
-        brandId: { $first: "$brandId" },
-        createdAt: { $first: "$createdAt" },
-        updatedAt: { $first: "$updatedAt" },
-        isFeatured: { $first: "$isFeatured" },
-        categoryOfferId: { $first: "$categoryOfferId" },
-        variants: { $push: "$variants" }
-      }
-    }])
-    return products  
+  
+    
 }
 
 
 const getHomepage = async(req,res) => {
     try {
-      let message = req.session.message || null 
-    delete req.session.message
-    const categories = await Category.find({})
-    const products = await lookUpProducts()
-    const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
+
     const user = req.session.user || req.user
-    const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
-    const wishlistItems = await Wishlist.find({userId : user._id})
-    const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
-    const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
+    let message = req.session.message || null 
+    delete req.session.message
+    const products = await homeService.getProducts()
+    const {categories,productsFullList,cartItems,wishlistItems,wishlistItemsCount,cartItemsCount} = await homeService.getUserShopContext(user)
     res.render("user-view/user.homepage.ejs",{message,categories,products,productsFullList,user,cartItems,cartItemsCount,wishlistItems,wishlistItemsCount})
     } catch (error) {
       console.log(error)
@@ -382,10 +323,10 @@ const getProductDetail = async(req,res) => {
     const relatedProduct = await lookUpProducts({ categoryId : new mongoose.Types.ObjectId(product.categoryId._id)},"",5)
     const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
     const user = req.session.user || req.user
-    const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
+    const cartItems = await Cart.find({userId : user?._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
     const isProductInCart = await Cart.findOne({productId : id,variant : variant})
-    const wishlistItems = await Wishlist.find({userId : user._id})
-    const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
+    const wishlistItems = await Wishlist.find({userId : user?._id})
+    const wishlistItemsCount = await Wishlist.find({userId : user?._id}).countDocuments()
     res.render("user-view/user.product-detail-page.ejs",{product,relatedProduct,productsFullList,variant,user,cartItems,isProductInCart,wishlistItems,wishlistItemsCount})
     } catch (error) {
         console.log(error.message)
@@ -398,21 +339,12 @@ try {
     delete req.session.message
     const perPage = 8
     const page = req.query.page || 1
-    const categories = await Category.find({})
-    const brands = await Brand.find({})
     const skip = (perPage * page) - perPage
-    const products = await lookUpProducts("","",perPage,skip)
-    let count = await lookUpProducts("","","","","count")
-    console.log(count)
-    count = count[0]["products_count"]
-    console.log(count)
-    const pages = Math.ceil(count / perPage)
-    const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
+    const products = await homeService.getProducts(skip,perPage)
     const user = req.session.user || req.user
-    const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
-    const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
-    const wishlistItems = await Wishlist.find({userId : user._id})
-    const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
+    let count = await homeService.getProductsCount()
+    const pages = Math.ceil(count / perPage)
+    const {categories,brands,productsFullList,cartItems,wishlistItems,wishlistItemsCount,cartItemsCount} = await homeService.getUserShopContext(user)
     res.render("user-view/user.shop.ejs",{categories,products,brands,productsFullList,user,cartItemsCount,cartItems,wishlistItems,wishlistItemsCount,pages,page,count})
     
 } catch (error) {
@@ -423,28 +355,28 @@ try {
 const shopFiltered = async (req,res) => {
   try {
     const { category, brand, minPrice, maxPrice } = req.body;
+    if(!category && !brand && !minPrice && !maxPrice){
+      return res.redirect("/shop")
+    }
+    const user = req.session.user || req.user
+    const perPage = 8
+    const page = req.query.page || 1
+    const skip = (perPage * page) - perPage
+    let query = {};
 
-    // Build query dynamically
-    let query = { isDeleted: false };
-
-    // Category filter — expects category IDs
     if (category ) {
-      // Ensure array type (in case only one checkbox selected)
       query.categoryId = {
         $in: (Array.isArray(category) ? category : [category])
           .map(id => new mongoose.Types.ObjectId(id))
       };
     }
 
-    // Brand filter — expects brand IDs
     if (brand) {
       query.brandId = {
         $in: (Array.isArray(brand) ? brand : [brand])
           .map(id => new mongoose.Types.ObjectId(id))
       };
     }
-
-    // Price range (for variants)
     let priceQuery = null
     if (minPrice || maxPrice) {
       let priceMatch = {};
@@ -457,27 +389,10 @@ const shopFiltered = async (req,res) => {
         }
       }
     }
-   
-
-    // Fetch filtered products
-    const user = req.session.user || req.user
-    let filteredProducts = null
-    if(priceQuery !== null){
-      filteredProducts =  await lookUpProducts(query,priceQuery)
-    }else{
-      filteredProducts =  await lookUpProducts(query)
-    }
-    
-     
-
-  
-      
-      const categories = await Category.find({})
-      const brands = await Brand.find({})
-      const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
-      const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
-      const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
-      const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
+    let filteredProducts = (priceQuery !== null) ? await homeService.getProducts(skip,perPage,query,priceQuery) : await homeService.getProducts(skip,perPage,query)
+    const count = (priceQuery !== null) ? await homeService.getProductsCount(query,priceQuery) : await homeService.getProductsCount(query)
+    const pages = Math.ceil(count / perPage)
+     const {categories,brands,productsFullList,cartItems,wishlistItems,wishlistItemsCount,cartItemsCount} = await homeService.getUserShopContext(user)
       if(Array.isArray(req.body.category)){
        req.body.category = req.body.category.map(value => String(value))
       }else{
@@ -489,14 +404,16 @@ const shopFiltered = async (req,res) => {
        }else{
          req.body.brand = String(req.body.brand)
        }
-    // Re-render your product listing EJS or HTML
     res.render("user-view/user.shop-filtered.ejs", {
       products: filteredProducts,
-      filters: req.body, 
+      filters: req.body,
+      page,
+      pages, 
+      count,
       categories,
       brands,
       productsFullList,
-      cartItems,cartItemsCount,user,wishlistItemsCount
+      cartItems,cartItemsCount,user,wishlistItems,wishlistItemsCount
     });
 
   } catch (error) {

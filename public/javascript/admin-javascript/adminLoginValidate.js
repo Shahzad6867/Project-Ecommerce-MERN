@@ -11,7 +11,7 @@ let isPassValid = false;
 document.addEventListener("DOMContentLoaded",function () {
   var serverMessage = document.getElementById("serverMessage")?.value
 
-  if(serverMessage === "403 Unauthorized User, Access Denied! "){
+  if(serverMessage === "401 Unauthorized User, Access Denied! "){
     
     iziToast.error({
       title : "Error",
@@ -69,7 +69,14 @@ document.addEventListener("DOMContentLoaded",function () {
     })
    
   }
-
+  if(serverMessage === "Something went wrong. Please try again later"){
+    iziToast.error({
+      title : "Error",
+      message: serverMessage,
+     position: 'topRight'
+    })
+    
+  }
 })
 
 

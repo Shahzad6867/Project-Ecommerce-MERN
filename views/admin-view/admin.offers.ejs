@@ -217,6 +217,22 @@
       position : "topRight"
     })
   }
+  if(serverMessage === "Offer has been created Successfully"){
+    iziToast.success({
+      title : "Offer",
+      message : serverMessage,
+      position : "topRight"
+    })
+  }
+  if(serverMessage === "Something went wrong. Please try again later"){
+    iziToast.error({
+      title : "Error",
+      message: serverMessage,
+     position: 'topRight'
+    })
+    
+  }
+
   
 
   function deleteOffer(offerId){

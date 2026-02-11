@@ -3,14 +3,54 @@
 <script>
  feather.replace();
     
-    function restoreBrand(id){
-       window.location.href = "/admin/restore-brand?id="+id
-    }
-    function areYouSure(id){
-        if(confirm("Are you sure ? Do you Want to delete the Brand ?")){
-            window.location.href = "/admin/delete-brand?id="+id
-        }
-    }
+ function restoreBrand(id){
+  fetch(`/admin/restore-brand?id=${id}`,{method : "PATCH"})
+                .then(res => res.json() )
+                .then(data => {
+                    window.location.href = "/admin/brands"   
+                })
+                .catch(error => iziToast.error({
+                    title : error.name ,
+                    message : error.message,
+                    position : "topRight"
+                }))
+ }
+ function areYouSure(id){
+  iziToast.question({
+        theme : "light",
+        title : "Brand",
+        message : "Are you sure you want to block the Brand ?",
+        position : "topCenter",
+        overlay : true,
+        close : false,
+        id : "blockBrand",
+        zindex : 9999,
+        timeout : 30000,
+        backgroundColor : "white", 
+        buttons : [
+            ["<button>OK</button>",function(instance,toast){
+                instance.hide({transitionOut : "fadeOut"},toast,'button')
+
+                fetch(`/admin/delete-brand?id=${id}`,{method : "PATCH"})
+                .then(res => res.json() )
+                .then(data => {
+                    window.location.href = "/admin/brands"   
+                })
+                .catch(error => iziToast.error({
+                    title : error.name ,
+                    message : error.message,
+                    position : "topRight"
+                }))
+
+            }],
+            ["<button>Cancel</button>",function(instance,toast){
+                instance.hide({transitionOut : "fadeOut"},toast,'button')
+                
+            }]
+        ]
+    })
+       
+ }
     
     function previewImage(input,index){
       const reader = new FileReader()
@@ -135,7 +175,7 @@
          message: serverMessage,
          position: "topCenter",
      })
-   }else if(serverMessage === "Something went Wrong!"){
+   }else if(serverMessage === "Something went wrong. Please try again later"){
      iziToast.error({
        title : "Error",
        message : serverMessage,
@@ -143,13 +183,13 @@
      })
    }else if(serverMessage === "Brand Restored Successfully"){
      iziToast.success({
-         title : "Success",
+         title : "Brand",
          message: serverMessage,
        position: 'topRight'
        })
-   }else if(serverMessage === "Brand Deleted"){
+   }else if(serverMessage === "Brand has been successfully Blocked"){
      iziToast.error({
-       title : "Deleted",
+       title : "Brand",
        message : serverMessage,
        position : "topRight"
      })

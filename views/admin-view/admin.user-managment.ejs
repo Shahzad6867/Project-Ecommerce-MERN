@@ -103,16 +103,14 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 <button title="Block" onclick="blockUser('<%= users[i]._id %> ')" 
-                    class="text-amber-400 hover:text-amber-600 mr-3 block-user-btn" >
+                    class="text-red-500 hover:text-red-600 ml-3 mr-3 block-user-btn" >
                     <i class="fas fa-ban"></i>
                 </button>
                 <button title="Unblock" onclick="unblockUser('<%= users[i]._id %>')" 
-                     class="text-green-600 hover:text-green-900 mr-3 unblock-user-btn" >
+                     class="text-green-600 hover:text-green-900 unblock-user-btn" >
                     <i class="fas fa-check-circle"></i>
                 </button>
-                <button title="Delete" onclick="areYouSure('<%= users[i]._id %>')" 
-                    class="text-red-600 hover:text-red-900 delete-user-btn">
-                <i class="fas fa-trash"></i>
+                
                </button>
             </td>
           </tr>

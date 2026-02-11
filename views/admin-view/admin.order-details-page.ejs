@@ -280,11 +280,11 @@
                             <i data-feather="truck" class="mr-2"></i> Shipping Information
                         </h3>
                         <div class="space-y-2 text-gray-700">
-                            <p><%= order.addressId.firstName %> <%= order.addressId.lastName %></p>
-                            <p><%= order.addressId.address %></p>
-                            <p><%= order.addressId.state %>, <%= order.addressId.pincode %></p>
-                            <p><%= order.addressId.country %></p>
-                            <p ><strong>Phone:</strong> <%= order.addressId.mobileNo %></p>
+                            <p><%= order.address.firstName %> <%= order.address.lastName %></p>
+                            <p><%= order.address.address %></p>
+                            <p><%= order.address.state %>, <%= (order.address.pincode !== "Not Applicable") ? order.address.pincode : ""%></p>
+                            <p><%= order.address.country %></p>
+                            <p ><strong>Phone:</strong> <%= order.address.mobileNo %></p>
                             <p><strong>Shipping Method:</strong> Standard Shipping (Free)</p>
                         </div>
                     </div>

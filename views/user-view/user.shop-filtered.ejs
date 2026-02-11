@@ -83,100 +83,96 @@
 
       <!-- Products Grid -->
       <div id="productGrid" class="flex flex-wrap gap-4">
+        <% const now = new Date() %>
+        <% let productCount = 0 %>
         <% for( let i = 0; i < products.length; i++ ) { %>
-          <% if (!products[i].categoryId.isDeleted && !products[i].brandId.isDeleted) { %>
-            <% if (!products[i].isDeleted) { %>
                 <% for( let j = 0; j < products[i].variants.length; j++ ) { %>
-                  <% let productOfferPrice = 0 %>
-                  <% let categoryOfferPrice = 0 %>
-                  <% let offerPrice = 0 %>
-                  <% let now = new Date() %>
+                 <% productCount++ %>
               <% if ( products[i].variants[j].stockQuantity !== 0 && products[i].variants[j].stockStatus !== "Out of Stock" ) { %>
-                  <% if (products[i].categoryOfferId !== null && products[i].variants[j].productOfferId !== undefined && products[i].variants[j].productOfferId.startDate <= now  && products[i].variants[j].productOfferId.endDate >= now && products[i].categoryOfferId.startDate <= now  && products[i].categoryOfferId.endDate >= now) { %>
-                          
-                      <% if (products[i].variants[j].productOfferId.discountType === "percentage") { %>
-                        <%  productOfferPrice = products[i].variants[j].price - ((products[i].variants[j].price * products[i].variants[j].productOfferId.discountValue ) / 100) %>
-                      <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
-                          <% productOfferPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue  %>
-                      <% } %>
-
-                      <% if (products[i].categoryOfferId.discountType === "percentage") { %>
-                          <% let tempPrice1 = products[i].variants[j].price - ((products[i].variants[j].price * products[i].categoryOfferId.discountValue ) / 100) %>
-                          <% let tempPrice2 = products[i].variants[j].price - products[i].categoryOfferId.maxDiscountAmount  %>
-                         
-                              <% if (tempPrice2 > tempPrice1) { %>
-                                  <% categoryOfferPrice = tempPrice2 %>
-                                  <% isMaxDiscountApplied = true %>
-                              <% } else {%>
-                                  <% categoryOfferPrice = tempPrice1 %>
-                              <% } %>
-                       <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
-                            <% if (products[i].variants[j].price > products[i].variants[j].productOfferId.minProductPrice) { %>
-                              <% categoryOfferPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue %>
-                            <% } %>
-                        <% } %>
-
-                        <% offerPrice = (productOfferPrice < categoryOfferPrice) ? productOfferPrice : categoryOfferPrice %>
-                        
-              <% } else if(products[i].categoryOfferId !== null && products[i].variants[j].productOfferId !== undefined && products[i].variants[j].productOfferId.startDate > now && products[i].categoryOfferId.startDate <= now  && products[i].categoryOfferId.endDate >= now) { %>
-                  <% if(products[i].categoryOfferId.startDate <= now  && products[i].categoryOfferId.endDate >= now){%>
-                      <% if (products[i].categoryOfferId.discountType === "percentage") { %>
-                          <% let tempPrice1 = products[i].variants[j].price - ((products[i].variants[j].price * products[i].categoryOfferId.discountValue ) / 100) %>
-                          <% let tempPrice2 = products[i].variants[j].price - products[i].categoryOfferId.maxDiscountAmount  %>
-                         
-                              <% if (tempPrice2 > tempPrice1) { %>
-                                  <% offerPrice = tempPrice2 %>
-                                  <% isMaxDiscountApplied = true %>
-                              <% } else {%>
-                                  <% offerPrice = tempPrice1 %>
-                              <% } %>
-                       <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
-                            <% if (products[i].variants[j].price > products[i].variants[j].productOfferId.minProductPrice) { %>
-                              <% offerPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue %>
-                            <% } %>
-                        <% } %>
-                        
-                  <% } %>
-              <% } else if(products[i].categoryOfferId !== null && products[i].variants[j].productOfferId === undefined && products[i].categoryOfferId.startDate <= now  && products[i].categoryOfferId.endDate >= now){%>
-                 
-                      <% if (products[i].categoryOfferId.discountType === "percentage") { %>
-                          <% let tempPrice1 = products[i].variants[j].price - ((products[i].variants[j].price * products[i].categoryOfferId.discountValue ) / 100) %>
-                          <% let tempPrice2 = products[i].variants[j].price - products[i].categoryOfferId.maxDiscountAmount  %>
-                         
-                              <% if (tempPrice2 > tempPrice1) { %>
-                                  <% offerPrice = tempPrice2 %>
-                                  <% isMaxDiscountApplied = true %>
-                              <% } else {%>
-                                  <% offerPrice = tempPrice1 %>
-                              <% } %>
-                       <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
-                            <% if (products[i].variants[j].price > products[i].variants[j].productOfferId.minProductPrice) { %>
-                              <% offerPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue %>
-                            <% } %>
-                        <% } %>
-                        
-                 
-              <% } else if(products[i].categoryOfferId !== null && products[i].variants[j].productOfferId !== undefined && products[i].categoryOfferId.startDate > now && products[i].variants[j].productOfferId.startDate <= now && products[i].variants[j].productOfferId.endDate >= now){ %>
-                  <% if (products[i].variants[j].productOfferId.discountType === "percentage") { %>
-                      <%  offerPrice = products[i].variants[j].price - ((products[i].variants[j].price * products[i].variants[j].productOfferId.discountValue ) / 100) %>
-                    <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
-                        <% offerPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue  %>
-                    <% } %>
-                   
-              <% } else if(products[i].categoryOfferId === null && products[i].variants[j].productOfferId !== undefined && products[i].variants[j].productOfferId.startDate <= now && products[i].variants[j].productOfferId.endDate >= now){ %>
-                  <% if (products[i].variants[j].productOfferId.discountType === "percentage") { %>
-                      <%  offerPrice = products[i].variants[j].price - ((products[i].variants[j].price * products[i].variants[j].productOfferId.discountValue ) / 100) %>
-                    <% } else if(products[i].variants[j].productOfferId.discountType === "flat"){%>
-                        <% offerPrice = products[i].variants[j].price - products[i].variants[j].productOfferId.discountValue  %>
-                    <% } %>
+                <%
+                
+                const price = products[i].variants[j].price
+                const productOffer = products[i].variants[j].productOfferId
+                const categoryOffer = products[i].categoryOfferId
+                
+                let offerPrice = price
+                let productOfferPrice = null
+                let categoryOfferPrice = null
+                
+                
+                const isProductOfferActive =
+                  productOffer &&
+                  productOffer.startDate <= now &&
+                  productOffer.endDate >= now
+                
+                const isCategoryOfferActive =
+                  categoryOffer &&
+                  categoryOffer.startDate <= now &&
+                  categoryOffer.endDate >= now
+                
+                
+                if (isProductOfferActive) {
+                  if (productOffer.discountType === "percentage") {
+                    productOfferPrice =
+                      price - (price * productOffer.discountValue) / 100
+                  } else if (productOffer.discountType === "flat") {
+                    productOfferPrice =
+                      price - productOffer.discountValue
+                  }
+                }
+                
+                
+                if (isCategoryOfferActive) {
+                  if (categoryOffer.discountType === "percentage") {
+                    const percentPrice =
+                      price - (price * categoryOffer.discountValue) / 100
+                
+                    const maxPrice =
+                      price - categoryOffer.maxDiscountAmount
+                
                     
-              <% } %>
+                    categoryOfferPrice = Math.max(percentPrice, maxPrice)
+                
+                  } else if (categoryOffer.discountType === "flat") {
+                    if (price > categoryOffer.productMinPrice) {
+                      categoryOfferPrice =
+                        price - categoryOffer.discountValue
+                    }
+                  }
+                }
+                
+           
+                if (productOfferPrice !== null && categoryOfferPrice !== null) {
+                  
+                  offerPrice = Math.min(productOfferPrice, categoryOfferPrice)
+                
+                } else if (productOfferPrice !== null) {
+                  
+                  offerPrice = productOfferPrice
+                
+                } else if (categoryOfferPrice !== null) {
+                  
+                  offerPrice = categoryOfferPrice
+                }
+                
+                %>
                   <div class="product-card bg-white rounded-lg shadow-sm p-4 transition-all w-[214px]">
                     <div class="h-40 mb-3 relative">
                         <img src="<%= products[i].variants[j].productImages[0] %>" alt="Product" class="w-full h-full object-contain">
-                        <button class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
-                            <i data-feather="heart" class="w-4 h-4"></i>
+                        <% let isProductInWishlist = wishlistItems.find(item => String(products[i]._id) === String(item.productId) && item.variant === j)%>
+                        <button  type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100" onclick="removeFromWishlist('<%= products[i]._id %>','<%= j %>')">
+                            <i data-feather="heart" class="w-4 h-4" fill="#FF2400" stroke="#FF2400"></i>
                         </button>
+                          <% if (user) { %>
+                            <button id="addWishBtn<%= products[i]._id %><%= j %>" type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 <%= (isProductInWishlist) ? 'hidden' : '' %>" onclick="addToWishlist(this,'<%= products[i]._id %>','<%= j %>')">
+                              <i  data-feather="heart" class="w-4 h-4" ></i>
+                          </button>
+                          <% } else { %>
+                            <button id="addWishBtn<%= products[i]._id %><%= j %>" type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 <%= (isProductInWishlist) ? 'hidden' : '' %>" onclick="getUserToLogin()">
+                              <i  data-feather="heart" class="w-4 h-4" ></i>
+                          </button>
+                          <% } %>
+                            
                         <a href="/product?id=<%= products[i]._id %>&variant=<%= j%>">
                             <button class="absolute top-12 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
                                 <i data-feather="eye" class="w-4 h-4"></i>
@@ -203,56 +199,161 @@
                     <div class="flex flex-shrink-0 justify-between items-center mb-2">
                       <% if (offerPrice > 0 && offerPrice < products[i].variants[j].price ) { %>
                         <span class="font-bold text-lg">$<span id="price<%= products[i]._id  %><%= j %>" ><%= offerPrice.toFixed(2) %></span>
-                        <span class="text-gray-500 text-sm line-through">$<%= (products[i].variants[j].price).toFixed(2)  %></span>
-                        <span class="text-green-600 text-xs font-medium "><%= (((products[i].variants[j].price - offerPrice) / products[i].variants[j].price) * 100).toFixed(0) %>% off</span>   
+                        <span class="text-gray-500 text-sm line-through ">$<%= (products[i].variants[j].price).toFixed(2)  %></span>
+                        <span class="text-green-600 text-xs font-medium"><%= (((products[i].variants[j].price - offerPrice) / products[i].variants[j].price) * 100).toFixed(0) %>% off</span>   
                     <% } else {%>
                         <span class="font-bold text-lg">$<span id="price<%= products[i]._id  %><%= j %>" ><%= (products[i].variants[j].price).toFixed(2) %></span>
                     <% } %>
                     </div>
-                     <% let isProductInCart = cartItems.find(item =>  String(products[i]._id) === String(item.productId._id) && item.variant === j ) || null %>
-                        <% if (isProductInCart) { %>
-                            <div class="flex  justify-between ">
-                            <button type="button" id="addToCartBtn<%= products[i]._id %><%= j %>" class="w-[0%] bg-yellow-400 hover:bg-yellow-500 text-gray-900  rounded-md font-medium text-sm flex items-center justify-center" onclick="addToCartInitially(this,'<%- i %>','<%- j %>','<%- products[i]._id %>','<%- j %>')">
-                                <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> 
-                            </button>
-                                <div id="incDecQtyDiv<%= products[i]._id %><%= j %>" class="flex items-center justify-between w-[100%]  rounded-lg   border border-black w-full ">
-                                    <button id="decQtyBtn<%= products[i]._id %><%= j %>" type="button" class="text-center flex justify-center w-full h-full bg-yellow-400 hover:bg-yellow-300 py-1 rounded-l-lg"  onclick="decrementQuantity('<%= i %>','<%= j %>','<%= products[i]._id %>')">
-                                        <i data-feather="minus"></i>
-                                    </button> 
-                                    <input type="text" id="quantity<%= products[i]._id %><%= j %>" value="<%= isProductInCart.quantity %>" class=" w-[5rem] px-2 text-xl bg-white font-bold py-[0.22rem] border-black-x-sides text-center" >
-                                    <button id="incQtyBtn<%= products[i]._id %><%= j %>" type="button" class="text-center flex justify-center w-full h-full py-1 bg-yellow-400 hover:bg-yellow-300 rounded-r-lg"  onclick="incrementQuantity('<%= i %>','<%= j %>','<%= products[i]._id %>')">
-                                        <i data-feather="plus"></i>
-                                    </button>
-                                </div>
-                            </div>
-                    <% } else {%>
-                        <!-- <a  href="/home/cart?productId=&variant=&quantity=1"> -->
-                            <div id="incDecQtyDiv<%= products[i]._id %><%= j %>" class="flex items-center justify-between w-[100%] bg-yellow-400  border border-black rounded-lg hidden">
+                     <% if (user) { %>
+                      <% if (!products[i].variants[j].isBlocked && !products[i].categoryId.isDeleted && !products[i].brandId.isDeleted) { %>
+                          <% let isProductInCart = cartItems.find(item =>  String(products[i]._id) === String(item.productId._id) && item.variant === j ) || null %>
+                            <% if (isProductInCart) { %>
+                              <div class="flex  justify-between ">
+                                <button type="button" id="addToCartBtn<%= products[i]._id %><%= j %>" class="w-[0%] bg-yellow-400 hover:bg-yellow-500 text-gray-900  rounded-md font-medium text-sm flex items-center justify-center" onclick="addToCartInitially(this,'<%- i %>','<%- j %>','<%- products[i]._id %>')">
+                                 <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> 
+                             </button>
+                                 <div id="incDecQtyDiv<%= products[i]._id %><%= j %>" class="flex items-center justify-between w-[100%]  rounded-lg   border border-black w-full ">
+                                     <button id="decQtyBtn<%= products[i]._id %><%= j %>" type="button" class="text-center flex justify-center w-full h-full bg-yellow-400 hover:bg-yellow-300 py-1 rounded-l-lg"  onclick="decrementQuantity('<%= i %>','<%= j %>','<%= products[i]._id %>')">
+                                         <i data-feather="minus"></i>
+                                     </button> 
+                                     <input type="text" id="quantity<%= products[i]._id %><%= j %>" value="<%= isProductInCart.quantity %>" class=" w-[5rem] px-2 text-xl bg-white font-bold py-[0.22rem] border-black-x-sides text-center" disabled>
+                                     <button id="incQtyBtn<%= products[i]._id %><%= j %>" type="button" class="text-center flex justify-center w-full h-full py-1 bg-yellow-400 hover:bg-yellow-300 rounded-r-lg"  onclick="incrementQuantity('<%= i %>','<%= j %>','<%= products[i]._id %>')">
+                                         <i data-feather="plus"></i>
+                                     </button>
+                                 </div>
+                             </div>
+                        <% } else {%>
+                            <!-- <a  href="/home/cart?productId=&variant=&quantity=1"> -->
+                              <div id="incDecQtyDiv<%= products[i]._id %><%= j %>" class="flex items-center justify-between w-[100%] bg-yellow-400  border border-black rounded-lg hidden">
                                 <button id="decQtyBtn<%= products[i]._id %><%= j %>" type="button" class="text-center flex justify-center w-full h-full bg-yellow-400 hover:bg-yellow-300 py-1 rounded-l-lg" onclick="decrementQuantity('<%= i %>','<%= j %>','<%= products[i]._id %>')">
                                     <i data-feather="minus"></i>
                                 </button> 
-                                <input type="text" id="quantity<%= products[i]._id %><%= j %>" value="1" class=" w-[5rem] bg-white px-2 text-xl  py-[0.22rem] border-black-x-sides text-center" >
+                                <input type="text" id="quantity<%= products[i]._id %><%= j %>" value="1" class=" w-[5rem] bg-white px-2 text-xl  py-[0.22rem] border-black-x-sides text-center" disabled>
                                 <button id="incQtyBtn<%= products[i]._id %><%= j %>" type="button" class="text-center flex justify-center w-full h-full py-1 bg-yellow-400 hover:bg-yellow-300 rounded-r-lg" onclick="incrementQuantity('<%= i %>','<%= j %>','<%= products[i]._id %>')">
                                     <i data-feather="plus"></i>
                                 </button>
                             </div>
-                            <button type="button" id="addToCartBtn<%= products[i]._id %><%= j %>" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-medium text-sm flex items-center justify-center" onclick="addToCartInitially(this,'<%- i %>','<%- j %>','<%- products[i]._id %>','<%- j %>')">
+                            <button type="button" id="addToCartBtn<%= products[i]._id %><%= j %>" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-medium text-sm flex items-center justify-center" onclick="addToCartInitially(this,'<%- i %>','<%- j %>','<%- products[i]._id %>')">
                                 <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> Add to Cart
                             </button>
+                                
+                        <% } %>
+                    <% } else { %>
+                      <button type="button" class="w-full bg-red-400  text-gray-900 py-2 rounded-md font-bold text-sm flex items-center justify-center" disabled>
+                        Product Unavailable
+                      </button>     
                     <% } %>
+                    <% } else { %>
+                          <button type="button" id="addToCartBtn<%= products[i]._id %><%= j %>" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-medium text-sm flex items-center justify-center" onclick="getUserToLogin()">
+                            <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> Add to Cart
+                        </button>
+                     <% } %>
+                
                 </div> 
                   <% } %>
                 <% } %>
                <% } %>
+      </div>
+      <div class="flex items-center justify-between mt-4">
+        <div class="text-sm text-gray-500">
+          Showing <span class="font-medium">1</span> to <span class="font-medium"><%= productCount %></span> of <span class="font-medium"><%= count %></span> results
+        </div>
+        <div class="flex space-x-2">
+          
+          <form method="post" action="/shop/filter?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %>">
+            <input type="number"  name="minPrice" placeholder="Min" class="hidden" value="<%= filters.minPrice %>">
+            <input type="number"  name="maxPrice" placeholder="Max" class="hidden" value="<%= filters.maxPrice %>">
+            <% for( let i = 0; i < categories.length; i++ ) { %>
+              <input type="checkbox" name="category" value="<%= categories[i]._id %>" class="hidden"
+              <% if(Array.isArray(filters.category) && filters.category.includes(String(categories[i]._id))) { %> 
+                checked <% } else if(!Array.isArray(filters.category) && filters.category === String(categories[i]._id)) { %> 
+                  checked
+                  <%}%> >
             <% } %>
-         <% } %>
+           <% for( let i = 0; i < brands.length; i++ ) { %>
+              <input type="checkbox" name="brand" value="<%= brands[i]._id %>" class="hidden"
+              <% if(Array.isArray(filters.brand) && filters.brand.includes(String(brands[i]._id))) { %> 
+                checked <% } else if(!Array.isArray(filters.brand) && filters.brand === String(brands[i]._id)) { %> 
+                  checked
+                  <%}%> 
+              >
+           <% } %>
+            
+            <% if (Number(page) === 1) { %>
+              <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
+                Previous
+              </button>
+            <% } else {%>
+              <button type="submit" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" >
+                Previous
+              </button>
+              <% } %>
+          
+            </form>
+          <% let i = Number(page) > 4 ? Number(page) - 3 : 1 %>
+          <% for(;i <= pages; i++ ) { %>
+          <form method="post" action="/shop/filter?page=<%= i %>">
+                <input type="number"  name="minPrice" placeholder="Min" class="hidden" value="<%= filters.minPrice %>">
+                <input type="number"  name="maxPrice" placeholder="Max" class="hidden" value="<%= filters.maxPrice %>">
+                <% for( let i = 0; i < categories.length; i++ ) { %>
+                  <input type="checkbox" name="category" value="<%= categories[i]._id %>" class="hidden"
+                  <% if(Array.isArray(filters.category) && filters.category.includes(String(categories[i]._id))) { %> 
+                    checked <% } else if(!Array.isArray(filters.category) && filters.category === String(categories[i]._id)) { %> 
+                      checked
+                      <%}%> >
+                <% } %>
+              <% for( let i = 0; i < brands.length; i++ ) { %>
+                  <input type="checkbox" name="brand" value="<%= brands[i]._id %>" class="hidden"
+                  <% if(Array.isArray(filters.brand) && filters.brand.includes(String(brands[i]._id))) { %> 
+                    checked <% } else if(!Array.isArray(filters.brand) && filters.brand === String(brands[i]._id)) { %> 
+                      checked
+                      <%}%> 
+                  >
+              <% } %>
+            <button type="submit" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+              <%= i %>
+            </button>
+          </form>
+          <% } %>
+          <form method="post" action="/shop/filter?page=<%= Number(page) < pages ? Number(page) + 1 : pages %>">
+                <input type="number"  name="minPrice" placeholder="Min" class="hidden" value="<%= filters.minPrice %>">
+                <input type="number"  name="maxPrice" placeholder="Max" class="hidden" value="<%= filters.maxPrice %>">
+                <% for( let i = 0; i < categories.length; i++ ) { %>
+                  <input type="checkbox" name="category" value="<%= categories[i]._id %>" class="hidden"
+                  <% if(Array.isArray(filters.category) && filters.category.includes(String(categories[i]._id))) { %> 
+                    checked <% } else if(!Array.isArray(filters.category) && filters.category === String(categories[i]._id)) { %> 
+                      checked
+                      <%}%> >
+                <% } %>
+              <% for( let i = 0; i < brands.length; i++ ) { %>
+                  <input type="checkbox" name="brand" value="<%= brands[i]._id %>" class="hidden"
+                  <% if(Array.isArray(filters.brand) && filters.brand.includes(String(brands[i]._id))) { %> 
+                    checked <% } else if(!Array.isArray(filters.brand) && filters.brand === String(brands[i]._id)) { %> 
+                      checked
+                      <%}%> 
+                  >
+              <% } %>
+            <% if (Number(page) === pages) { %>
+              <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
+                Next
+              </button>
+            <% } else {%>
+              <button type="submit" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" >
+                Next
+              </button>
+              <% } %>
+          
+            </form>
+        </div>
       </div>
     </section>
   </div>
 
+  <script src="/javascript/user-javascript/wishlist-function.js"></script>
   <!-- Footer -->
   <%- include("../partials/user-side/footer.ejs")%>
-  <%- include("../../public/javascript/user-javascript/shop-validation.ejs")%>
+  <%- include("../../public/javascript/user-javascript/shop.ejs")%>
 
 
   

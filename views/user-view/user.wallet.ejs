@@ -17,7 +17,7 @@
                     <h2 class="text-xl font-bold">Wallet Balance</h2>
                     <i data-feather="credit-card" class="w-6 h-6"></i>
                 </div>
-                <div class="text-3xl font-bold mb-2">$ <%= wallet[0].walletBalance.toFixed(2) %></div>
+                <div class="text-3xl font-bold mb-2">$ <%= wallet?.walletBalance?.toFixed(2) %></div>
                 <p class="text-sm ">Available for instant checkout</p>
             </div>
 
@@ -31,7 +31,7 @@
             </div>
 
             <div class="divide-y divide-gray-200">
-                <% if (wallet[0].transactions.length === 0) { %>
+                <% if (wallet?.transactions?.length === 0) { %>
                     <div class="transaction-item">
                         <div class="text-center border rounded-md py-3 bg-gray-100">
                            <h1 class="font-bold text-xl">No wallet activity yet</h1>
@@ -40,9 +40,9 @@
                     </div>
                 <% } %>
 
-                <% if (!Array.isArray(wallet[0].transactions)) { %>
-                    <% for( let i = wallet.length - 1; i >= 0 ; i-- ) { %>
-                        <% if (wallet[i].transactions.transactionReason === "Wallet Top-up") { %>
+                <% if (Array.isArray(wallet?.transactions)) { %>
+                    <% for( let i = wallet.transactions.length - 1; i >= 0 ; i-- ) { %>
+                        <% if (wallet.transactions[i].transactionReason === "Wallet Top-up") { %>
                             <div class="transaction-item py-4">
                                 <div class="flex justify-between items-center">
                                     <div class="flex items-center px-2">
@@ -51,11 +51,11 @@
                                         </div>
                                         <div>
                                             <h3 class="font-medium">Wallet Top-up</h3>
-                                            <p class="text-sm text-gray-500"> <%= new Date(wallet[i].transactions.createdAt).toLocaleDateString("en-IN", {
+                                            <p class="text-sm text-gray-500"> <%= new Date(wallet.transactions[i].createdAt).toLocaleDateString("en-IN", {
                                                 day: "numeric",
                                                 month: "short",
                                                 year: "numeric"
-                                            }) %> • <%= new Date(wallet[i].transactions.createdAt).toLocaleTimeString('en-US', { 
+                                            }) %> • <%= new Date(wallet.transactions[i].createdAt).toLocaleTimeString('en-US', { 
                                                     hour: '2-digit', 
                                                     minute: '2-digit', 
                                                     hour12: true 
@@ -63,12 +63,12 @@
                                         </div>
                                     </div>
                                     <div >
-                                        <p class="font-bold px-4 flex justify-center items-center rounded-full bg-green-400">$<%= wallet[i].transactions.transactionAmount.toFixed(2) %></p>
+                                        <p class="font-bold px-4 flex justify-center items-center rounded-full bg-green-400">$<%= wallet.transactions[i].transactionAmount.toFixed(2) %></p>
                                         <p class="text-sm text-gray-500 text-center">Credit Card</p>
                                     </div>
                                 </div>
                             </div>
-                        <% } else if(wallet[i].transactions.transactionReason === "Novamart Purchase"){ %>
+                        <% } else if(wallet.transactions[i].transactionReason === "Novamart Purchase"){ %>
                             <div class="transaction-item py-4">
                                 <div class="flex justify-between items-center">
                                     <div class="flex items-center px-2">
@@ -76,12 +76,12 @@
                                             <i data-feather="shopping-bag" class="w-5 h-5"></i>
                                         </div>
                                         <div>
-                                            <h3 class="font-medium">Order <%= wallet[i].transactions.paymentId.orderId.orderId %></h3>
-                                            <p class="text-sm text-gray-500"><%= new Date(wallet[i].transactions.createdAt).toLocaleDateString("en-IN", {
+                                            <h3 class="font-medium">Order <%= wallet.transactions[i].paymentId?.order?.orderId %></h3>
+                                            <p class="text-sm text-gray-500"><%= new Date(wallet.transactions[i].createdAt).toLocaleDateString("en-IN", {
                                                 day: "numeric",
                                                 month: "short",
                                                 year: "numeric"
-                                            }) %> • <%= new Date(wallet[i].transactions.createdAt).toLocaleTimeString('en-US', { 
+                                            }) %> • <%= new Date(wallet.transactions[i].createdAt).toLocaleTimeString('en-US', { 
                                                     hour: '2-digit', 
                                                     minute: '2-digit', 
                                                     hour12: true 
@@ -89,14 +89,14 @@
                                         </div>
                                     </div>
                                     <div >
-                                        <p class="font-bold px-4 flex justify-center items-center rounded-full bg-red-400">$<%= wallet[i].transactions.transactionAmount.toFixed(2) %></p>
+                                        <p class="font-bold px-4 flex justify-center items-center rounded-full bg-red-400">$<%= wallet.transactions[i].transactionAmount.toFixed(2) %></p>
                                         <p class="text-sm text-gray-500 text-center">Purchase</p>
                                     </div>
                                 </div>
                             </div>
     
                         
-                        <% } else if (wallet[i].transactions.transactionReason === "Order Refund") { %>
+                        <% } else if (wallet.transactions[i].transactionReason === "Order Refund") { %>
                             <div class="transaction-item py-4">
                                 <div class="flex justify-between items-center">
                                     <div class="flex items-center px-2">
@@ -104,12 +104,12 @@
                                             <i data-feather="rotate-ccw" class="w-5 h-5"></i>
                                         </div>
                                         <div>
-                                            <h3 class="font-medium">Order <%= wallet[i].transactions.paymentId.orderId.orderId %></h3>
-                                            <p class="text-sm text-gray-500"><%= new Date(wallet[i].transactions.createdAt).toLocaleDateString("en-IN", {
+                                            <h3 class="font-medium">Order <%= wallet.transactions[i].paymentId.order.orderId %></h3>
+                                            <p class="text-sm text-gray-500"><%= new Date(wallet.transactions[i].createdAt).toLocaleDateString("en-IN", {
                                                 day: "numeric",
                                                 month: "short",
                                                 year: "numeric"
-                                            }) %> • <%= new Date(wallet[i].transactions.createdAt).toLocaleTimeString('en-US', { 
+                                            }) %> • <%= new Date(wallet.transactions[i].createdAt).toLocaleTimeString('en-US', { 
                                                     hour: '2-digit', 
                                                     minute: '2-digit', 
                                                     hour12: true 
@@ -117,7 +117,7 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <p class="font-bold px-4 flex justify-center items-center rounded-full bg-green-400">$<%= Number(wallet[i].transactions.transactionAmount).toFixed(2) %></p>
+                                        <p class="font-bold px-4 flex justify-center items-center rounded-full bg-green-400">$<%= Number(wallet.transactions[i].transactionAmount).toFixed(2) %></p>
                                         <p class="text-sm text-gray-500 text-center">Order Refund</p>
                                     </div>
                                 </div>

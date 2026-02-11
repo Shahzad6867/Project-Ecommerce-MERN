@@ -6,7 +6,6 @@ const itemsPerPageController = require("../controllers/admin.controllers/itemsPe
 const categoryManagmentController = require("../controllers/admin.controllers/categoryManagmentController.js")
 const brandManagmentController = require("../controllers/admin.controllers/brandManagmentController.js")
 const productManagmentController = require("../controllers/admin.controllers/productManagmentController.js")
-const adminLogoutController = require("../controllers/admin.controllers/adminLogoutController.js")
 const searchController = require("../controllers/admin.controllers/searchController.js")
 const orderManagementController = require("../controllers/admin.controllers/ordersManagementController.js")
 const offerManagementController = require("../controllers/admin.controllers/offerManagementController.js")
@@ -16,32 +15,42 @@ const dashboardController = require("../controllers/admin.controllers/dashboardC
 const adminAuth = require("../middlewares/admin.auth.js")
 const upload = require("../config/multerConfig.js")
 
+// 
 router.get("/login",adminAuth.isLogged,adminLoginController.getAdminLogin)
 router.post("/login",adminLoginController.adminLogin)
+router.get("/logout",adminLoginController.logoutAdmin)
+
+// Users Management
 router.get("/users",adminAuth.checkSession,userManagmentController.getUsers)
-router.get("/block-user",adminAuth.checkSession,userManagmentController.blockUser)
-router.get("/unblock-user",adminAuth.checkSession,userManagmentController.unblockUser)
-router.get("/delete-user",adminAuth.checkSession,userManagmentController.deleteUser)
+router.patch("/block-user",adminAuth.checkSession,userManagmentController.blockUser)
+router.patch("/unblock-user",adminAuth.checkSession,userManagmentController.unblockUser)
+
 router.post("/users",searchController.searchUser)
 router.post("/products",searchController.searchProducts)
 router.post("/items-per-page",itemsPerPageController.selectedOptionToViewTheList)
+
+// Category Management
 router.get("/categories",adminAuth.checkSession,categoryManagmentController.getCategories)
 router.post("/add-category",upload.single("categoryImage"),categoryManagmentController.addCategory)
 router.post("/edit-category",upload.single("categoryImage"),categoryManagmentController.editCategory)
-router.get("/delete-category",adminAuth.checkSession,categoryManagmentController.deleteCategory)
-router.get("/restore-category",adminAuth.checkSession,categoryManagmentController.restoreCategory)
+router.patch("/delete-category",adminAuth.checkSession,categoryManagmentController.deleteCategory)
+router.patch("/restore-category",adminAuth.checkSession,categoryManagmentController.restoreCategory)
+
+// Product Management
 router.get("/products",adminAuth.checkSession,productManagmentController.getProducts)
 router.get("/add-product",adminAuth.checkSession,productManagmentController.getAddProduct)
 router.post("/add-product",upload.any(),productManagmentController.addProduct)
 router.get("/edit-product",adminAuth.checkSession,productManagmentController.getEditProduct)
 router.post("/edit-product",upload.any(),productManagmentController.editProduct)
-router.get("/delete-product",adminAuth.checkSession,productManagmentController.deleteProduct)
-router.get("/restore-product",adminAuth.checkSession,productManagmentController.restoreProduct)
+router.patch("/delete-product",adminAuth.checkSession,productManagmentController.blockProduct)
+router.patch("/restore-product",adminAuth.checkSession,productManagmentController.restoreProduct)
+
+//Brand Management
 router.get("/brands",adminAuth.checkSession,brandManagmentController.getBrand)
 router.post("/add-brand",upload.single("brandImage"),brandManagmentController.addBrand)
 router.post("/edit-brand",upload.single("brandImage"),brandManagmentController.editBrand)
-router.get("/delete-brand",adminAuth.checkSession,brandManagmentController.deleteBrand)
-router.get("/restore-brand",adminAuth.checkSession,brandManagmentController.restoreBrand)
+router.patch("/delete-brand",adminAuth.checkSession,brandManagmentController.deleteBrand)
+router.patch("/restore-brand",adminAuth.checkSession,brandManagmentController.restoreBrand)
 
 // Orders Management
 router.get("/orders",adminAuth.checkSession,orderManagementController.getOrders)
@@ -68,10 +77,10 @@ router.get("/coupons/add-coupon",adminAuth.checkSession,couponManagementControll
 router.get("/coupons/edit-coupon",adminAuth.checkSession,couponManagementController.getEditCoupon)
 router.post("/coupons/add-coupon",upload.single("bannerImage"),couponManagementController.addCoupon)
 router.post("/coupons/edit-coupon",upload.single("bannerImage"),couponManagementController.editCoupon)
-router.delete("/coupons/delete-coupons",couponManagementController.deleteCoupon)
+router.delete("/coupons/delete-coupon",couponManagementController.deleteCoupon)
 
 //Sales Report 
-router.get("/reports",adminAuth.checkSession,reportsController.getSalesReport)
+router.get("/reports",reportsController.getSalesReport)
 router.get("/reports/sales/excel",reportsController.getSalesReportIntoExcel)
 router.get("/reports/sales/pdf",reportsController.getSalesReportIntoPdf)
 
@@ -81,7 +90,5 @@ router.get("/dashboard/get-chart-details",dashboardController.getRevenueChartDet
 
 
 
-//Logout Admin
-router.get("/logout",adminLogoutController.logoutAdmin)
 
 module.exports = router

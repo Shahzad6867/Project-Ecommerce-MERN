@@ -1,4 +1,26 @@
 feather.replace();
+function buyNow(productId,variant){
+   fetch(`/cart/buynow?productId=${productId}&variant=${variant}`,{method : "POST"})
+   .then(res => res.json())
+   .then(data => {
+    if(data.message === "Done"){
+        window.location.href = "/checkout"
+    }else{
+        iziToast.error({
+            title : "Product",
+            message : data.specMessage,
+            position : "topRight"
+        })
+    }
+   })
+   .catch(error => {
+    iziToast.error({
+        title : "Error",
+        message : error.message,
+        position : "topRight"
+    })
+   })
+}
 function addToWishlist(btn,productId,variant){
     btn.classList.add("hidden")
     let itemCount = document.getElementById("wishlistItemQty")

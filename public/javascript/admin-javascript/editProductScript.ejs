@@ -70,7 +70,7 @@
             // Add variant
             let variantCount = 0;
             document.getElementById('addVariantBtn').addEventListener('click', function() {
-                const variants = JSON.parse('<%- JSON.stringify( product[0].variants)%>')
+                const variants = JSON.parse('<%- JSON.stringify( product.variants)%>')
                 if (variants[variantCount]) {
                     const variantSize = variants[variantCount].size 
                     const variantColor = variants[variantCount].color
@@ -418,9 +418,9 @@
             if (
             !anyVariantChanged &&
             productName === initialProductName.toUpperCase().trim() &&
-            category.value === '<%= product[0].categoryId._id %>' &&
-            brand.value === '<%= product[0].brandId._id %>' &&
-            description.value.trim() === '<%= product[0].description.trim() %>'
+            category.value === '<%= product.categoryId._id %>' &&
+            brand.value === '<%= product.brandId._id %>' &&
+            description.value.trim() === '<%= product.description.trim() %>'
             ) {
             iziToast.error({
                 title: "Error",
@@ -449,7 +449,7 @@
 
 
             // Add initial variant
-            const variantLen = Number('<%- product[0].variants.length %>')
+            const variantLen = Number('<%- product.variants.length %>')
             for(let j = 0 ; j < variantLen ; j++){
             document.getElementById("addVariantBtn").click()
             }

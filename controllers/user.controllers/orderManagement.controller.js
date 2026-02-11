@@ -19,7 +19,13 @@ const getCheckout = async (req,res) => {
     let message = req.session.message || null
     delete req.session.message
     const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
-    const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId").populate("couponApplied")
+    const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("categoryId").populate("brandId").populate("productOfferId").populate("categoryOfferId").populate("couponApplied")
+    for(let i = 0 ; i < cartItems.length ; i++){
+        if(cartItems[i].productId.variants[cartItems[i].variant].isBlocked || cartItems[i].categoryId.isDeleted || cartItems[i].brandId.isDeleted ){
+            req.session.message = "Some items in your cart are unavailable. Please remove them to continue"
+            return res.redirect("/cart")
+        } 
+    }
     const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
     const address = await Address.find({userId : user._id,isDefault : false})
     const defaultAddress = await Address.findOne({userId : user._id,isDefault : true})
@@ -59,12 +65,17 @@ const placeOrder = async (req,res) => {
     const items = []
     const lineItems = []
     const stockUnavailable = []
+    const productBlocked = 0
 
     
     let grandTotalForCashOnDelivery = 0
     if(Array.isArray(req.body.productId)){
         for(let i = 0 ; i < req.body.productId.length ; i++){
             let product = await Product.findById(req.body.productId[i])
+            if(product.variants[req.body.variants[i]].isBlocked === true || product.categoryId.isDeleted === true || product.brandId.isDeleted === true){
+                req.session.message = "Some items in your cart are unavailable. Please remove them to continue"
+                return res.redirect("/cart")
+             }
             if( product.variants[req.body.variants[i]].stockStatus !== "Out of Stock" && product.variants[req.body.variants[i]].stockQuantity >= req.body.quantity[i]){
                 if(req.body.paymentMethod === "Pay with Stripe"){
                     lineItems.push(
@@ -92,6 +103,7 @@ const placeOrder = async (req,res) => {
                   })
                   grandTotalForCashOnDelivery += (Number(req.body.offerPrice[i]) * Number(req.body.quantity[i]))
             }else{
+               
                 if(product.variants[req.body.variants[i]].stockQuantity > 0 && product.variants[req.body.variants[i]].stockQuantity < req.body.quantity[i]){
                     stockUnavailable.push(`${product.productName}-${req.body.size[i]} has only Limited Stock, The maximum quantity you can order is ${product.variants[req.body.variants[i]].stockQuantity}, Please update the quantity in cart and proceed to Checkout_`)
                 }else if(product.variants[req.body.variants[i]].stockQuantity === 0 || product.variants[req.body.variants[i]].stockStatus === "Out of Stock"){
@@ -102,14 +114,19 @@ const placeOrder = async (req,res) => {
            
       
           }
+          
+
           if(stockUnavailable.length > 0){
             req.session.message = stockUnavailable
-            console.log(stockUnavailable)
             return res.redirect("/cart")
           }
     }else{
         
         let product = await Product.findById(req.body.productId)
+        if(product.variants[req.body.variants].isBlocked === true || product.categoryId.isDeleted === true || product.brandId.isDeleted === true){
+            req.session.message = "Some items in your cart are unavailable. Please remove them to continue"
+            return res.redirect("/cart")
+         }
         if( product.variants[req.body.variants].stockStatus !== "Out of Stock" && product.variants[req.body.variants].stockQuantity >= req.body.quantity){
             if(req.body.paymentMethod === "Pay with Stripe"){
                 lineItems.push({
@@ -136,6 +153,7 @@ const placeOrder = async (req,res) => {
               })
               grandTotalForCashOnDelivery += (Number(req.body.offerPrice) * Number(req.body.quantity))
         }else{
+           
             if(product.variants[req.body.variants].stockQuantity > 0 && product.variants[req.body.variants].stockQuantity < req.body.quantity){
                 stockUnavailable.push(`${product.productName}-${req.body.size} has only Limited Stock, The maximum quantity you can order is ${product.variants[req.body.variants].stockQuantity}, Please update the quantity in cart and proceed to Checkout_`)
             }else if(product.variants[req.body.variants].stockQuantity === 0 || product.variants[req.body.variants].stockStatus === "Out of Stock"){
@@ -143,6 +161,9 @@ const placeOrder = async (req,res) => {
             }
             
         }
+
+        
+
         if(stockUnavailable.length > 0){
             req.session.message = stockUnavailable
             console.log(stockUnavailable)
@@ -151,10 +172,9 @@ const placeOrder = async (req,res) => {
     }
     grandTotalForCashOnDelivery += Number(req.body.tax)
     grandTotalForCashOnDelivery -= Number(req.body.discount) || 0
-    console.log(grandTotalForCashOnDelivery)
     if(req.body.paymentMethod === "Cash on Delivery"){
-        if(grandTotalForCashOnDelivery < 100){
-            req.session.message = "Order amount should be greater than $100 to be eligible for Cash on Delivery"
+        if(grandTotalForCashOnDelivery > 100){
+            req.session.message = "Order amount greater than $100 will not be eligible for Cash on Delivery"
             return res.redirect("/checkout")
         }else{
             for(let j = 0 ; j < items.length ; j++){
@@ -167,11 +187,22 @@ const placeOrder = async (req,res) => {
        
     }
     
+    let address = await Address.findOne({_id : req.body.addressId})
+    let addressObj = {
+        firstName : address.firstName,
+        lastName : address.lastName,
+        country : address.country,
+        state : address.state,
+        city : address.city,
+        address : address.address, 
+        pincode : address.pincode,
+        mobileNo : address.mobileNo
+    }
     
     let order = new Order({
         orderId : orderIdGenerator(),
         userId : user._id,
-        addressId : req.body.addressId,
+        address : addressObj,
         items : items,
         subTotal : req.body.subTotal,
         shipping : req.body.shipping,
@@ -198,7 +229,7 @@ const placeOrder = async (req,res) => {
     confirmedOrder.paymentId = savedPayment._id
     await confirmedOrder.save()
     if(req.body.paymentMethod === "Cash on Delivery"){
-        confirmedOrder = await Order.findOne({_id : confirmedOrder._id }).populate("addressId").populate("paymentId")
+        confirmedOrder = await Order.findOne({_id : confirmedOrder._id }).populate("paymentId")
         const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
         const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
         const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
@@ -318,7 +349,7 @@ const placeOrder = async (req,res) => {
                 await product.save()
                 await Cart.findOneAndDelete({userId : user._id, productId : items[j].productId,variant : items[j].variant})
         }
-        confirmedOrder = await Order.findOne({_id : confirmedOrder._id }).populate("addressId").populate("paymentId")
+        confirmedOrder = await Order.findOne({_id : confirmedOrder._id }).populate("paymentId")
         const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
         const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
         const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
@@ -465,7 +496,7 @@ const getOrderConfirmationPage = async (req,res) => {
     await Payment.findOneAndUpdate({_id : new mongoose.Types.ObjectId(req.query.paymentId) },{$set : {status : "Payment Failed"}})
    }
    let user = req.session.user || req.user
-   const confirmedOrder = await Order.findOne({_id : new mongoose.Types.ObjectId(id) }).populate("addressId").populate("paymentId")
+   const confirmedOrder = await Order.findOne({_id : new mongoose.Types.ObjectId(id) }).populate("paymentId")
    const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
    const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
    const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
@@ -519,7 +550,7 @@ const getOrderDetailPage = async (req,res) => {
     let user = req.session.user || req.user
     const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
     const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
-    const order = await Order.findOne({_id : req.params.id}).populate("addressId").populate("paymentId")
+    const order = await Order.findOne({_id : req.params.id}).populate("paymentId")
     const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
     res.render("user-view/user.order-details-page.ejs",{user,productsFullList,cartItems,order,wishlistItemsCount})
 }
@@ -546,7 +577,7 @@ const cancelItem = async (req,res) => {
                  amount = Math.round(amount * 100) / 100
                 let product = await Product.findOne({_id : order.items[i].productId })
                 product.variants[order.items[i].variant].stockQuantity += order.items[i].quantity
-                if (payment.paymentMethod === "Pay with NovaWallet" && order.items[i].isCancelled === false) {
+                if (payment.paymentMethod === "Pay with NovaWallet" && order.items[i].isCancelled === false && payment.status !== "Pending" && payment.status !== "Payment Failed" ) {
                     let wallet = await Wallet.findOne({userId : user._id})
                     wallet.walletBalance += amount
                     wallet.transactions.push({
@@ -557,7 +588,7 @@ const cancelItem = async (req,res) => {
                     })
                     await wallet.save()
                     payment.amountRefunded += amount
-                }else if (payment.paymentMethod === "Pay with Stripe" && order.items[i].isCancelled === false) {
+                }else if (payment.paymentMethod === "Pay with Stripe" && order.items[i].isCancelled === false && payment.status !== "Pending" && payment.status !== "Payment Failed") {
                     payment.amountToBeRefunded += amount
                     let refund = await stripe.refunds.create({
                         payment_intent : payment.paymentIntentId,
@@ -652,7 +683,7 @@ const cancelOrder = async (req,res) => {
                 await product.save()
             }    
             }
-                if (payment.paymentMethod === "Pay with Stripe") {
+                if (payment.paymentMethod === "Pay with Stripe" && payment.status !== "Pending" && payment.status !== "Payment Failed") {
                     payment.amountToBeRefunded += sumOfAmounts
                     let refund = await stripe.refunds.create({
                         payment_intent : payment.paymentIntentId,
@@ -667,7 +698,7 @@ const cancelOrder = async (req,res) => {
                     })
                 }
             
-               if(payment.paymentMethod === "Pay with NovaWallet"){
+               if(payment.paymentMethod === "Pay with NovaWallet" && payment.status !== "Pending" && payment.status !== "Payment Failed"){
                  wallet.walletBalance += sumOfAmounts
                  wallet.transactions.push({
                     paymentId : payment._id,
@@ -677,6 +708,11 @@ const cancelOrder = async (req,res) => {
                  })
                  await wallet.save()
                  payment.amountRefunded += sumOfAmounts
+                 for(let i = 0 ; i < order.items.length ; i++ ){
+                    order.items[i].refundOnCancelled.status = "Refunded"
+                    order.items[i].refundOnCancelled.refundedAt = new Date()
+                    order.items[i].isCancelled = true
+                 }
                }
                
                 

@@ -8,11 +8,12 @@
         <input type="text" id="serverMessage" value="<%= message ? message : null %>" hidden>
         <div id="cartItemsList" class="w-[65%] mr-2">
             <% let subTotal = 0 %>
+            <% let offerPrice = 0 %>
             <% let itemsWithStock = 0 %>
             <% if (cartItems.length > 0) { %>
                <% let now = new Date() %>
              <% for( let i = 0; i < cartItems.length; i++ ) { %>
-                <% if (!cartItems[i].productId.isDeleted) { %>
+                <% if (!cartItems[i].productId.variants[cartItems[i].variant].isBlocked && !cartItems[i].categoryId.isDeleted && !cartItems[i].brandId.isDeleted) { %>
                 <% if (cartItems[i].productId.variants[cartItems[i].variant].stockQuantity !== 0 && cartItems[i].productId.variants[cartItems[i].variant].stockStatus !== "Out of Stock") { %>
                     <%
 
@@ -20,7 +21,7 @@
                         const price = cartItems[i].productId.variants[cartItems[i].variant].price
                         const quantity = cartItems[i].quantity
 
-                        let offerPrice = price
+                        offerPrice = price
                         let productOfferPrice = null
                         let categoryOfferPrice = null
 
@@ -88,7 +89,7 @@
                 
                 <% itemsWithStock += cartItems[i].quantity %>
                 <div id="cartItemInCart<%= cartItems[i]._id %>" class="bg-white rounded-lg border shadow-sm w-full  flex justify-between mb-2 p-6 ">
-                    <div class="max-w-[20%] h-[20%]  border-2 border-black rounded-lg ">
+                    <div class="min-w-[20%] max-w-[20%] h-[20%]  border-2 border-black rounded-lg ">
                       <img src="<%= cartItems[i].productId.variants[cartItems[i].variant].productImages[0] %>" alt="" class="w-full height-[100%] rounded">
                     </div>
                     <div class="w-[78%]">
@@ -126,7 +127,7 @@
                  </div>
              <% } else {%>
                 <div id="cartItemInCart<%= cartItems[i]._id %>" class="bg-white rounded-lg border shadow-sm w-full  flex justify-between mb-2 p-6 ">
-                    <div class="max-w-[20%] h-[20%]  border-2 border-black rounded-lg ">
+                    <div class="min-w-[20%] max-w-[20%] h-[20%]  border-2 border-black rounded-lg ">
                       <img src="<%= cartItems[i].productId.variants[cartItems[i].variant].productImages[0] %>" alt="" class="w-full height-[100%] rounded">
                     </div>
                     <div class="w-[78%]">
@@ -140,8 +141,12 @@
                      </div>
                      <p>Color : <strong><%= cartItems[i].productId.variants[cartItems[i].variant].color %></strong> | Size : <strong><%= cartItems[i].productId.variants[cartItems[i].variant].size %></strong> </p>
                      <div class="flex items-center gap-3 mt-1 mb-2">
-                        
-                           <!-- <p class="line-through text-gray-400 text-lg"></p> -->
+                        <% if (offerPrice > 0 && offerPrice < cartItems[i].productId.variants[cartItems[i].variant].price ) { %>
+                            <p class="text-3xl font-bold text-black" >$ <span id="price<%= cartItems[i]._id %><%= cartItems[i].variant %>" ><%= offerPrice.toFixed(2) %></span></p>
+                            <p class="line-through text-gray-400 text-lg">$ <%= cartItems[i].productId.variants[cartItems[i].variant].price %></p>
+                        <% } else {%>
+                            <p class="text-3xl font-bold text-black" >$ <span id="price<%= cartItems[i]._id %><%= cartItems[i].variant %>" ><%= cartItems[i].productId.variants[cartItems[i].variant].price %></span></p>
+                        <% } %>
                      </div>
                      <div class="w-full mt-1 flex justify-between items-center">
                          <div id="incDecQtyDiv<%= cartItems[i]._id %>" class="flex items-center mt-2">
@@ -156,7 +161,7 @@
                 <% } %>
              <% } else {%>
                 <div id="cartItemInCart<%= cartItems[i]._id %>" class="bg-white rounded-lg border shadow-sm w-full  flex justify-between mb-2 p-6 ">
-                    <div class="max-w-[20%] h-[20%]  border-2 border-black rounded-lg ">
+                    <div class="min-w-[20%] max-w-[20%] h-[20%]  border-2 border-black rounded-lg ">
                       <img src="<%= cartItems[i].productId.variants[cartItems[i].variant].productImages[0] %>" alt="" class="w-full height-[100%] rounded">
                     </div>
                     <div class="w-[78%]">
@@ -170,8 +175,12 @@
                      </div>
                      <p>Color : <strong><%= cartItems[i].productId.variants[cartItems[i].variant].color %></strong> | Size : <strong><%= cartItems[i].productId.variants[cartItems[i].variant].size %></strong> </p>
                      <div class="flex items-center gap-3 mt-1 mb-2">
-                        
-                           <!-- <p class="line-through text-gray-400 text-lg"></p> -->
+                        <% if (offerPrice > 0 && offerPrice < cartItems[i].productId.variants[cartItems[i].variant].price ) { %>
+                            <p class="text-3xl font-bold text-black" >$ <span id="price<%= cartItems[i]._id %><%= cartItems[i].variant %>" ><%= offerPrice.toFixed(2) %></span></p>
+                            <p class="line-through text-gray-400 text-lg">$ <%= cartItems[i].productId.variants[cartItems[i].variant].price %></p>
+                        <% } else {%>
+                            <p class="text-3xl font-bold text-black" >$ <span id="price<%= cartItems[i]._id %><%= cartItems[i].variant %>" ><%= cartItems[i].productId.variants[cartItems[i].variant].price %></span></p>
+                        <% } %>
                      </div>
                      <div class="w-full mt-1 flex justify-between items-center">
                          <div id="incDecQtyDiv<%= cartItems[i]._id %>" class="flex items-center mt-2">
@@ -203,19 +212,23 @@
                 <% let now = new Date() %>
                 <% let discountedAmount = 0 %>
                 <% if (cartItems[0]?.couponApplied !== null &&  subTotal >= cartItems[0]?.couponApplied.minAmount && cartItems[0]?.couponApplied.endDate >= now ) { %>
-                <div class="flex items-center mb-3">
-                    <input type="text" value="<%= cartItems[0].couponApplied.name  %>" class="w-[80%] px-4 py-2 bg-blue-600 text-white font-bold mr-2 rounded-md " disabled>
-                    <button type="button" class=" w-[20%] px-4 py-2 font-bold flex justify-center items-center  rounded-lg bg-red-400 hover:bg-red-500 " onclick="removeCoupon('<%= cartItems[0].couponApplied._id %>')">
+                   <% isApplied = true %>
+                   <% if (cartItems[0]?.couponApplied.discountType === "percentage") { %>
+                        <% discountedAmount = (subTotal * cartItems[0]?.couponApplied.discountValue) / 100 %>
+                        <% if (discountedAmount > cartItems[0]?.couponApplied.maxDiscountAmount) { %>
+                            <% discountedAmount = cartItems[0]?.couponApplied.maxDiscountAmount %>
+                    <% } %>
+                    <% } else { %>
+                        <% discountedAmount = cartItems[0]?.couponApplied.discountValue %>
+                   <% } %>
+                   
+                <% } %>
+                <div id="appliedCouponDisplay" class="flex items-center mb-3 <%=  (!isApplied) ? 'hidden' : ''  %>">
+                    <input id="appliedCouponName" type="text" value="<%= (isApplied) ? cartItems[0].couponApplied.name : ""  %>" class="w-[80%] px-4 py-2 bg-blue-600 text-white font-bold mr-2 rounded-md " disabled>
+                    <button id="removeCouponBtn" type="button" class=" w-[20%] px-4 py-2 font-bold flex justify-center items-center  rounded-lg bg-red-400 hover:bg-red-500 " onclick="removeCoupon()" >
                     Remove
                     </button>
-                   </div>
-                   <% isApplied = true %>
-                   <% discountedAmount = (subTotal * cartItems[0]?.couponApplied.discountValue) / 100 %>
-                   <% if (discountedAmount > cartItems[0]?.couponApplied.maxDiscountAmount) { %>
-                    <% discountedAmount = cartItems[0]?.couponApplied.maxDiscountAmount %>
-                   <% } %>
-                <% } %>
-                
+                </div>
                 <div class="w-full">
                     <% if (coupons.length > 0) { %>
                         
@@ -238,12 +251,19 @@
                                                 <div class="w-full px-2 flex justify-between items-center h-[60%]">
                                                     <h1 class="font-bold text-black text-lg"><%= userCoupons[i].name %></h1>
                                                     <% if (cartItems[0]?.couponApplied !== null && userCoupons[i]._id.toString() === cartItems[0]?.couponApplied._id.toString() &&  (Number(subTotal) + (Number(subTotal) * 0.05)) >= cartItems[0]?.couponApplied.minAmount) { %>
-                                                        <button type="button" class="mr-2 rounded-lg bg-green-400 flex justify-between items-center text-black font-bold px-3 py-1 "  disabled>
+                                                        <button id="appliedBtn<%= userCoupons[i]._id %>" type="button" class="mr-2 rounded-lg bg-green-400 flex justify-between items-center text-black font-bold px-3 py-1"disabled>
                                                             <i data-feather="check" class=""></i>
                                                             Applied
                                                         </button>
+                                                        <button id="applyBtn<%= userCoupons[i]._id %>" type="button" class="mr-2 rounded-lg bg-green-400 text-black font-bold px-3 py-1 hover:bg-green-500 hidden" onclick="applyCoupon('<%= userCoupons[i]._id %>','<%= userCoupons[i].minAmount %>')">
+                                                            Apply
+                                                        </button>  
                                                     <% } else { %>
-                                                        <button type="button" class="mr-2 rounded-lg bg-green-400 text-black font-bold px-3 py-1 hover:bg-green-500" onclick="applyCoupon('<%= userCoupons[i]._id %>','<%= userCoupons[i].minAmount %>')">
+                                                        <button id="appliedBtn<%= userCoupons[i]._id %>" type="button" class="mr-2 rounded-lg bg-green-400 flex justify-between items-center text-black font-bold px-3 py-1 hidden"disabled>
+                                                            <i data-feather="check" class=""></i>
+                                                            Applied
+                                                        </button>
+                                                        <button id="applyBtn<%= userCoupons[i]._id %>" type="button" class="mr-2 rounded-lg bg-green-400 text-black font-bold px-3 py-1 hover:bg-green-500 " onclick="applyCoupon('<%= userCoupons[i]._id %>','<%= userCoupons[i].minAmount %>')">
                                                             Apply
                                                         </button>     
                                                     <% } %>
@@ -267,12 +287,19 @@
                                                 <div class="w-full px-2 flex justify-between items-center h-[60%]">
                                                     <h1 class="font-bold text-black text-lg"><%= coupons[i].name %></h1>
                                                     <% if (cartItems[0]?.couponApplied !== null && coupons[i]._id.toString() === cartItems[0]?.couponApplied._id.toString() &&  (Number(subTotal) + (Number(subTotal) * 0.05)) >= cartItems[0]?.couponApplied.minAmount) { %>
-                                                        <button type="button" class="mr-2 rounded-lg bg-green-400 flex justify-between items-center text-black font-bold px-3 py-1 "  disabled>
+                                                        <button id="appliedBtn<%= coupons[i]._id %>" type="button" class="mr-2 rounded-lg bg-green-400 flex justify-between items-center text-black font-bold px-3 py-1 "  disabled>
                                                             <i data-feather="check" class=""></i>
                                                             Applied
                                                         </button>
+                                                        <button id="applyBtn<%= coupons[i]._id %>" type="button" class="mr-2 rounded-lg bg-green-400 text-black font-bold px-3 py-1 hover:bg-green-500 hidden" onclick="applyCoupon('<%= coupons[i]._id %>','<%= coupons[i].minAmount %>')">
+                                                            Apply
+                                                        </button> 
                                                     <% } else { %>
-                                                        <button type="button" class="mr-2 rounded-lg bg-green-400 text-black font-bold px-3 py-1 hover:bg-green-500" onclick="applyCoupon('<%= coupons[i]._id %>','<%= coupons[i].minAmount %>')">
+                                                        <button id="appliedBtn<%= coupons[i]._id %>" type="button" class="mr-2 rounded-lg bg-green-400 flex justify-between items-center text-black font-bold px-3 py-1 hidden"  disabled>
+                                                            <i data-feather="check" class=""></i>
+                                                            Applied
+                                                        </button>
+                                                        <button id="applyBtn<%= coupons[i]._id %>" type="button" class="mr-2 rounded-lg bg-green-400 text-black font-bold px-3 py-1 hover:bg-green-500" onclick="applyCoupon('<%= coupons[i]._id %>','<%= coupons[i].minAmount %>')">
                                                             Apply
                                                         </button>     
                                                     <% } %>
@@ -303,15 +330,15 @@
                 <div class="space-y-4 mt-2">
                     <div class="flex justify-between">
                         <span class="text-gray-600 font-bold">Subtotal (<span id="subTotalItemsInCart"><%= itemsWithStock || 0%></span> items)</span>
-                        <span  class="font-bold">$ <span id="subTotalInCart"><%= subTotal %></span></span>
+                        <span  class="font-bold">$ <span id="subTotalInCart"><%= subTotal.toFixed(2) %></span></span>
                         <% subTotal = (isApplied === true) ? (subTotal - discountedAmount).toFixed(2) : subTotal.toFixed(2) %>
                     </div>
-                    <% if (isApplied === true) { %>
-                        <div class="flex justify-between">
+               
+                        <div id="discountDiv" class="flex justify-between <%= (!isApplied) ? "hidden" : "" %>">
                             <span class="text-gray-600 font-bold">Discount </span>
-                            <span  class="font-bold">$ <span id="discountedValue"><%= discountedAmount.toFixed(2) %></span></span>
+                            <span  class="font-bold">$ <span id="discountedValue"><%=  discountedAmount?.toFixed(2) || 0 %></span></span>
                         </div>
-                    <% } %>
+                
                     <div class="flex justify-between">
                         <span class="text-gray-600 font-bold">Tax</span>
                         <% let tax = (subTotal * 0.05).toFixed(2) %>
@@ -343,16 +370,103 @@
             
             <div class="bg-white rounded-lg shadow-sm p-6 mt-6">
                 <h2 class="text-lg font-bold mb-4">Payment Methods</h2>
-                <div class="flex space-x-4">
-                    <img src="https://cdn-icons-png.flaticon.com/512/196/196578.png" class="h-8" alt="Visa">
-                    <img src="https://cdn-icons-png.flaticon.com/512/196/196561.png" class="h-8" alt="Mastercard">
-                    <img src="https://icons.iconarchive.com/icons/simpleicons-team/simple/128/american-express-icon.png" class="h-8" alt="American Express">
+                <div class="flex items-center space-x-4">
+                    <img src="/images/visa.png" class="h-4" alt="Visa">
+                    <img src="/images/mastercard.svg" class="h-6" alt="Mastercard">
+                    <img src="/images/american-express.svg" class="h-4" alt="American Express">
+                    
                     
                 </div>
             </div>
         </div>
     </div>
 </div>
+<script>
+    function applyCoupon(couponId,minAmount){
+        const grandTotalElement = document.getElementById("grandTotal")
+        const subTotal = Number(document.getElementById("subTotalInCart").innerText)
+        const taxElement = document.getElementById("tax")
+        const discountDiv = document.getElementById("discountDiv")
+        const discountValue = document.getElementById("discountedValue")
+        if(grandTotal < Number(minAmount)){
+            iziToast.info({
+                title : "Coupon",
+                message : `The minimum amount to apply this coupon is $${minAmount}`,
+                position : "topRight"
+            })
+            event.preventDefault()
+            return
+        }
+        fetch(`/cart/apply-coupon/${couponId}`,{method : "PATCH"})
+        .then(res => res.json())
+        .then(data => {
+            if(data.message === "Done"){
+                let discountedAmount = 0
+                 if (data.coupon.discountType === "percentage") { 
+                         discountedAmount = (subTotal * data.coupon.discountValue) / 100
+                         if (discountedAmount > data.coupon.maxDiscountAmount) { 
+                            discountedAmount = data.coupon.maxDiscountAmount
+                          } 
+                     } else { 
+                         discountedAmount = data.coupon.discountValue
+                } 
+                const tax = ((subTotal - discountedAmount) * 0.05)
+                const shipping = 10
+               taxElement.innerText =  tax.toFixed(2)
+               grandTotalElement.innerText = ((subTotal - discountedAmount) + tax + shipping).toFixed(2)
+               discountDiv.classList.remove("hidden")
+               discountValue.innerText = discountedAmount.toFixed(2)
+               document.getElementById(`applyBtn${data.coupon._id}`).classList.add("hidden")
+               document.getElementById(`appliedBtn${data.coupon._id}`).classList.remove("hidden")
+               if(data.olderCoupon !== null){
+                document.getElementById(`applyBtn${data.olderCoupon}`).classList.remove("hidden")
+                document.getElementById(`appliedBtn${data.olderCoupon}`).classList.add("hidden")
+               }else{
+                document.getElementById("appliedCouponDisplay").classList.remove("hidden")
+               }
+               document.getElementById("appliedCouponName").value = data.coupon.name
 
+            }
+        })
+        .catch(error => { 
+            iziToast.error({
+                title : "Error",
+                message : error.message,
+                position : "topRight"
+            })
+        })
+    }
+    function removeCoupon(){
+        fetch(`/cart/remove-coupon`,{method : "PATCH"})
+        .then(res => res.json())
+        .then(data => {
+            if(data.message === "Done"){
+                const grandTotalElement = document.getElementById("grandTotal")
+                const subTotal = Number(document.getElementById("subTotalInCart").innerText)
+                const taxElement = document.getElementById("tax")
+                const discountDiv = document.getElementById("discountDiv")
+                const discountValue = document.getElementById("discountedValue")
+                
+                const tax = (subTotal * 0.05)
+                const shipping = 10
+               taxElement.innerText =  tax.toFixed(2)
+               grandTotalElement.innerText = (subTotal + tax + shipping).toFixed(2)
+               discountDiv.classList.add("hidden")
+               discountValue.innerText = 0.00
+               document.getElementById(`applyBtn${data.coupon.couponApplied}`).classList.remove("hidden")
+               document.getElementById(`appliedBtn${data.coupon.couponApplied}`).classList.add("hidden")
+                document.getElementById("appliedCouponDisplay").classList.add("hidden")
+               document.getElementById("appliedCouponName").value = ""
+            }
+        })
+        .catch(error => { 
+            iziToast.error({
+                title : "Error",
+                message : error.message,
+                position : "topRight"
+            })
+        })
+    }
+</script>
 <script src="/javascript/user-javascript/cartManagementInCart.js"></script>
 <%- include("../partials/user-side/footer.ejs")%>

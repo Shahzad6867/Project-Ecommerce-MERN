@@ -1,50 +1,10 @@
 feather.replace();
-    function applyCoupon(couponId,minAmount){
-        console.log(minAmount)
-        const grandTotal = document.getElementById("grandTotal").innerText
-        if(Number(grandTotal) < Number(minAmount)){
-            iziToast.info({
-                title : "Coupon",
-                message : `The minimum amount to apply this coupon is $${minAmount}`,
-                position : "topRight"
-            })
-            event.preventDefault()
-            return
-        }
-        fetch(`/cart/apply-coupon/${couponId}`,{method : "PATCH"})
-        .then(res => res.json())
-        .then(data => {
-            if(data.message === "Done"){
-                window.location.href = "/cart"
-            }
-        })
-        .catch(error => { 
-            iziToast.error({
-                title : "Error",
-                message : error.message,
-                position : "topRight"
-            })
-        })
-    }
+    
 
-    function removeCoupon(couponId){
-        fetch(`/cart/remove-coupon`,{method : "PATCH"})
-        .then(res => res.json())
-        .then(data => {
-            if(data.message === "Done"){
-                window.location.href = "/cart"
-            }
-        })
-        .catch(error => { 
-            iziToast.error({
-                title : "Error",
-                message : error.message,
-                position : "topRight"
-            })
-        })
-    }
+    
 
     function incrementQuantity(cartId,productId,variantIndex){
+        const shipping = 10
         let quantity = document.getElementById(`quantity${cartId}`)
         let price = document.getElementById(`price${cartId}${variantIndex}`).innerText
         let cartItemQtyToBeUpdated = document.getElementById(`cartItemQty${productId}${variantIndex}`)
@@ -72,16 +32,16 @@ feather.replace();
             .then(res => res.json())
             .then(data => {
                 if (data.message === "Quantity has been updated in Cart") {
-                    subTotal.innerText = (Number(subTotal.innerText) + ((counter * price) - (Number(quantity.value) * price))).toFixed(2)
-                    subTotalInCart.innerText = (Number(subTotalInCart.innerText) + ((counter * price) - (Number(quantity.value) * price))).toFixed(2)
-                    tax.innerText = (Number(subTotalInCart.innerText) * 0.05).toFixed(2)
+                    subTotal.innerText = Math.round((Number(subTotal.innerText) + ((counter * price) - (Number(quantity.value) * price))) * 100) / 100
+                    subTotalInCart.innerText = Math.round((Number(subTotalInCart.innerText) + ((counter * price) - (Number(quantity.value) * price))) * 100) / 100
+                    tax.innerText = Math.round((Number(subTotalInCart.innerText) * 0.05) * 100) / 100
                     quantity.value = counter
                     cartItemQtyToBeUpdated.innerText = Number(cartItemQtyToBeUpdated.innerText) + 1
                     cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) + 1
                     myCartHead.innerText = Number(myCartHead.innerText) + 1
                     myCartHeadInCart.innerText = Number(myCartHeadInCart.innerText) + 1
                     subTotalItemsInCart.innerText = Number(subTotalItemsInCart.innerText) + 1
-                    grandTotal.innerText = Number(subTotalInCart.innerText) + Number(tax.innerText)
+                    grandTotal.innerText = Math.round((Number(subTotalInCart.innerText) + Number(tax.innerText) + shipping) * 100) / 100
                     feather.replace()
                     
                 }else if(data.message === "Out of Stock" || data.message === "Product Unavailable"){
@@ -96,10 +56,10 @@ feather.replace();
                     myCartHead.innerText = Number(myCartHead.innerText) - Number(quantity.value)
                     myCartHeadInCart.innerText = Number(myCartHeadInCart.innerText) - Number(quantity.value)
                     subTotalItemsInCart.innerText = Number(subTotalItemsInCart.innerText) - Number(quantity.value)
-                    subTotal.innerText = (Number(subTotal.innerText) - (Number(quantity.value) * price) ).toFixed(2)
-                    subTotalInCart.innerText = (Number(subTotalInCart.innerText) -  (Number(quantity.value) * price) ).toFixed(2)
-                    tax.innerText = (Number(subTotalInCart.innerText) * 0.05).toFixed(2)
-                    grandTotal.innerText = Number(subTotalInCart.innerText) + Number(tax.innerText)
+                    subTotal.innerText = Math.round((Number(subTotal.innerText) - (Number(quantity.value) * price) ) * 100) / 100
+                    subTotalInCart.innerText = Math.round((Number(subTotalInCart.innerText) -  (Number(quantity.value) * price) ) * 100) / 100
+                    tax.innerText = Math.round((Number(subTotalInCart.innerText) * 0.05) * 100) / 100
+                    grandTotal.innerText = Math.round((Number(subTotalInCart.innerText) + Number(tax.innerText) + shipping) * 100) / 100
                     iziToast.error({
                         title : "Cart",
                         message : data.specMessage,
@@ -121,6 +81,7 @@ feather.replace();
         
     }
     function decrementQuantity(cartId,productId,variantIndex){
+        const shipping = 10
         let quantity = document.getElementById(`quantity${cartId}`)
         let price = document.getElementById(`price${cartId}${variantIndex}`).innerText
         let cartItemQtyToBeUpdated = document.getElementById(`cartItemQty${productId}${variantIndex}`)
@@ -146,16 +107,16 @@ feather.replace();
             .then(res => res.json())
             .then(data => {
                 if (data.message === "Quantity has been updated in Cart") {
-                    subTotal.innerText = (Number(subTotal.innerText) - ( (Number(quantity.value) * price) - (counter * price))).toFixed(2)
-                    subTotalInCart.innerText = (Number(subTotalInCart.innerText) - ( (Number(quantity.value) * price) - (counter * price))).toFixed(2)
-                    tax.innerText = (Number(subTotalInCart.innerText) * 0.05).toFixed(2)
+                    subTotal.innerText = Math.round((Number(subTotal.innerText) - ( (Number(quantity.value) * price) - (counter * price))) * 100) / 100
+                    subTotalInCart.innerText = Math.round((Number(subTotalInCart.innerText) - ( (Number(quantity.value) * price) - (counter * price))) * 100) / 100
+                    tax.innerText = Math.round((Number(subTotalInCart.innerText) * 0.05) * 100) / 100
                     quantity.value = counter
                     cartItemQtyToBeUpdated.innerText = Number(cartItemQtyToBeUpdated.innerText) - 1
                     cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - 1
                     subTotalItemsInCart.innerText = Number(subTotalItemsInCart.innerText) - 1
                     myCartHead.innerText = Number(myCartHead.innerText) - 1
                     myCartHeadInCart.innerText = Number(myCartHeadInCart.innerText) - 1
-                    grandTotal.innerText = Number(subTotalInCart.innerText) + Number(tax.innerText)
+                    grandTotal.innerText = Math.round((Number(subTotalInCart.innerText) + Number(tax.innerText) + shipping) * 100) / 100
                     feather.replace()
                     
                 }else if(data.message === "Out of Stock" || data.message === "Product Unavailable"){
@@ -170,10 +131,10 @@ feather.replace();
                     myCartHead.innerText = Number(myCartHead.innerText) - Number(quantity.value)
                     myCartHeadInCart.innerText = Number(myCartHeadInCart.innerText) - Number(quantity.value)
                     subTotalItemsInCart.innerText = Number(subTotalItemsInCart.innerText) - Number(quantity.value)
-                    subTotal.innerText = (Number(subTotal.innerText) - (Number(quantity.value) * price) ).toFixed(2)
-                    subTotalInCart.innerText = (Number(subTotalInCart.innerText) -  (Number(quantity.value) * price) ).toFixed(2)
-                    tax.innerText = (Number(subTotalInCart.innerText) * 0.05).toFixed(2)
-                    grandTotal.innerText = Number(subTotalInCart.innerText) + Number(tax.innerText)
+                    subTotal.innerText = Math.round((Number(subTotal.innerText) - (Number(quantity.value) * price) ) * 100 ) / 100
+                    subTotalInCart.innerText = Math.round((Number(subTotalInCart.innerText) -  (Number(quantity.value) * price) ) * 100) / 100
+                    tax.innerText = Math.round((Number(subTotalInCart.innerText) * 0.05) * 100) / 100
+                    grandTotal.innerText = Math.round((Number(subTotalInCart.innerText) + Number(tax.innerText) + shipping) * 100) / 100
                     iziToast.error({
                         title : "Cart",
                         message : data.specMessage,
@@ -216,7 +177,14 @@ feather.replace();
 
 
     let serverMessage = document.getElementById("serverMessage").value
-      if(serverMessage !== ""){
+    if(serverMessage ===  "Some items in your cart are unavailable. Please remove them to continue"){
+        iziToast.info({
+            title : "Cart",
+            message : serverMessage,
+            position : "topCenter"
+        })
+    }
+      if(serverMessage !== "" && serverMessage !== "Some items in your cart are unavailable. Please remove them to continue"){
         
         serverMessage = serverMessage.split("_,")
        

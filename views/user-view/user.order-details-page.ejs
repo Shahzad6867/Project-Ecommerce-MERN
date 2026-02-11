@@ -37,7 +37,7 @@
                       Complete Payment
                     </a>
                   <% } %>
-                <% if (order.status[order.status.length - 1] === "Pending") { %>
+                <% if (order.status[order.status.length - 1] === "Pending" && order.paymentId.status !== "Payment Failed") { %>
                     <button type="button" class="px-4 py-2  bg-red-400 font-bold text-black rounded-md hover:bg-red-600 flex items-center" onclick="cancelOrder('<%= order._id %>')">
                         Cancel Order
                     </button>
@@ -204,8 +204,16 @@
                          <% } %>
                     </div>
                 </div>
-
-
+                <% if (order.status[order.status.length - 1] === "Order Cancelled") { %>
+                    <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-blue-300 w-full mb-3">
+                        <i data-feather="info" class="w-5 h-5 mr-1"></i>
+                        <p class="text-sm text-black">
+                          Order has been cancelled on <span class="font-bold" ><%= new Date(order.statusTimeline.cancelledAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
+                        }) %>, </span><span class="font-bold"><%= new Date(order.statusTimeline.cancelledAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>.</span>
+                          The amount has been refunded to your <strong> Orginal Payment Method </strong>
+                         </p>
+                       </div>
+                <% } %>
                 <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Approved Return Request")) { %>
                     <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-blue-300 w-full mb-3">
                         <i data-feather="info" class="w-5 h-5 mr-1"></i>
@@ -389,7 +397,7 @@
                                             
                                     <% } %>  
                                 <% } %> 
-                                <% if (order.status[order.status.length - 1] === "Pending" && !order.items[i].isCancelled ) { %>
+                                <% if (order.status[order.status.length - 1] === "Pending" && !order.items[i].isCancelled && order.paymentId.status !== "Payment Failed" ) { %>
                                     <div class="flex justify-end w-[50%] items-center ">
                                         <button type="button" class="bg-red-400 hover:bg-red-500 p-2 font-bold rounded-xl" onclick="cancelItem('<%= order._id %>','<%= order.items[i]._id %>')" >Cancel Item</button>
                                     </div>
@@ -399,6 +407,14 @@
                                     </div>
                                 <% } %>    
                             </div>
+                            <% if (order.items[i].isCancelled) { %>
+                                <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-red-300 w-full mb-3">
+                                    <i data-feather="info" class="w-5 h-5 mr-1"></i>
+                                    <p class="text-sm text-black">
+                                      Item has been cancelled. Appropriate amount will be refunded to the Orginal Payment Method
+                                     </p>
+                                   </div>
+                            <% } %>
                             <% if (order.items[i].return.declinedAt !== null) { %>
                                 <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-red-300 w-full mb-3">
                                     <i data-feather="info" class="w-5 h-5 mr-1"></i>
@@ -471,11 +487,11 @@
                         <i data-feather="truck" class="mr-2"></i> Shipping Information
                     </h3>
                     <div class="space-y-2 text-gray-700">
-                        <p><%= order.addressId.firstName %> <%= order.addressId.lastName %></p>
-                        <p><%= order.addressId.address %></p>
-                        <p><%= order.addressId.state %>, <%= order.addressId.pincode %></p>
-                        <p><%= order.addressId.country %></p>
-                        <p ><strong>Phone:</strong> <%= order.addressId.mobileNo %></p>
+                        <p><%= order.address.firstName %> <%= order.address.lastName %></p>
+                        <p><%= order.address.address %></p>
+                        <p><%= order.address.state %>, <%= (order.address.pincode !== "Not Applicable") ? order.address.pincode : ""%></p>
+                        <p><%= order.address.country %></p>
+                        <p ><strong>Phone:</strong> <%= order.address.mobileNo %></p>
                         <p><strong>Shipping Method:</strong> Standard Shipping (Free)</p>
                     </div>
                 </div>

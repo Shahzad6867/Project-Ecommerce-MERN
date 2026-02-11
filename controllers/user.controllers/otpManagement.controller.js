@@ -50,6 +50,7 @@ const getUserOtp = async (req, res) => {
             description : "Upto 10% off on next Order",
             endDate : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
             discountValue : 10,
+            discountType : "percentage",
             minAmount : 500,
             maxDiscountAmount : 60,
             bannerImage : null,

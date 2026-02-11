@@ -6,7 +6,6 @@
         let price = Number(document.getElementById(`price${productId}${variant}`).innerText)
         let myCartHead = document.getElementById("cartHeadItemCount")
         let subTotal = document.getElementById("subTotal")
-        console.log(cartItemsDiv)
         let nothingInCartCard = document.getElementById("nothingInCartCard")
         fetch(`/cart?productId=${productId}&variant=${variant}&quantity=1`,{method : "POST"})
         .then(res => res.json())
@@ -59,7 +58,7 @@
                                                 
                                             </div>
                                         </div>` + cartItemsDiv.innerHTML
-                    subTotal.innerText = (Number(subTotal.innerText) + price).toFixed(2)
+                    subTotal.innerText = Math.round((Number(subTotal.innerText) + price) * 100 ) / 100
                     feather.replace()
                     iziToast.info({
                         title : "Cart",
@@ -124,7 +123,7 @@
             .then(data => {
                 
                 if (data.message === "Quantity has been updated in Cart") {
-                    subTotal.innerText = (Number(subTotal.innerText) + ((counter * price) - (Number(quantity.value) * price))).toFixed(2)
+                    subTotal.innerText = Math.round((Number(subTotal.innerText) + ((counter * price) - (Number(quantity.value) * price))) * 100) / 100
                     quantity.value = counter
                     cartItemQtyToBeUpdated.innerText = Number(cartItemQtyToBeUpdated.innerText) + 1
                     cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) + 1
@@ -195,7 +194,7 @@
                 document.getElementById(`incDecQtyDiv${productId}${variantIndex}`).classList.add("hidden")
                 myCartHead.innerText = Number(myCartHead.innerText) - 1
                 cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - 1
-                subTotal.innerText = (Number(subTotal.innerText) - ( (Number(quantity.value) * price) - (counter * price))).toFixed(2)
+                subTotal.innerText = Math.round((Number(subTotal.innerText) - ( (Number(quantity.value) * price) - (counter * price))) * 100) / 100
                 cartItem.remove()
                 if(Number(cartItemQtyNotifier.innerText) === 0){
                     document.getElementById("checkoutBtn").disabled = true
@@ -218,7 +217,7 @@
             fetch(`/cart/update-cart-item?productId=${productId}&variant=${variantIndex}&quantity=${counter}`,{method : "PATCH"})
             .then(res => res.json())
             .then(data => {
-                subTotal.innerText = (Number(subTotal.innerText) - ( (Number(quantity.value) * price) - (counter * price))).toFixed(2)
+                subTotal.innerText = Math.round((Number(subTotal.innerText) - ( (Number(quantity.value) * price) - (counter * price))) * 100) / 100
                 quantity.value = counter
                 cartItemQtyToBeUpdated.innerText = Number(cartItemQtyToBeUpdated.innerText) - 1
                 cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - 1
@@ -257,7 +256,7 @@
                 myCartHead.innerText = Number(myCartHead.innerText) - Number(quantity.value)
                 cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - Number(quantity.value)
                 quantity.value = 1
-                subTotal.innerText = (Number(subTotal.innerText) -  (Number(quantity.value) * price) ).toFixed(2)
+                subTotal.innerText = Math.round((Number(subTotal.innerText) -  (Number(quantity.value) * price) ) * 100) / 100
                 cartItem.remove()
                 if(document.getElementById("cartItemsDiv").children.length === 0){
                     document.getElementById("cartItemsDiv").innerHTML = `<div id="nothingInCartCard" class="flex  items-center justify-center border border-gray-400 w-[96%] text-left px-3 py-8 text-gray-700  rounded-lg m-2">
@@ -297,9 +296,9 @@
                 cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - Number(quantity.value)
                 myCartHeadInCart.innerText = Number(myCartHeadInCart.innerText) - Number(quantity.value)
                 subTotalItemInCart.innerText = Number(subTotalItemInCart.innerText) - Number(quantity.value)
-                subTotal.innerText = (Number(subTotal.innerText) -  (Number(quantity.value) * price) ).toFixed(2)
-                subTotalInCart.innerText =(Number(subTotalInCart.innerText) -  (Number(quantity.value) * price) ).toFixed(2)
-                tax.innerText = (Number(subTotalInCart.innerText) * 0.05 ).toFixed(2)
+                subTotal.innerText = Math.round((Number(subTotal.innerText) -  (Number(quantity.value) * price) ) * 100) / 100
+                subTotalInCart.innerText = Math.round((Number(subTotalInCart.innerText) -  (Number(quantity.value) * price) ) * 100) / 100
+                tax.innerText = Math.round((Number(subTotalInCart.innerText) * 0.05 ) * 100)
                 cartItem.remove()
                 if(document.getElementById("cartItemsDiv").children.length === 0){
                     document.getElementById("cartItemsDiv").innerHTML = `<div id="nothingInCartCard" class="flex  items-center justify-center border border-gray-400 w-[96%] text-left px-3 py-8 text-gray-700  rounded-lg m-2">
@@ -334,4 +333,10 @@
     }
     
     
-   
+    function getUserToLogin(){
+        iziToast.info({
+            title : "Info",
+            message : "Almost there! Please log in to add items to your Cart or Wishlist",
+            position : "topCenter"
+        })
+    }

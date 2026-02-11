@@ -1,544 +1,59 @@
-
-const Product = require("../../models/product.model.js");
-const Brand = require("../../models/brand.model.js");
-const Category = require("../../models/category.model.js");
-const Order = require("../../models/order.model.js");
 const ExcelJs = new require("exceljs")
 const PDFDocument = require("pdfkit-table")
-const path = require("path")
-const ejs = require("ejs")
-
-async function itemsSold(fromDate,toDate){
- let result = await Order.aggregate([
-    {
-      $match : {
-        "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
-      }
-    },{
-      $match : {
-        "statusTimeline.orderedAt" : {
-          $gte : fromDate,
-          $lt : toDate
-        }
-      }
-    },{
-      $unwind : "$items"
-    },{
-      $group : {_id : null,totalItemsSold : {$sum : "$items.quantity"} }
-    }
-   ])
-   return result[0]?.totalItemsSold || 0
-}
-
-async function computeGrossSales(fromDate,toDate){
-  let result = await Order.aggregate([
-    {
-      $match : {
-        "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
-      }
-    },{
-      $match : {
-        "statusTimeline.orderedAt" : {
-          $gte : fromDate,
-          $lt : toDate
-        }
-      }
-    },{
-      $unwind : "$items"
-    },{
-      $group : {_id : null,grossSales : {$sum : {$multiply : ["$items.price","$items.quantity"]}} }
-    }
-   ])
-    return new Intl.NumberFormat("en-US",{
-    style : "currency",
-    currency : "USD",
-    minimumFractionDigits : 2
-   }).format(result[0]?.grossSales || 0)
-   
-}
-async function computeTotalProductDiscount(fromDate,toDate){
-  let result = await Order.aggregate([
-    {
-      $match : {
-        "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
-      }
-    },{
-      $match : {
-        "statusTimeline.orderedAt" : {
-          $gte : fromDate,
-          $lt : toDate
-        }
-      }
-    },{
-      $unwind : "$items"
-    },{
-      $group : {_id : null, totalProductDiscount : {$sum : {$subtract : [{$multiply : ["$items.price","$items.quantity"]},{$multiply : ["$items.offerPrice","$items.quantity"]}] }}}
-    }
-   ])
-    return new Intl.NumberFormat("en-US",{
-    style : "currency",
-    currency : "USD",
-    minimumFractionDigits : 2
-   }).format(result[0]?.totalProductDiscount || 0)
-   
-}
-async function computeTotalCouponDiscount(fromDate,toDate){
-  let result = await Order.aggregate([
-    {
-      $match : {
-        "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
-      }
-    },{
-      $match : {
-        "statusTimeline.orderedAt" : {
-          $gte : fromDate,
-          $lt : toDate
-        }
-      }
-    },{
-      $group : {_id : null, totalCouponDiscount : {$sum : "$discount"}}
-    }
-   ])
-    return new Intl.NumberFormat("en-US",{
-    style : "currency",
-    currency : "USD",
-    minimumFractionDigits : 2
-   }).format(result[0]?.totalCouponDiscount || 0)
-   
-}
-async function computeTotalRefunds(fromDate,toDate){
-  let result = await Order.aggregate([
-    {
-      $match : {
-        "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
-      }
-    },{
-      $match : {
-        "statusTimeline.orderedAt" : {
-          $gte : fromDate,
-          $lt : toDate
-        }
-      }
-    },{
-      $lookup : {
-        from : "payments",
-        localField : "paymentId",
-        foreignField : "_id",
-        as : "paymentId"
-      }
-    },{
-      $unwind : "$paymentId"
-    },{
-      $group : {_id : null, amountRefunded : {$sum : "$paymentId.amountRefunded"}}
-    }
-   ])
-    return new Intl.NumberFormat("en-US",{
-    style : "currency",
-    currency : "USD",
-    minimumFractionDigits : 2
-   }).format(result[0]?.amountRefunded || 0)
-   
-}
-async function computeNetSales(fromDate,toDate){
-  let result = await Order.aggregate([
-    {
-      $match : {
-        "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
-      }
-    },{
-      $match : {
-        "statusTimeline.orderedAt" : {
-          $gte : fromDate,
-          $lt : toDate
-        }
-      }
-    },{
-      $lookup : {
-        from : "payments",
-        localField : "paymentId",
-        foreignField : "_id",
-        as : "paymentId"
-      }
-    },{
-      $unwind : "$paymentId"
-    },{
-      $group : {_id : null, netSales : {$sum : {$subtract : ["$subTotal","$paymentId.amountRefunded"]}}}
-    }
-   ])
-    return new Intl.NumberFormat("en-US",{
-    style : "currency",
-    currency : "USD",
-    minimumFractionDigits : 2
-   }).format(result[0]?.netSales || 0)
-   
-}
-
-async function computeSalePerItem(fromDate,toDate,skip,limit){
-  let result = await Order.aggregate([
-    {
-      $match : {
-        "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
-      }
-    },{
-      $match : {
-        "statusTimeline.orderedAt" : {
-          $gte : fromDate,
-          $lt : toDate
-        }
-      }
-    },{
-      $addFields : {
-        itemsLength : {$size : "$items"}
-      }
-    },{
-      $unwind : "$items"
-    },{
-      $group : {_id : {productName : "$items.productName",productColor : "$items.color",productSize : "$items.size"},
-       productId : {$first : "$items.productId"},
-       itemsSold : {$sum : "$items.quantity"},
-       revenue : {$sum : {$multiply : ["$items.quantity","$items.price"]}},
-       productDiscount : {$sum : {$subtract : [{$multiply : ["$items.quantity","$items.price"]},{$multiply : ["$items.quantity","$items.offerPrice"]}]}},
-       couponDiscount : {$sum : {$divide :  ["$discount","$itemsLength"]}},
-       netRevenueBeforeRefund : {$sum :{$subtract : [{$multiply : ["$items.quantity","$items.offerPrice"]},{ $divide: ["$discount", "$itemsLength"] }]} },
-       amountRefunded: {
-        $sum: {
-          $cond: {
-            if: { $or : [{
-              $and: [
-                { $eq: ["$items.return.isRequested", true] },
-                { $ne: ["$items.return.approvedAt", null] }
-              ]
-            },{
-              $ne: ["$items.refundOnCancelled.status", null]
-            }]
-            },
-            then: {
-              $subtract: [
-                { $multiply: ["$items.quantity", "$items.offerPrice"] },
-                { $divide: ["$discount", "$itemsLength"] }
-              ]
-            },
-            else: 0
-          }
-        }
-      }
-      }
-    },{
-      $addFields : {
-        netRevenue : {$subtract : ["$netRevenueBeforeRefund","$amountRefunded"]}
-      }
-    },{
-      $lookup : {
-        from : "products",
-        localField : "productId",
-        foreignField : "_id",
-        as : "productId"
-      }
-    },{
-      $unwind : "$productId"
-    },{
-      $lookup : {
-        from : "categories",
-        localField : "productId.categoryId",
-        foreignField : "_id",
-        as : "categoryId"
-      }
-    },{
-      $unwind : "$categoryId"
-    },{
-      $project : {
-        _id : 1,
-        itemsSold : 1,
-        revenue : 1,
-        productDiscount : 1,
-        couponDiscount : 1,
-        netRevenue : 1,
-        amountRefunded : 1,
-        categoryName : "$categoryId.categoryName"
-      }
-    },{
-      $sort : {"netRevenue" : -1}
-    },{
-      $facet: {
-        data: [
-          { $skip: skip },
-          { $limit: limit }
-        ],
-        totalCount: [
-          { $count: "count" }
-        ]
-      }
-    }
-   ])
-    return result
-   
-}
-async function computeSalePerItemForPdfAndExcel(fromDate,toDate){
-  let result = await Order.aggregate([
-    {
-      $match : {
-        "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
-      }
-    },{
-      $match : {
-        "statusTimeline.orderedAt" : {
-          $gte : fromDate,
-          $lt : toDate
-        }
-      }
-    },{
-      $addFields : {
-        itemsLength : {$size : "$items"}
-      }
-    },{
-      $unwind : "$items"
-    },{
-      $group : {_id : {productName : "$items.productName",productColor : "$items.color",productSize : "$items.size"},
-       productId : {$first : "$items.productId"},
-       itemsSold : {$sum : "$items.quantity"},
-       revenue : {$sum : {$multiply : ["$items.quantity","$items.price"]}},
-       productDiscount : {$sum : {$subtract : [{$multiply : ["$items.quantity","$items.price"]},{$multiply : ["$items.quantity","$items.offerPrice"]}]}},
-       couponDiscount : {$sum : {$divide :  ["$discount","$itemsLength"]}},
-       netRevenueBeforeRefund : {$sum :{$subtract : [{$multiply : ["$items.quantity","$items.offerPrice"]},{ $divide: ["$discount", "$itemsLength"] }]} },
-       amountRefunded: {
-        $sum: {
-          $cond: {
-            if: { $or : [{
-              $and: [
-                { $eq: ["$items.return.isRequested", true] },
-                { $ne: ["$items.return.approvedAt", null] }
-              ]
-            },{
-              $ne: ["$items.refundOnCancelled.status", null]
-            }]
-            },
-            then: {
-              $subtract: [
-                { $multiply: ["$items.quantity", "$items.offerPrice"] },
-                { $divide: ["$discount", "$itemsLength"] }
-              ]
-            },
-            else: 0
-          }
-        }
-      }
-      }
-    },{
-      $addFields : {
-        netRevenue : {$subtract : ["$netRevenueBeforeRefund","$amountRefunded"]}
-      }
-    },{
-      $lookup : {
-        from : "products",
-        localField : "productId",
-        foreignField : "_id",
-        as : "productId"
-      }
-    },{
-      $unwind : "$productId"
-    },{
-      $lookup : {
-        from : "categories",
-        localField : "productId.categoryId",
-        foreignField : "_id",
-        as : "categoryId"
-      }
-    },{
-      $unwind : "$categoryId"
-    },{
-      $project : {
-        _id : 1,
-        itemsSold : 1,
-        revenue : 1,
-        productDiscount : 1,
-        couponDiscount : 1,
-        netRevenue : 1,
-        amountRefunded : 1,
-        categoryName : "$categoryId.categoryName"
-      }
-    },{
-      $sort : {"netRevenue" : -1}
-    }
-   ])
-    return result
-   
-}
-async function computeOrderBasedSales(fromDate,toDate,skip,limit){
-  let result = await Order.aggregate([
-    {
-      $match : {
-        "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
-      }
-    },{
-      $match : {
-        "statusTimeline.orderedAt" : {
-          $gte : fromDate,
-          $lt : toDate
-        }
-      }
-    },{
-      $lookup : {
-        from : "payments",
-        localField : "paymentId",
-        foreignField : "_id",
-        as : "paymentId"
-      }
-    },{
-      $unwind : "$paymentId"
-    },{
-      $addFields : {
-        itemsLength : {$size : "$items"}
-      }
-    },{
-      $unwind : "$items"
-    },{
-      $group : {_id : "$orderId",
-        orderedAt : {$first : "$statusTimeline.orderedAt"},
-       revenue : {$sum : {$multiply : ["$items.price","$items.quantity"]}},
-       productDiscount : {$sum : {$subtract : [{$multiply : ["$items.quantity","$items.price"]},{$multiply : ["$items.quantity","$items.offerPrice"]}]}},
-       couponDiscount : {$sum : { $divide: ["$discount", "$itemsLength"] }},
-       netRevenueBeforeRefund : {$sum : {$subtract : [{$multiply : ["$items.quantity","$items.offerPrice"]},{ $divide: ["$discount", "$itemsLength"] }]}},
-       amountRefunded : {$first : "$paymentId.amountRefunded"}
-      }
-    },{
-      $addFields : {
-        netRevenue : {$subtract : ["$netRevenueBeforeRefund","$amountRefunded"]}
-      }
-    },{
-      $sort : {"netRevenue" : -1}
-    },{
-      $skip : skip
-    },{
-      $limit : limit
-    }
-   ])
-    return result
-   
-}
-async function computeOrderBasedSalesForPdfAndExcel(fromDate,toDate){
-  let result = await Order.aggregate([
-    {
-      $match : {
-        "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
-      }
-    },{
-      $match : {
-        "statusTimeline.orderedAt" : {
-          $gte : fromDate,
-          $lt : toDate
-        }
-      }
-    },{
-      $lookup : {
-        from : "payments",
-        localField : "paymentId",
-        foreignField : "_id",
-        as : "paymentId"
-      }
-    },{
-      $unwind : "$paymentId"
-    },{
-      $addFields : {
-        itemsLength : {$size : "$items"}
-      }
-    },{
-      $unwind : "$items"
-    },{
-      $group : {_id : "$orderId",
-        orderedAt : {$first : "$statusTimeline.orderedAt"},
-       revenue : {$sum : {$multiply : ["$items.price","$items.quantity"]}},
-       productDiscount : {$sum : {$subtract : [{$multiply : ["$items.quantity","$items.price"]},{$multiply : ["$items.quantity","$items.offerPrice"]}]}},
-       couponDiscount : {$sum : { $divide: ["$discount", "$itemsLength"] }},
-       netRevenueBeforeRefund : {$sum : {$subtract : [{$multiply : ["$items.quantity","$items.offerPrice"]},{ $divide: ["$discount", "$itemsLength"] }]}},
-       amountRefunded : {$first : "$paymentId.amountRefunded"}
-      }
-    },{
-      $addFields : {
-        netRevenue : {$subtract : ["$netRevenueBeforeRefund","$amountRefunded"]}
-      }
-    },{
-      $sort : {"netRevenue" : -1}
-    }
-   ])
-    return result
-   
-}
-
+const reportsService = require("../../services/admin-services/reportsService.js")
+const ERROR_MESSAGES = require("../../constants/errorMessages.js")
+const HTTP_STATUS = require("../../constants/httpStatus.js")
 
 const getSalesReport = async (req, res) => {
     try {
-    let today = new Date(new Date().toISOString().split("T")[0])
-    let fromDate = null 
-    let toDate = null
-    if(req.query.fromDate && req.query.toDate){
-      fromDate = new Date(req.query.fromDate)
-      fromDate.setUTCHours(0,0,0,0)
-      toDate = new Date(req.query.toDate )
-      toDate.setUTCHours(23,59,59,999) 
-    }else{
-      fromDate = new Date(today)
-      fromDate.setUTCHours(0,0,0,0)
-      toDate = new Date(today) 
-      toDate.setUTCHours(23,59,59,999)
-    }
-    let reportPeriod = fromDate.toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"}) + " - " + toDate.toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"})
-    let generatedOn = today.toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"})
-    
+    const {today,fromDate,toDate} = reportsService.computeFromAndToDate(req.query.fromDate,req.query.toDate)
     let reportBasedOn = req.query.reportBasedOn || "today"
     const perPage = 5
     const productWisePage  = req.query.productWisePage || 1
     const orderWisePage  = req.query.orderWisePage || 1
     const skipForProduct = (perPage * productWisePage) - perPage
     const skipForOrder = (perPage * orderWisePage) - perPage
-     let totalOrdersCount = await Order.find({"status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]},"statusTimeline.orderedAt" : {$gte : fromDate,$lt : toDate}}).countDocuments()
-     let itemsSoldCount = await itemsSold(fromDate,toDate)
-     let grossSales = await computeGrossSales(fromDate,toDate)
-     let totalProductDiscount = await computeTotalProductDiscount(fromDate,toDate)
-     let totalCouponDiscount = await computeTotalCouponDiscount(fromDate,toDate)
-     let totalRefunds = await computeTotalRefunds(fromDate,toDate)
-     let netSales = await computeNetSales(fromDate,toDate)
-     let salePerItem = await computeSalePerItem(fromDate,toDate,skipForProduct,perPage)
-     let orderBasedSales = await computeOrderBasedSales(fromDate,toDate,skipForOrder,perPage)
-     console.log(salePerItem[0].data)
+     let totalOrdersCount = await reportsService.computeTotalOrdersCount(fromDate,toDate)
+     let itemsSoldCount = await reportsService.itemsSold(fromDate,toDate)
+     let grossSales = await reportsService.computeGrossSales(fromDate,toDate)
+     let totalProductDiscount = await reportsService.computeTotalProductDiscount(fromDate,toDate)
+     let totalCouponDiscount = await reportsService.computeTotalCouponDiscount(fromDate,toDate)
+     let totalRefunds = await reportsService.computeTotalRefunds(fromDate,toDate)
+     let totalTax = await reportsService.computeTotalTax(fromDate,toDate)
+     let totalShipping = await reportsService.computeTotalShipping(fromDate,toDate)
+     let totalOrderValue = await reportsService.computeTotalOrderValue(fromDate,toDate)
+     let netSales = await reportsService.computeNetSales(fromDate,toDate)
+     let salePerItem = await reportsService.computeSalePerItem(fromDate,toDate,skipForProduct,perPage)
+     let orderBasedSales = await reportsService.computeOrderBasedSales(fromDate,toDate,skipForOrder,perPage)
      const productCount = salePerItem[0].totalCount[0]?.count || 1
      const pagesForProduct = Math.ceil(productCount / perPage)
      const orderCount = totalOrdersCount || 1
      const pagesForOrder = Math.ceil(orderCount / perPage)
      salePerItem = salePerItem[0].data
-      res.render("admin-view/admin.sales-report.ejs",{totalOrdersCount,itemsSoldCount,grossSales,totalProductDiscount,totalCouponDiscount,totalRefunds,netSales,salePerItem,orderBasedSales,orderWisePage,productWisePage,pagesForOrder,pagesForProduct,fromDate,toDate,reportBasedOn})
+      res.render("admin-view/admin.sales-report.ejs",{totalOrdersCount,itemsSoldCount,grossSales,totalProductDiscount,totalCouponDiscount,totalRefunds,netSales,totalTax,totalShipping,totalOrderValue,salePerItem,orderBasedSales,orderWisePage,productWisePage,pagesForOrder,pagesForProduct,fromDate,toDate,reportBasedOn})
   
     } catch (err) {
       console.error(err)
-      res.status(500).send("Server Error")
+      return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send(ERROR_MESSAGES.SERVER_ERROR)
     }
   }
-  const getSalesReportIntoExcel = async (req, res) => {
+const getSalesReportIntoExcel = async (req, res) => {
     try {
-    let today = new Date(new Date().toISOString().split("T")[0])
-    let fromDate = null 
-    let toDate = null
-    if(req.query.fromDate && req.query.toDate){
-      fromDate = new Date(req.query.fromDate)
-      fromDate.setUTCHours(0,0,0,0)
-      toDate = new Date(req.query.toDate )
-      toDate.setUTCHours(23,59,59,999) 
-    }else{
-      fromDate = new Date(today)
-      fromDate.setUTCHours(0,0,0,0)
-      toDate = new Date(today) 
-      toDate.setUTCHours(23,59,59,999)
-    }
+     const {today,fromDate,toDate} = reportsService.computeFromAndToDate(req.query.fromDate,req.query.toDate)
     let reportPeriod = fromDate.toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"}) + " - " + toDate.toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"})
     let generatedOn = today.toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"})
-     let totalOrdersCount = await Order.find({"status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]},"statusTimeline.orderedAt" : {$gte : fromDate,$lt : toDate}}).countDocuments()
-     let itemsSoldCount = await itemsSold(fromDate,toDate)
-     let grossSales = await computeGrossSales(fromDate,toDate)
-     let totalProductDiscount = await computeTotalProductDiscount(fromDate,toDate)
-     let totalCouponDiscount = await computeTotalCouponDiscount(fromDate,toDate)
-     let totalRefunds = await computeTotalRefunds(fromDate,toDate)
-     let netSales = await computeNetSales(fromDate,toDate)
-     let salePerItem = await computeSalePerItemForPdfAndExcel(fromDate,toDate)
-     let orderBasedSales = await computeOrderBasedSalesForPdfAndExcel(fromDate,toDate)
+     let totalOrdersCount = await reportsService.computeTotalOrdersCount(fromDate,toDate)
+     let itemsSoldCount = await reportsService.itemsSold(fromDate,toDate)
+     let grossSales = await reportsService.computeGrossSales(fromDate,toDate)
+     let totalProductDiscount = await reportsService.computeTotalProductDiscount(fromDate,toDate)
+     let totalCouponDiscount = await reportsService.computeTotalCouponDiscount(fromDate,toDate)
+     let totalRefunds = await reportsService.computeTotalRefunds(fromDate,toDate)
+     let netSales = await reportsService.computeNetSales(fromDate,toDate)
+     let totalTax = await reportsService.computeTotalTax(fromDate,toDate)
+     let totalShipping = await reportsService.computeTotalShipping(fromDate,toDate)
+     let totalOrderValue = await reportsService.computeTotalOrderValue(fromDate,toDate)
+     let salePerItem = await reportsService.computeSalePerItemForPdfAndExcel(fromDate,toDate)
+     let orderBasedSales = await reportsService.computeOrderBasedSalesForPdfAndExcel(fromDate,toDate)
       
      const workbook = new ExcelJs.Workbook()
 
@@ -556,6 +71,9 @@ const getSalesReport = async (req, res) => {
       {metric : "Total Coupon Discount", value : totalCouponDiscount},
       {metric : "Refunds", value : totalRefunds},
       {metric : "Net Sales", value : netSales},
+      {metric : "Tax", value : totalTax},
+      {metric : "Shipping", value : totalShipping},
+      {metric : "Total Order Value", value : totalOrderValue}
      ])
 
      summarySheet.getRow(1).font = {bold : true}
@@ -681,36 +199,24 @@ const getSalesReport = async (req, res) => {
   }
 const getSalesReportIntoPdf = async (req, res) => {
     try {
-    let today = new Date(new Date().toISOString().split("T")[0])
-    let fromDate = null 
-    let toDate = null
-    if(req.query.fromDate && req.query.toDate){
-      fromDate = new Date(req.query.fromDate)
-      fromDate.setUTCHours(0,0,0,0)
-      toDate = new Date(req.query.toDate )
-      toDate.setUTCHours(23,59,59,999) 
-    }else{
-      fromDate = new Date(today)
-      fromDate.setUTCHours(0,0,0,0)
-      toDate = new Date(today) 
-      toDate.setUTCHours(23,59,59,999)
-    }
+     const {today,fromDate,toDate} = reportsService.computeFromAndToDate(req.query.fromDate,req.query.toDate)
     let reportPeriod = fromDate.toLocaleDateString("en-US", {day: "numeric",month: "short",year: "numeric",timeZone : req.cookies.tz}) + " - " + toDate.toLocaleDateString("en-US", {day: "numeric",month: "short",year: "numeric",timeZone : req.cookies.tz})
     let generatedOn = today.toLocaleDateString("en-US", {day: "numeric",month: "short",year: "numeric",timeZone : req.cookies.tz})
-
+     let totalOrdersCount = await reportsService.computeTotalOrdersCount(fromDate,toDate)
+     let itemsSoldCount = await reportsService.itemsSold(fromDate,toDate)
+     let grossSales = await reportsService.computeGrossSales(fromDate,toDate)
+     let totalProductDiscount = await reportsService.computeTotalProductDiscount(fromDate,toDate)
+     let totalCouponDiscount = await reportsService.computeTotalCouponDiscount(fromDate,toDate)
+     let totalRefunds = await reportsService.computeTotalRefunds(fromDate,toDate)
+     let netSales = await reportsService.computeNetSales(fromDate,toDate)
+     let totalTax = await reportsService.computeTotalTax(fromDate,toDate)
+     let totalShipping = await reportsService.computeTotalShipping(fromDate,toDate)
+     let totalOrderValue = await reportsService.computeTotalOrderValue(fromDate,toDate)
+     let salePerItem = await reportsService.computeSalePerItemForPdfAndExcel(fromDate,toDate)
+     let orderBasedSales = await reportsService.computeOrderBasedSalesForPdfAndExcel(fromDate,toDate)
    
-     let totalOrdersCount = await Order.find({"status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]},"statusTimeline.orderedAt" : {$gte : fromDate,$lt : toDate}}).countDocuments()
-     let itemsSoldCount = await itemsSold(fromDate,toDate)
-     let grossSales = await computeGrossSales(fromDate,toDate)
-     let totalProductDiscount = await computeTotalProductDiscount(fromDate,toDate)
-     let totalCouponDiscount = await computeTotalCouponDiscount(fromDate,toDate)
-     let totalRefunds = await computeTotalRefunds(fromDate,toDate)
-     let netSales = await computeNetSales(fromDate,toDate)
-     let salePerItem = await computeSalePerItemForPdfAndExcel(fromDate,toDate)
-     let orderBasedSales = await computeOrderBasedSalesForPdfAndExcel(fromDate,toDate)
-   
 
-     const doc = new PDFDocument({ margin: 40 })
+     const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 40 })
      res.setHeader("Content-Type", "application/pdf")
       res.setHeader(
         "Content-Disposition",
@@ -747,7 +253,10 @@ const getSalesReportIntoPdf = async (req, res) => {
             {label : "Product Discount",align : "center",headerAlign : "center",valign : "center"},
             {label : "Coupon Discount",align : "center",headerAlign : "center",valign : "center"},
             {label : "Refunds",align : "center",headerAlign : "center",valign : "center"},
-            {label : "Net Revenue",align : "center",headerAlign : "center",valign : "center"}
+            {label : "Net Revenue",align : "center",headerAlign : "center",valign : "center"},
+            {label : "Tax",align : "center",headerAlign : "center",valign : "center"},
+            {label : "Shipping",align : "center",headerAlign : "center",valign : "center"},
+            {label : "Total Order Value",align : "center",headerAlign : "center",valign : "center"}
           ],
           rows: [[
             totalOrdersCount,
@@ -756,7 +265,10 @@ const getSalesReportIntoPdf = async (req, res) => {
             totalProductDiscount,
             totalCouponDiscount,
             totalRefunds,
-            netSales
+            netSales,
+            totalTax,
+            totalShipping,
+            totalOrderValue
           ]]
         }, {
           prepareHeader: () => doc.font("Helvetica-Bold").fontSize(12),
@@ -791,7 +303,7 @@ const getSalesReportIntoPdf = async (req, res) => {
         ])
       })
 
-      doc.moveDown(2)
+      doc.addPage()
       doc.fontSize(14).font("Helvetica-Bold").text("Order-Wise Sales")
       doc.moveDown(0.5)
       await doc.table({
@@ -803,7 +315,10 @@ const getSalesReportIntoPdf = async (req, res) => {
           {label : "Product Discount",align : "center",headerAlign : "center",valign : "center"},
           {label : "Coupon Discount",align : "center",headerAlign : "center",valign : "center"},
           {label : "Refunds",align : "center",headerAlign : "center",valign : "center"},
-          {label : "Net Revenue",align : "center",headerAlign : "center",valign : "center"}
+          {label : "Net Revenue",align : "center",headerAlign : "center",valign : "center"},
+          {label : "Tax",align : "center",headerAlign : "center",valign : "center"},
+          {label : "Shipping",align : "center",headerAlign : "center",valign : "center"},
+          {label : "Total Order Value",align : "center",headerAlign : "center",valign : "center"}
         ],
         rows: orderBasedSales.map((order, i) => [
           i + 1,
@@ -813,7 +328,10 @@ const getSalesReportIntoPdf = async (req, res) => {
           `$${order.productDiscount.toFixed(2)}`,
           `$${order.couponDiscount.toFixed(2)}`,
           `$${order.amountRefunded.toFixed(2)}`,
-          `$${order.netRevenue.toFixed(2)}`
+          `$${order.netRevenue.toFixed(2)}`,
+          `$${order.tax.toFixed(2)}`,
+          `$${order.shipping.toFixed(2)}`,
+          `$${order.totalOrderValue.toFixed(2)}`
         ])
       })
       

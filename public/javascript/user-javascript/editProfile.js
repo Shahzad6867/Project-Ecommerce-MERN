@@ -109,7 +109,6 @@ document.getElementById("edit-profile-form").addEventListener("submit", function
     const imageUpload = document.getElementById("imageUpload")
 
     const nameRegex = /^[A-Za-z]+(?:[ '-][A-Za-z]+)*(?:\d{0,5})?$/
-    console.log()
     const newIntlNumber = iti.getNumber();
 
     // ❗ detect no change correctly

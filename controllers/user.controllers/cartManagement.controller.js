@@ -1,67 +1,42 @@
-const Product = require("../../models/product.model");
-const Address = require("../../models/address.model");
-const User = require("../../models/user.model");
 const Cart = require("../../models/cart.model")
-const Wishlist = require("../../models/wishlist.model")
-const mongoose = require("mongoose");
-const Offer = require("../../models/offer.model");
 const Coupon = require("../../models/coupon.model");
-const { getCoupons } = require("../admin.controllers/couponManagementController");
-
+const cartService = require("../../services/user-services/cartService.js")
 
 const getCart = async (req,res) => {
     let user = req.session.user || req.user
     let message = req.session.message || null
     delete req.session.message
-    const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
-    const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId").populate("couponApplied")
-    const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
-    const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
-    const offers = await Offer.find({})
+    const productsFullList = await cartService.getFullProducts()
+    const cartItems = await cartService.getCartItems(user._id)
+    const cartItemsCount = await cartService.getCartItemsCount(user._id)
+    const wishlistItemsCount = await cartService.getWishlistItemsCount(user._id)
     const coupons = await Coupon.find({userId : null})
     const userCoupons = await Coupon.find({userId : user._id})
-    res.render("user-view/user.cart-management.ejs",{message,user,productsFullList,cartItems,cartItemsCount,offers,coupons,userCoupons,wishlistItemsCount})
+    res.render("user-view/user.cart-management.ejs",{message,user,productsFullList,cartItems,cartItemsCount,coupons,userCoupons,wishlistItemsCount})
 }
 
 const addToCart = async (req,res) => {
    try {
     const {productId,variant,quantity} = req.query
     let cartUser = req.session.user || req.user
-    await Wishlist.findOneAndDelete({userId : cartUser._id,productId : productId,variant : variant})
-    const product = await Product.findById(productId)
-    let stock = product.variants[variant].stockQuantity 
-    if(!product.isDeleted){
-        if(stock === 0 || product.variants[variant].stockStatus === "Out of Stock"){
-            product.variants[variant].stockStatus = "Out of Stock"
-            await product.save()
-          return   res.status(409).json({
-                success : false,
-                message : "Out of Stock",
-                specMessage : `${product.productName} is Out of Stock`
-            })
-        }
-    }else{
+    const result = await cartService.addItemToCart(cartUser._id,productId,variant,quantity)
+    if(result.message === "Out of Stock"){
+        return   res.status(409).json({
+            success : false,
+            message : "Out of Stock",
+            specMessage : `${result.product.productName} is Out of Stock`
+        })
+    }else if(result.message === "Product Unavailable"){
         return res.status(410).json({
             success : false,
             message : "Product Unavailable"
         })
     }
-    const cartItem = new Cart({
-        userId : cartUser._id,
-        productId : productId,
-        categoryId : product.categoryId,
-        variant : variant,
-        quantity : quantity,
-        categoryOfferId : product.categoryOfferId,
-        productOfferId : product.variants[variant].productOfferId
-        
-    })
-    await cartItem.save()
-     res.status(200).json({
+    return res.status(200).json({
         success : true,
         message : "Product has been added to Cart",
-        product,
-        cart : cartItem
+        product : result.product,
+        cart : result.cartItem
     })
    } catch (error) {
     console.log(error)
@@ -72,13 +47,45 @@ const addToCart = async (req,res) => {
    }
 }
 
+const buyNow = async ( req,res) => {
+    const {productId,variant} = req.query
+    
+    let cartUser = req.session.user || req.user
+     let cartItem = await cartService.getCartItem(cartUser._id,productId,variant)
+     let quantity =  cartItem?.quantity || 1
+     if(cartItem){
+        return res.status(200).json({
+            success : true,
+            message : "Done"
+        })
+     }else{
+    const result = await cartService.addItemToCart(cartUser._id,productId,variant,quantity)
+    if(result.message === "Out of Stock"){
+        return   res.status(409).json({
+            success : false,
+            message : "Out of Stock",
+            specMessage : `${result.product.productName} is Out of Stock`
+        })
+    }else if(result.message === "Product Unavailable"){
+        return res.status(410).json({
+            success : false,
+            message : "Product Unavailable"
+        })
+    }
+    
+    return res.status(200).json({
+            success : true,
+            message : "Done"
+        })
+     }
+}
+
 const updateCartItem = async (req,res) => {
     try {
      const {productId,variant,quantity} = req.query
      let cartUser = req.session.user || req.user
-     console.log(productId)
-     let cartItem = await Cart.findOne({userId : cartUser._id,productId : productId,variant : variant})
-     let product = await Product.findById(productId)
+     let cartItem = await cartService.getCartItem(cartUser._id,productId,variant)
+     let product = await cartService.getProduct(productId)
      let availableStock = product.variants[variant].stockQuantity
      if(!product.isDeleted){
         if(availableStock === 0 || product.variants[variant].stockStatus === "Out of Stock"){
@@ -124,9 +131,8 @@ const updateCartItem = async (req,res) => {
  const deleteCartItem = async (req,res) => {
     try {
         const {cartItemId,productId} = req.query
-        console.log(cartItemId)
         await Cart.findByIdAndDelete({_id : cartItemId})
-        let product = await Product.findById(productId)
+        let product = await cartService.getProduct(productId)
         return res.status(200).json({
             success : true,
             message : "Item have been removed from your Cart",
@@ -156,18 +162,24 @@ const deleteCartItemFromHome = async (req,res) => {
 const applyCoupon = async (req,res) => {
     let {id} = req.params
     let user = req.session.user || req.user
+    const olderCoupon = await Cart.findOne({userId : user._id})
     await Cart.updateMany({userId : user._id},{couponApplied : id})
+    const coupon = await Coupon.findById(id)
     return res.json({
         success : true,
-        message : "Done"
+        message : "Done",
+        coupon,
+        olderCoupon : olderCoupon.couponApplied
     })
 }
 const removeCoupon = async (req,res) => {
     let user = req.session.user || req.user
+    const coupon = await Cart.findOne({userId : user._id})
     await Cart.updateMany({userId : user._id},{couponApplied : null})
     return res.json({
         success : true,
-        message : "Done"
+        message : "Done",
+        coupon
     })
 }
 module.exports = {
@@ -177,5 +189,6 @@ module.exports = {
     deleteCartItemFromHome,
     deleteCartItem,
     applyCoupon,
-    removeCoupon
+    removeCoupon,
+    buyNow
 }

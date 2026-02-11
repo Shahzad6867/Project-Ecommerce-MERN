@@ -19,7 +19,6 @@ let iti = window.intlTelInput(input, {
 feather.replace();
 
 function doesTheCountryHavePincode(country){
-    console.log(country)
     const noPostalCodeCountries = ["AE", "HK", "MO", "QA", "OM", "SA"];
     const pincode = document.getElementById("pincode")
     if(noPostalCodeCountries.includes(country)){
@@ -200,7 +199,6 @@ document.getElementById("accountName").addEventListener("click", function() {
     if(useSameName.checked === true){
         document.getElementById("firstName").value = firstName
         document.getElementById("lastName").value = lastName
-        console.log(iti.getNumber())
     }else{
         document.getElementById("firstName").value = ""
         document.getElementById("lastName").value = ""

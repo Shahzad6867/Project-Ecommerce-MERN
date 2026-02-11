@@ -30,7 +30,7 @@
 
     <div class="bg-white w-[33%] h-[90px]  rounded-lg shadow">
       <div class=" bg-green-300 h-[40%] flex items-center justify-center rounded-tr-lg rounded-tl-lg">
-        <p class="text-sm font-bold text-gray-800">Total Revenue</p>
+        <p class="text-sm font-bold text-gray-800">Gross Revenue</p>
       </div>
       
       <h2 class="text-2xl font-medium text-gray-700 mt-2.5 text-center"><%= grossSales %></h2>
@@ -67,7 +67,7 @@
 
     <div class="bg-white w-[25%] h-[90px]  rounded-lg shadow">
       <div class=" bg-green-300 h-[40%] flex items-center justify-center rounded-tr-lg rounded-tl-lg">
-        <p class="text-sm font-bold text-gray-800">Net Profit</p>
+        <p class="text-sm font-bold text-gray-800">Net Revenue</p>
       </div>
       
       <h2 class="text-2xl font-medium text-gray-700 mt-2.5 text-center"><%= netSales %></h2>
@@ -278,6 +278,16 @@
     
 
  getRevenueAnalysisChart()
+
+ let serverMessage = '<%- message %>'
+ if(serverMessage === "Something went wrong. Please try again later"){
+    iziToast.error({
+      title : "Error",
+      message: serverMessage,
+     position: 'topRight'
+    })
+    
+  }
 </script>
 
 </body>

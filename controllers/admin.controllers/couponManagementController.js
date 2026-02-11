@@ -1,147 +1,82 @@
-const cloudinary = require("../../config/cloudinaryConfig.js")
 const fs = require("fs");
+const path = require("path");
 const {extractPublicId} = require("cloudinary-build-url")
-const Product = require("../../models/product.model.js");
-const Category = require("../../models/category.model.js")
-const Cart = require("../../models/cart.model.js")
-const Coupon = require("../../models/coupon.model.js")
+const couponService = require("../../services/admin-services/couponService.js")
+const ERROR_MESSAGES = require("../../constants/errorMessages.js")
+const HTTP_STATUS = require("../../constants/httpStatus.js")
 
 const getCoupons = async(req,res) => {
     const perPage = req.session.itemsPerPage || 5 
     const page = req.query.page || 1
-    const coupons = await Coupon.find({userId : null}).skip(perPage * page - perPage).limit(perPage)
-    const count = await Coupon.countDocuments({})
-    const productsFullList = await Product.aggregate().project({productName : 1,_id : 0})
+    const coupons = await couponService.getCoupons(perPage,page)
+    const count = await couponService.countCoupons()
     const pages = Math.ceil(count / perPage)
      const message = req.session.message || null
     delete req.session.message
     const timezone = req.cookies.tz
-    res.render("admin-view/admin.coupons.ejs",{message,coupons,count,page,pages,productsFullList,timezone})
+    res.render("admin-view/admin.coupons.ejs",{message,coupons,count,page,pages,timezone})
 }
 const getAddCoupon = async(req,res) => {
-    const message = req.session.message || null
-    delete req.session.message
-    const coupon = null
-    res.render("admin-view/admin.add-coupon.ejs",{coupon})
+    res.render("admin-view/admin.add-coupon.ejs",{coupon : null})
 }
 const getEditCoupon = async(req,res) => {
     const couponId = req.query.id
-    const coupon = await Coupon.findOne({_id : couponId })
-    const message = req.session.message || null
-    delete req.session.message
+    const coupon = await couponService.getCoupon(couponId)
     const timezone = req.cookies.tz
-    res.render("admin-view/admin.add-coupon.ejs",{message,coupon,timezone})
+    res.render("admin-view/admin.add-coupon.ejs",{coupon,timezone})
 }
 const addCoupon = async (req,res) => {
    try {
-    const {couponName,description,endDate,discountValue,minAmount,maxDiscountAmount} = req.body
-    let coupon = {}
+    const {couponName,description,endDate,discountType,discountValue,minAmount,maxDiscountAmount} = req.body
     let imageUrl = null
     if(req.file){
-        
-        let file = req.file
-        const imageUpload = async (file) => {
-        
-            const result = await cloudinary.uploader.upload(file.path,{
-                folder : "coupon-banners"
-            })
-            fs.unlinkSync(file.path)
-          return result.secure_url
-        }
-         imageUrl = await imageUpload(file)
-        
-       }
-
-    
-     coupon = new Coupon({
-         name : couponName.toUpperCase(),
-         description,
-         endDate : new Date(endDate),
-         discountValue,
-         minAmount,
-         maxDiscountAmount,
-         bannerImage : imageUrl
-     })
-     await coupon.save()
+        imageUrl = await couponService.uploadToCloudinary(req.file.path)
+        fs.unlinkSync(path.resolve(req.file.path))
+    }
+    await couponService.createNewCoupon(couponName,description,endDate,discountType,discountValue,minAmount,maxDiscountAmount,imageUrl)
+    req.session.message = "Coupon has been created Successfully"
     return res.redirect("/admin/coupons")
    } catch (error) {
     console.log(error)
+    req.session.message = ERROR_MESSAGES.SERVER_ERROR
+    return res.redirect("/admin/coupons")
    }
 }
 
 const editCoupon = async (req,res) => {
     try {
-        const {couponName,description,endDate,discountValue,minAmount,maxDiscountAmount} = req.body
-        let coupon = await Coupon.findOne({_id : req.query.id })
-        console.log(coupon)
+        const {couponName,description,endDate,discountType,discountValue,minAmount,maxDiscountAmount} = req.body
+        let coupon = await couponService.getCoupon(req.query.id)
         let imageUrl = null
         if(req.file){
-            
-            let file = req.file
-            const imageUpload = async (file) => {
-            
-                const result = await cloudinary.uploader.upload(file.path,{
-                    folder : "coupon-banners"
-                })
-                fs.unlinkSync(file.path)
-              return result.secure_url
-            }
-             imageUrl = await imageUpload(file)
-             if(coupon.bannerImage !== null){
+            imageUrl = await couponService.uploadToCloudinary(req.file.path)
+            fs.unlinkSync(path.resolve(req.file.path))
+            if(coupon.bannerImage !== null){
                 let publicId = extractPublicId(coupon.bannerImage)
-                    await cloudinary.uploader.destroy(publicId,(error,result) => {
-                    if(error) {
-                        console.error(error)
-                    }else{
-                        console.log(result)
-                    }
-                    })
+                    await couponService.deleteImageFromCloudinary(publicId)
                }
-           }
+        }
 
-           
-           if(imageUrl === null){
-              imageUrl = coupon.bannerImage 
-           }
+        if(imageUrl === null){
+            imageUrl = coupon.bannerImage 
+        }
 
-           
-           
-         await Coupon.findOneAndUpdate({_id : req.query.id},{
-             name : couponName.toUpperCase(),
-             description : description,
-             endDate : new Date(endDate),
-             discountValue,
-             minAmount,
-             maxDiscountAmount,
-             bannerImage : imageUrl
-         })
-        
+        await couponService.updateCoupon(req.query.id,couponName,description,endDate,discountType,discountValue,minAmount,maxDiscountAmount,imageUrl) 
         req.session.message = "Coupon Updated Successfully"
         return res.redirect("/admin/coupons")
        } catch (error) {
         console.log(error)
+        req.session.message = ERROR_MESSAGES.SERVER_ERROR
+        return res.redirect("/admin/coupons")
        }
 }
 
 const deleteCoupon = async(req,res) => {
-    let couponId = req.query.id
-    let coupon = await Coupon.findById(couponId)
-    if(coupon.applicableOn === "product"){
-        let product = await Product.findOne({_id : coupon.productId})
-            await Coupon.findOneAndDelete({_id : product.variants[coupon.productVariant].productCouponId})
-            product.variants[coupon.productVariant].productCouponId = null
-            await Cart.updateMany({productId : product._id,variant : coupon.productVariant},{productCouponId : null})
-            await product.save()
-       }else{
-            let product = await Product.findOne({categoryId : coupon.categoryId})
-             await Coupon.findOneAndDelete({_id : product.categoryCouponId})
-             await Product.updateMany({categoryId : coupon.categoryId },{categoryCouponId : null})
-             await Cart.updateMany({categoryId : coupon.categoryId},{categoryCouponId : null})
-       }
-       return res.json({
-        success : true,
-        message : "Coupon has been Deleted Succesfully"
-       })
+    await couponService.deleteCoupon(req.query.id)
+    req.session.message =  "Coupon has been deleted Successfully"
+    return res.status(HTTP_STATUS.OK).json({
+        success : true
+    })
   
 }
 

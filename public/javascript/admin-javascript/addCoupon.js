@@ -1,4 +1,31 @@
 feather.replace();
+      
+     function setAccordingToDiscountType(){
+        const discountType = document.getElementById("discountType")
+        const maxDiscountAmount = document.getElementById("maxDiscountAmount")
+        const discountValue = document.getElementById("discountValue")
+
+        if(discountType.value === "flat"){
+            maxDiscountAmount.disabled = true
+             discountValue.placeholder = "How much amount are you willing to give Discount"
+        }else if(discountType.value === "percentage"){
+            maxDiscountAmount.disabled = false
+            discountValue.placeholder = "How much percentage are you willing to give Discount"
+        }else{
+            discountValue.placeholder = "Select Discount Type"
+        }
+     }
+
+     function fillMaxDiscountOnFlat(){
+        const maxDiscountAmount = document.getElementById("maxDiscountAmount")
+        const discountType = document.getElementById("discountType")
+        const discountValue = document.getElementById("discountValue")
+        if(discountType.value === "flat"){
+            maxDiscountAmount.value = Number(discountValue.value)
+        }
+     }
+
+
          // Form submission
      function previewImage(input) {
         const preview = document.getElementById('previewImg');
@@ -62,6 +89,7 @@ feather.replace();
           
            const couponName = document.getElementById('couponName').value;
            const endDate = document.getElementById('endDate').value;
+           const discountType = document.getElementById("discountType").value
            const discountValue = document.getElementById("discountValue").value
            const minAmount = document.getElementById("minAmount").value
            const maxDiscountAmount = document.getElementById("maxDiscountAmount").value
@@ -118,12 +146,33 @@ feather.replace();
                return;
            }
            
+           if(discountType === ""){
+    
+            iziToast.error({
+            title: 'Error',
+            message: 'Please select a Discount Type',
+            position: 'topCenter'
+            });
+            e.preventDefault();
+            return;
+        }
            
-            if(discountValue > 70){
+            if(discountType === "percentage" && discountValue > 70){
     
                 iziToast.error({
                 title: 'Error',
                 message: 'Please enter a Discount Percentage that is less than 70',
+                position: 'topCenter'
+                });
+                e.preventDefault();
+                return;
+            }
+
+            if(discountType === "flat" && discountValue > 120){
+    
+                iziToast.error({
+                title: 'Error',
+                message: 'Please enter a Flat Discount that is less than 120',
                 position: 'topCenter'
                 });
                 e.preventDefault();
@@ -149,10 +198,12 @@ feather.replace();
            }
            
 
-            
+           document.getElementById("maxDiscountAmount").disabled = false
 
       
            
            
            
        });
+
+       

@@ -1,6 +1,5 @@
-const Admin = require("../../models/admin.model.js");
-const User = require("../../models/user.model.js");
-const bcryptjs = require("bcryptjs");
+const adminService = require("../../services/admin-services/adminLoginService")
+const ERROR_MESSAGES = require("../../constants/errorMessages.js")
 
 const getAdminLogin = async (req,res) => {
     const message = req.session.message || null
@@ -10,13 +9,12 @@ const getAdminLogin = async (req,res) => {
 
 const adminLogin = async (req,res) => {
     try {
-        console.log(req.body)
     const {email,password} = req.body
-    const isAdmin = await Admin.findOne({email})
+    const isAdmin = await adminService.validateAdminEmail(email)
     if(!isAdmin){
-    return res.render("admin-view/admin.login.ejs",{message : "403 Unauthorized User, Access Denied! "})
+    return res.render("admin-view/admin.login.ejs",{message : "401 Unauthorized User, Access Denied! "})
     }
-    const isPassMatch = await bcryptjs.compare(password,isAdmin.password)
+    const isPassMatch = await adminService.validateAdminPassword(password,isAdmin.password)
     if(isAdmin && !isPassMatch){
     return  res.render("admin-view/admin.login.ejs",{message : "Incorrect Password"})
     }
@@ -25,15 +23,27 @@ const adminLogin = async (req,res) => {
     return res.redirect("/admin/dashboard")
     } catch (error) {
         console.error(error)
+        return  res.render("admin-view/admin.login.ejs",{message : ERROR_MESSAGES.SERVER_ERROR})
     }
 }
 
 
-
+const logoutAdmin = async (req,res) => {
+    try {
+      req.session.admin = null
+    res.redirect("/admin/login")
+    } catch (error) {
+      console.error(error);
+      req.session.message = ERROR_MESSAGES.SERVER_ERROR;
+      res.redirect("/admin/dashboard");
+    }
+  }
+    
 
 
 
 module.exports = {
     getAdminLogin,
     adminLogin,
+    logoutAdmin
 }

@@ -9,20 +9,6 @@
     <input type="text" id="serverMessage" value="<%= (message) ? message : '' %>" hidden>
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold text-gray-800">Coupons</h1>
-      <!-- <div class="relative">
-        <form autocomplete="off" action="/admin/products" method="post">
-            <input type="search" placeholder="Whom are you looking for ?" name="search" 
-               class="productSearchBar border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" data-search>
-             <div id="productSearchResultBox" data-product-container>  
-             </div>
-        <i id="search-icon" class="fas fa-search absolute right-3 top-3 text-gray-500"></i>
-        </form>
-      </div> -->
-      <template data-product-template>
-        <div id="product-list-item"  >
-         <span class="ml-2 " data-header ></span>
-        </div>
-      </template>  
 
 
          <a href="/admin/coupons/add-coupon">
@@ -71,8 +57,8 @@
           <% if (coupons.length === 0) { %>
             <tr>
               <td></td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
-               No Coupons Added Yet !
+              <td colspan="6" class="px-6 py-4 whitespace-nowrap text-sm text-center italic text-gray-500">
+               No coupons have been added yet !
               </td>
             </tr>
           <% } %>
@@ -210,10 +196,32 @@
   const serverMessage = document.getElementById("serverMessage").value
   if(serverMessage === "Coupon Updated Successfully"){
     iziToast.success({
+      title : "Coupon",
+      message : serverMessage,
+      position : "topRight"
+    })
+  }
+  if(serverMessage === "Coupon has been created Successfully"){
+    iziToast.success({
+      title : "Coupon",
+      message : serverMessage,
+      position : "topRight"
+    })
+  }
+  if(serverMessage === "Coupon has been deleted Successfully"){
+    iziToast.success({
       title : "Offer",
       message : serverMessage,
       position : "topRight"
     })
+  }
+  if(serverMessage === "Something went wrong. Please try again later"){
+    iziToast.error({
+      title : "Error",
+      message: serverMessage,
+     position: 'topRight'
+    })
+    
   }
   
 
@@ -233,18 +241,10 @@
             ["<button>OK</button>",function(instance,toast){
                 instance.hide({transitionOut : "fadeOut"},toast,'button')
 
-                fetch(`/admin/coupons/delete-offer?id=${couponId}`,{method : "DELETE"})
+                fetch(`/admin/coupons/delete-coupon?id=${couponId}`,{method : "DELETE"})
                 .then(res => res.json() )
                 .then(data => {
-                    iziToast.error({
-                      title : "Coupon" ,
-                      message : data.message,
-                      position : "topRight"
-                  })
-                  setTimeout(() => {
-                    window.location.href = "/admin/coupons" 
-                  },3000)
-                
+                    window.location.href = "/admin/coupons"  
                 })
                 .catch(error => iziToast.error({
                     title : error.name ,

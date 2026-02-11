@@ -126,7 +126,7 @@
                   <!-- Status (only once for product) -->
                   <td class="px-6 py-2 whitespace-nowrap text-center text-sm font-large text-gray-500">
                     
-                      <% if (!products[i].isDeleted) { %>
+                      <% if (!products[i].variants[j].isBlocked) { %>
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
                       <% } else { %>
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactive</span> 
@@ -141,13 +141,13 @@
                           <i class="fas fa-edit"></i>
                         </button>
                       </a>
-                      <button title="Restore" onclick="restoreProduct('<%= products[i]._id %>')" 
+                      <button title="Restore" onclick="restoreProduct('<%= products[i]._id %>','<%= j %>')" 
                           class="text-green-600 hover:text-green-900 mr-3 unblock-user-btn" >
                         <i class="fas fa-check-circle"></i>
                       </button>
-                      <button title="Delete" onclick="areYouSure('<%= products[i]._id %>')" 
+                      <button title="Block" onclick="areYouSure('<%= products[i]._id %>','<%= j %>')" 
                           class="text-red-600 hover:text-red-900 delete-user-btn">
-                        <i class="fas fa-trash"></i>
+                          <i class="fas fa-ban"></i>
                       </button>
                   </td>
                 </tr>

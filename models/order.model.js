@@ -91,10 +91,39 @@ const orderSchema = Schema({
         ref : "User",
         required : true
     },
-    addressId : {
-        type : mongoose.Schema.Types.ObjectId,
-        ref : "Address",
-        required : true
+    address : {
+        firstName : {
+            type : String,
+            required : true
+        },
+        lastName : {
+            type : String,
+            required : true
+        },
+        country : {
+            type : String,
+            required : true
+        },
+        state : {
+            type : String,
+            required : true
+        },
+        city : {
+            type : String,
+            require : true
+        },
+        address : {
+            type : String,
+            required : true
+        }, 
+        pincode : {
+            type : String,
+            required : true
+        },
+        mobileNo : {
+            type : String,
+            required : true
+        }
     },
     items : [itemSchema],
     subTotal : {

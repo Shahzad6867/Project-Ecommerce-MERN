@@ -14,6 +14,11 @@ const couponSchema = new Schema({
         type : Date,
         required : true
     },
+    discountType : {
+        type : String,
+        required : true,
+        enum : ["flat","percentage"]
+    },
     discountValue : {
         type : Number,
         required : true

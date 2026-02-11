@@ -18,6 +18,10 @@ const variantSchema = Schema({
         type : mongoose.Schema.Types.ObjectId,
         ref : "Offer",
         default : null
+    },
+    isBlocked : {
+        type : Boolean,
+        default : false
     }
 },{_id : false})
 
@@ -30,10 +34,6 @@ const productSchema = Schema({
         type : String,
         required : false,
         default : null
-    },
-    isDeleted : {
-        type : Boolean,
-        default : false
     },
     isFeatured : {
         type : Boolean,

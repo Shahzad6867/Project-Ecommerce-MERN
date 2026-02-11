@@ -67,22 +67,103 @@
 
     });
     function blockUser(id){
-        if(confirm("Are you sure ? Do you Want to block the User ?")){
-            window.location.href = "/admin/block-user?id="+id
-        }
+      iziToast.question({
+        theme : "light",
+        title : "User",
+        message : "Are you sure you want to block the User ?",
+        position : "topCenter",
+        overlay : true,
+        close : false,
+        id : "blockUser",
+        zindex : 9999,
+        timeout : 30000,
+        backgroundColor : "white", 
+        buttons : [
+            ["<button>OK</button>",function(instance,toast){
+                instance.hide({transitionOut : "fadeOut"},toast,'button')
+
+                fetch(`/admin/block-user?id=${id}`,{method : "PATCH"})
+                .then(res => res.json() )
+                .then(data => {
+                    window.location.href = "/admin/users"   
+                })
+                .catch(error => iziToast.error({
+                    title : error.name ,
+                    message : error.message,
+                    position : "topRight"
+                }))
+
+            }],
+            ["<button>Cancel</button>",function(instance,toast){
+                instance.hide({transitionOut : "fadeOut"},toast,'button')
+                
+            }]
+        ]
+    })
+        
     }
     function unblockUser(id){
-        if(confirm("Are you sure ? Do you Want to Unblock the User ?")){
-            window.location.href = "/admin/unblock-user?id="+id
-        }
+      iziToast.question({
+        theme : "light",
+        title : "User",
+        message : "Are you sure you want to Unblock the user ?",
+        position : "topCenter",
+        overlay : true,
+        close : false,
+        id : "blockUser",
+        zindex : 9999,
+        timeout : 30000,
+        backgroundColor : "white", 
+        buttons : [
+            ["<button>OK</button>",function(instance,toast){
+                instance.hide({transitionOut : "fadeOut"},toast,'button')
+
+                fetch(`/admin/unblock-user?id=${id}`,{method : "PATCH"})
+                .then(res => res.json() )
+                .then(data => {
+                    window.location.href = "/admin/users"   
+                })
+                .catch(error => iziToast.error({
+                    title : error.name ,
+                    message : error.message,
+                    position : "topRight"
+                }))
+
+            }],
+            ["<button>Cancel</button>",function(instance,toast){
+                instance.hide({transitionOut : "fadeOut"},toast,'button')
+                
+            }]
+        ]
+    })
     }
-    function areYouSure(id){
-        if(confirm("Are you sure ? Do you Want to delete the User ?")){
-            window.location.href = "/admin/delete-user?id="+id
-        }
-    }
-    
    
+    
+let serverMessage = '<%- message %>'
+if(serverMessage){
+  if(serverMessage === "User has been successfully Blocked"){
+    iziToast.success({
+      title : "User",
+      message : serverMessage,
+      position : "topRight"
+    })
+  }
+  if(serverMessage === "User has been successfully Unblocked"){
+    iziToast.success({
+      title : "User",
+      message : serverMessage,
+      position : "topRight"
+    })
+  }
+}
+if(serverMessage === "Something went wrong. Please try again later"){
+    iziToast.error({
+      title : "Error",
+      message: serverMessage,
+     position: 'topRight'
+    })
+    
+  }
     
  </script>
 </body>

@@ -1,0 +1,34 @@
+
+<script>
+
+    feather.replace()
+
+    document.getElementById("minPrice").addEventListener("input",() => {
+      const minPrice = document.getElementById("minPrice").value
+      if(minPrice < 0){
+      iziToast.error({
+        title : "Error",
+        message : "Minimum Price should not be less than 0",
+        position : "topRight"
+      })
+    }
+
+    })
+    document.getElementById("maxPrice").addEventListener("input",() => {
+      const maxPrice = document.getElementById("maxPrice").value
+      if(maxPrice < 0){
+      iziToast.error({
+        title : "Error",
+        message : "Maximum Price should not be less than 0",
+        position : "topRight"
+      })
+    }
+
+    })
+
+    
+    
+  </script>
+
+</body>
+</html>

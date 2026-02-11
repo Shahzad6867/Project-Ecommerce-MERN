@@ -20,7 +20,7 @@ const getWallet = async (req,res) => {
     if(wallet[0].transactions.length > 0){
       wallet = await Wallet.aggregate([{
         $match : {
-          userId : user._id
+          userId : wallet[0].userId
         }
       },{
         $unwind : "$transactions"
@@ -38,16 +38,21 @@ const getWallet = async (req,res) => {
         from : "orders",
        localField :"transactions.paymentId.orderId",
        foreignField : "_id",
-       as : "transactions.paymentId.orderId"
+       as : "transactions.paymentId.order"
       }                 
     },{
      $unwind : {
-       path : "$transactions.paymentId.orderId",
+       path : "$transactions.paymentId.order",
       preserveNullAndEmptyArrays: true}
+    },{
+      $group : { 
+        _id : "$userId",
+      walletBalance : {$first : "$walletBalance"},
+      transactions : {$push : "$transactions"}
+      }
     }])
     }
-     console.log(wallet)
-    res.render("user-view/user.wallet.ejs",{message,user,cartItems,cartItemsCount,productsFullList,wallet,wishlistItemsCount})
+    res.render("user-view/user.wallet.ejs",{message,user,cartItems,cartItemsCount,productsFullList,wallet : wallet[0],wishlistItemsCount})
   }
 
   const walletTopUp = async (req,res) => {
@@ -67,7 +72,7 @@ const getWallet = async (req,res) => {
               price_data : {
                 currency : "usd",
                 product_data : {name : "Wallet Top-up"},
-                unit_amount : req.body.amount * 100,
+                unit_amount : Math.round(req.body.amount * 100) / 100,
               },
               quantity : 1
             }

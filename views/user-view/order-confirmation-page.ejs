@@ -73,11 +73,11 @@
                     <h3 class="text-lg font-semibold mb-4 flex items-center">
                         <i data-feather="truck" class="mr-2"></i> Shipping Information
                     </h3>
-                    <p class="text-gray-800"><%= confirmedOrder.addressId.firstName %> <%= confirmedOrder.addressId.lastName %></p>
-                    <p class="text-gray-600"><%= confirmedOrder.addressId.address %></p>
-                    <p class="text-gray-600"><%= confirmedOrder.addressId.state %>, <%= confirmedOrder.addressId.pincode %></p>
-                    <p class="text-gray-600"><%= confirmedOrder.addressId.country %></p>
-                    <p class="text-gray-600 mt-2"><%= confirmedOrder.addressId.mobileNo %></p>
+                    <p class="text-gray-800"><%= confirmedOrder.address.firstName %> <%= confirmedOrder.address.lastName %></p>
+                    <p class="text-gray-600"><%= confirmedOrder.address.address %></p>
+                    <p class="text-gray-600"><%= confirmedOrder.address.state %>, <%= confirmedOrder.address.pincode %></p>
+                    <p class="text-gray-600"><%= confirmedOrder.address.country %></p>
+                    <p class="text-gray-600 mt-2"><%= confirmedOrder.address.mobileNo %></p>
                 </div>
 
                 <div class="bg-gray-50 border p-6 rounded-lg mt-4">
