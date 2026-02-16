@@ -25,48 +25,30 @@
             <% if (orders.length > 0) { %>
                 <div class="space-y-6">
                     <!-- Order 1 -->
-                    <% orders.forEach(order => { %>
+                    <% for( let i = 0; i < orders.length; i++ ) { %>
                         <div class="order-card p-6 border rounded-lg mb-6 bg-white shadow-sm">
-                          <% if ((order.paymentId.status === "Pending" || order.paymentId.status === "Payment Failed"  ) && order.paymentId.paymentMethod === "Pay with Stripe" && !order.status.includes("Cancelled")) { %>
+                          <% if ((orders[i].paymentId.status === "Pending" || orders[i].paymentId.status === "Payment Failed"  ) && orders[i].paymentId.paymentMethod === "Pay with Stripe" && !orders[i].isCancelled) { %>
                             <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-yellow-300 w-[80%] mb-3">
                              <i data-feather="alert-triangle" class="w-5 h-5 mr-1"></i>
                              <p class="text-sm text-black">
-                               Please complete the payment by <span class="font-bold" ><%= new Date(order.willBeCancelledAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
-                             }) %>, </span><span class="font-bold"><%= new Date(order.willBeCancelledAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %></span>
+                               Please complete the payment by <span class="font-bold" ><%= new Date(orders[i].willBeCancelledAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
+                             }) %>, </span><span class="font-bold"><%= new Date(orders[i].willBeCancelledAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %></span>
                                If payment is not received by then, this order will be automatically cancelled.
                               </p>
                             </div>
                            <% } %>
-                           <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Approved Return Request")) { %>
-                            <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-blue-300 w-[70%] mb-3">
-                                <i data-feather="info" class="w-5 h-5 mr-1"></i>
-                                <p class="text-sm text-black">
-                                  Return Request has been Approved at <span class="font-bold" ><%= new Date(order.return.approvedAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
-                                }) %>, </span><span class="font-bold"><%= new Date(order.return.approvedAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>.</span>
-                                  The amount has been refunded to your <strong>NovaWallet</strong>.
-                                 </p>
-                               </div>
-                        <% } %>
-                           <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Declined Return Request")) { %>
-                            <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-red-300 w-full mb-3">
-                                <i data-feather="info" class="w-5 h-5 mr-1"></i>
-                                <p class="text-sm text-black">
-                                  Return Request has been Declined at <span class="font-bold" ><%= new Date(order.return.declinedAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
-                                }) %>, </span><span class="font-bold"><%= new Date(order.return.declinedAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>.</span>
-                                  <strong> Reason : </strong><%= order.return.declineReason %>
-                                 </p>
-                               </div>
-                        <% } %>
+                           
+                          
                           <!-- Top Section -->
                           <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
                             <div>
                               <h2 class="text-lg font-semibold">
-                                Order ID: <span class="text-gray-700"><%= order.orderId %></span>
+                                Order ID: <span class="text-gray-700"><%= orders[i].orderId %></span>
                               </h2>
-                              <% if (!order.isCancelled) { %>
+                              <% if (!orders[i].isCancelled) { %>
                                 <p class="text-sm text-gray-500">
                                   Placed on 
-                                  <%= new Date(order.createdAt).toLocaleDateString("en-IN", {
+                                  <%= new Date(orders[i].createdAt).toLocaleDateString("en-IN", {
                                       day: "numeric",
                                       month: "short",
                                       year: "numeric"
@@ -75,7 +57,7 @@
                               <% } else{ %>
                                 <p class="text-sm text-gray-500">
                                   Cancelled on 
-                                  <%= new Date(order.statusTimeline.cancelledAt).toLocaleDateString("en-IN", {
+                                  <%= new Date(orders[i].items[orders[i].items.length - 1].statusTimeline.cancelledAt).toLocaleDateString("en-IN", {
                                       day: "numeric",
                                       month: "short",
                                       year: "numeric"
@@ -86,34 +68,36 @@
                               
                             </div>
                         
-                            <div class="flex items-center mt-3 md:mt-0">
+                            <div class="flex items-center mt-3">
                               <p>Payment Status : </p>
                               <span class="px-3 py-1 ml-1 mr-4 rounded-full text-sm font-bold
-                                <%= order.paymentId.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
-                                order.paymentId.status === 'Paid Successfully' ? 'bg-green-100 text-green-700' : 
-                              order.paymentId.status === 'Payment Failed' ? 'bg-red-100 text-red-700' :
-                              order.paymentId.status === 'Order Cancelled' ? 'bg-red-100 text-red-700' :
+                                <%= orders[i].paymentId.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+                                orders[i].paymentId.status === 'Paid Successfully' ? 'bg-green-100 text-green-700' : 
+                              orders[i].paymentId.status === 'Payment Failed' ? 'bg-red-100 text-red-700' :
+                              orders[i].paymentId.status === 'Order Cancelled' ? 'bg-red-100 text-red-700' :
                                'bg-gray-100 text-gray-700' %>">
-                                <%= order.paymentId.status %>
+                                <%= orders[i].paymentId.status %>
                               </span>
+
                               <p>Order Status : </p>
                               <span class="px-3 py-1 ml-1 rounded-full text-sm font-bold
-                                <%= order.status[order.status.length - 1] === 'Pending' ? 'bg-gray-100 text-gray-700' :
-                               order.status[order.status.length - 1] === 'Processed' ? 'bg-yellow-100 text-yellow-700' : 
-                               order.status[order.status.length - 1] === 'Shipped' ? 'bg-blue-100 text-blue-700' : 
-                                order.status[order.status.length - 1] === 'Delivered' ? 'bg-green-100 text-green-700' : 
-                              order.status[order.status.length - 1] === 'Cancelled' ? 'bg-red-100 text-red-700' :
-                              order.status[order.status.length - 1] === 'Return Order Requested' ? 'bg-yellow-400 text-black' :
-                              order.status[order.status.length - 1] === 'Approved Return Request' ? 'bg-green-400 text-black' :
-                              order.status[order.status.length - 1] === 'Declined Return Request' ? 'bg-red-400 text-black' :
+                                <%= ordersStatus[i] === 'Pending' ? 'bg-gray-100 text-gray-700' :
+                               ordersStatus[i] === 'Processed' ? 'bg-yellow-100 text-yellow-700' : 
+                               ordersStatus[i] === 'Shipped' ? 'bg-blue-100 text-blue-700' : 
+                                ordersStatus[i] === 'Delivered' ? 'bg-green-100 text-green-700' : 
+                              ordersStatus[i] === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                              ordersStatus[i] === 'Return Requested' ? 'bg-yellow-400 text-black' :
+                              ordersStatus[i] === 'Return Request Approved' ? 'bg-green-400 text-black' :
+                              ordersStatus[i] === 'Return Request Declined' ? 'bg-red-400 text-black' :
                                'bg-gray-100 text-gray-700' %>">
-                                <%= order.status[order.status.length - 1] %>
+                                <%= ordersStatus[i] %>
                               </span>
-                        
-                              <span class="mx-4 hidden md:block text-gray-300">|</span>
-                        
+
+                              
+                              <span class="mx-4 md:block text-gray-300">|</span>
+
                               <span class="text-lg font-semibold">
-                                $<%= order.grandTotal %>
+                                $<%= orders[i].grandTotal %>
                               </span>
                             </div>
                           </div>
@@ -125,9 +109,9 @@
                               <div>
                                 <p class="text-gray-500">Items</p>
                                 <% let sumOfQuantity = 0 %>
-                                <% for( let i = 0; i < order.items.length; i++ ) { %>
-                                    <% if (!order.items[i].isCancelled) { %>
-                                        <% sumOfQuantity += order.items[i].quantity %>
+                                <% for( let j = 0; j < orders[i].items.length; j++ ) { %>
+                                    <% if (!orders[i].items[j].isCancelled) { %>
+                                        <% sumOfQuantity += orders[i].items[j].quantity %>
                                     <% } %>
                                      
                                 <% } %>
@@ -136,16 +120,16 @@
                         
                               <div>
                                 <p class="text-gray-500">Payment</p>
-                                <% if (order.paymentId.paymentMethod === "Pay with Stripe" && (order.paymentId.status === "Pending"||order.paymentId.status === "Payment Failed" || order.paymentId.status === "Order Cancelled")) { %>
+                                <% if (orders[i].paymentId.paymentMethod === "Pay with Stripe" && (orders[i].paymentId.status === "Pending"||orders[i].paymentId.status === "Payment Failed" || orders[i].paymentId.status === "orders[i] Cancelled")) { %>
                                   <p class="font-medium">Pay with Credit / Debit Card</p>
-                                <% } else if(order.paymentId.paymentMethod === "Pay with Stripe" && order.paymentId.status === "Paid Successfully"){%>
+                                <% } else if(orders[i].paymentId.paymentMethod === "Pay with Stripe" && orders[i].paymentId.status === "Paid Successfully"){%>
                                   <p class="font-medium">Paid with Credit / Debit Card</p>
-                                <% } else if(order.paymentId.paymentMethod === "Pay with NovaWallet" && order.paymentId.status === "Pending") { %>
+                                <% } else if(orders[i].paymentId.paymentMethod === "Pay with NovaWallet" && orders[i].paymentId.status === "Pending") { %>
                                     <p class="font-medium">Pay with NovaWallet</p>
-                                <% } else if(order.paymentId.paymentMethod === "Pay with NovaWallet" && order.paymentId.status === "Paid Successfully") { %>
+                                <% } else if(orders[i].paymentId.paymentMethod === "Pay with NovaWallet" && orders[i].paymentId.status === "Paid Successfully") { %>
                                   <p class="font-medium">Paid with NovaWallet</p>
                                   <% } else { %>
-                                    <p class="font-medium"><%= order.paymentId.paymentMethod %></p>
+                                    <p class="font-medium"><%= orders[i].paymentId.paymentMethod %></p>
                                    <% } %>
                                 
                               </div>
@@ -158,25 +142,24 @@
                         
                             <!-- Action -->
                             <div class="mt-4 md:mt-0 flex gap-3">
-                              <a href="/orders/<%= order._id %>"
+                              <a href="/orders/<%= orders[i]._id %>"
                                 class="px-4 py-2 border rounded-md hover:bg-gray-100 font-bold flex items-center">
                                 <i data-feather="eye" class="w-4 h-4 mr-2"></i>
                                 View Details
                               </a>
 
                         
-                              <% if(order.status.includes("Shipped") && !order.status.includes("Return Order Requested")) { %>
-                                <a href="<%= order.invoiceUrl %>"
-                                  class="px-4 py-2 bg-blue-600 text-white flex items-center font-bold rounded-md hover:bg-blue-700" download>
-                                  <i data-feather="download" class="w-4 h-4 mr-2"></i>
-                                  Download Invoice
+                              <% if (orders[i].invoiceUrl !== null && orders[i].invoiceCreatedAt !== null) { %>
+                                <a href="<%= orders[i].invoiceUrl %>" download>
+                                    <button type="button" id="downloadInvoiceBtn" class="px-4 py-2 ml-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center" onclick="downloadInvoice('<%- orders[i]._id %>')">
+                                        <i data-feather="download" class="w-4 h-4 mr-2"></i> Download Invoice
+                                    </button>
                                 </a>
-                                
                               <% } %>
                               
 
-                              <% if ((order.paymentId.status === "Pending" || order.paymentId.status === "Payment Failed") & order.paymentId.paymentMethod === "Pay with Stripe" && !order.status.includes("Cancelled")) { %>
-                                <a href="/orders/<%= order._id %>/pending-payment"
+                              <% if ((orders[i].paymentId.status === "Pending" || orders[i].paymentId.status === "Payment Failed") && orders[i].paymentId.paymentMethod === "Pay with Stripe" && !orders[i].isCancelled) { %>
+                                <a href="/orders/<%= orders[i]._id %>/pending-payment"
                                   class="px-4 py-2 bg-yellow-400 text-gray-700 hover:bg-yellow-300 rounded-md font-bold flex items-center">
                                   <i data-feather="credit-card" class="w-4 h-4 mr-2"></i>
                                   Complete Payment
@@ -187,7 +170,7 @@
                         
                           </div>
                         </div>
-                        <% }) %>
+                        <% } %>
                         
                     
     

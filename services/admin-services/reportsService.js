@@ -27,25 +27,44 @@ function computeFromAndToDate(queryFromDate,queryToDate){
 }
 
 async function computeTotalOrdersCount(fromDate,toDate){
-   let count = Order.find({"status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]},"statusTimeline.orderedAt" : {$gte : fromDate,$lt : toDate}}).countDocuments()
-   return count
+   let count = await Order.aggregate([{
+    $match : {
+      isCancelled : false,
+      isReturned : false
+    }
+   },{
+    $unwind : "$items"
+  },{
+    $match : {
+      "items.statusTimeline.orderedAt" : {
+        $gte : fromDate,
+        $lte : toDate
+      }
+    }
+  },{
+    $group : {_id : "$orderId"}
+  },{
+    $count : "ordersCount"
+  }])
+   return count[0]?.ordersCount ?? 0
 }
 
 async function itemsSold(fromDate,toDate){
  let result = await Order.aggregate([
-    {
-      $match : {
-        "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
-      }
+  { 
+    $match : {
+      isCancelled : false,
+      isReturned : false
+    }
+  },{
+      $unwind : "$items"
     },{
       $match : {
-        "statusTimeline.orderedAt" : {
+        "items.statusTimeline.orderedAt" : {
           $gte : fromDate,
           $lt : toDate
         }
       }
-    },{
-      $unwind : "$items"
     },{
       $group : {_id : null,totalItemsSold : {$sum : "$items.quantity"} }
     }
@@ -54,22 +73,20 @@ async function itemsSold(fromDate,toDate){
 }
 
 async function computeGrossSales(fromDate,toDate){
-  let result = await Order.aggregate([
-    {
+  let result = await Order.aggregate([{
+    $match : {
+      isCancelled : false,
+      isReturned : false
+    }
+  },{
       $match : {
-        "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
-      }
-    },{
-      $match : {
-        "statusTimeline.orderedAt" : {
+        "items.statusTimeline.orderedAt" : {
           $gte : fromDate,
           $lt : toDate
         }
       }
     },{
-      $unwind : "$items"
-    },{
-      $group : {_id : null,grossSales : {$sum : {$multiply : ["$items.price","$items.quantity"]}} }
+      $group : {_id : null,grossSales : {$sum : "$subTotal"} }
     }
    ])
     return new Intl.NumberFormat("en-US",{
@@ -83,17 +100,19 @@ async function computeTotalProductDiscount(fromDate,toDate){
   let result = await Order.aggregate([
     {
       $match : {
-        "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
+        isCancelled : false,
+        isReturned : false
       }
     },{
+      $unwind : "$items"
+    },
+    {
       $match : {
-        "statusTimeline.orderedAt" : {
+        "items.statusTimeline.orderedAt" : {
           $gte : fromDate,
           $lt : toDate
         }
       }
-    },{
-      $unwind : "$items"
     },{
       $group : {_id : null, totalProductDiscount : {$sum : {$subtract : [{$multiply : ["$items.price","$items.quantity"]},{$multiply : ["$items.offerPrice","$items.quantity"]}] }}}
     }
@@ -109,11 +128,12 @@ async function computeTotalCouponDiscount(fromDate,toDate){
   let result = await Order.aggregate([
     {
       $match : {
-        "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
+        isCancelled : false,
+        isReturned : false
       }
     },{
       $match : {
-        "statusTimeline.orderedAt" : {
+        "items.statusTimeline.orderedAt" : {
           $gte : fromDate,
           $lt : toDate
         }
@@ -133,11 +153,12 @@ async function computeTotalRefunds(fromDate,toDate){
   let result = await Order.aggregate([
     {
       $match : {
-        "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
+        isCancelled : false,
+        isReturned : false
       }
     },{
       $match : {
-        "statusTimeline.orderedAt" : {
+        "items.statusTimeline.orderedAt" : {
           $gte : fromDate,
           $lt : toDate
         }
@@ -155,6 +176,7 @@ async function computeTotalRefunds(fromDate,toDate){
       $group : {_id : null, amountRefunded : {$sum : "$paymentId.amountRefunded"}}
     }
    ])
+    console.log(result)
     return new Intl.NumberFormat("en-US",{
     style : "currency",
     currency : "USD",
@@ -166,11 +188,18 @@ async function computeNetSales(fromDate,toDate){
   let result = await Order.aggregate([
     {
       $match : {
-        "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
+        isCancelled : false,
+        isReturned : false
       }
     },{
+      $addFields : {
+        itemsLength : {$size : "$items"}
+      }
+    },{
+      $unwind : "$items"
+    },{
       $match : {
-        "statusTimeline.orderedAt" : {
+        "items.statusTimeline.orderedAt" : {
           $gte : fromDate,
           $lt : toDate
         }
@@ -185,7 +214,9 @@ async function computeNetSales(fromDate,toDate){
     },{
       $unwind : "$paymentId"
     },{
-      $group : {_id : null, netSales : {$sum : {$subtract : ["$subTotal","$paymentId.amountRefunded"]}}}
+      $group : {_id : "$orderId", amountRefunded : {$first : "$paymentId.amountRefunded"},subTotal : {$sum : {$subtract : [{$multiply : ["$items.offerPrice","$items.quantity"]},{$divide : ["$discount","$itemsLength"]}]} }}
+    },{
+      $group : {_id : null, netSales : {$sum : {$subtract : ["$subTotal","$amountRefunded"]}}}
     }
    ])
     return new Intl.NumberFormat("en-US",{
@@ -199,11 +230,12 @@ async function computeTotalOrderValue(fromDate,toDate){
     let result = await Order.aggregate([
       {
         $match : {
-          "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
+          isCancelled : false,
+          isReturned : false
         }
       },{
         $match : {
-          "statusTimeline.orderedAt" : {
+          "items.statusTimeline.orderedAt" : {
             $gte : fromDate,
             $lt : toDate
           }
@@ -233,17 +265,18 @@ async function computeTotalOrderValue(fromDate,toDate){
     let result = await Order.aggregate([
       {
         $match : {
-          "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
+          isCancelled : false,
+          isReturned : false
         }
       },{
         $match : {
-          "statusTimeline.orderedAt" : {
+          "items.statusTimeline.orderedAt" : {
             $gte : fromDate,
             $lt : toDate
           }
         }
       },{
-        $group : {_id : null, taxCollected : {$sum : "$tax"}}
+        $group : {_id : null, taxCollected : {$sum : "$tax" }}
       }
      ])
       return new Intl.NumberFormat("en-US",{
@@ -257,15 +290,18 @@ async function computeTotalOrderValue(fromDate,toDate){
     let result = await Order.aggregate([
       {
         $match : {
-          "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
+          isCancelled : false,
+          isReturned : false
         }
       },{
         $match : {
-          "statusTimeline.orderedAt" : {
+          "items.statusTimeline.orderedAt" : {
             $gte : fromDate,
             $lt : toDate
           }
         }
+      },{
+        $group : {_id : "$orderId", shipping : {$first : "$shipping"}}
       },{
         $group : {_id : null, shippingCollected : {$sum : "$shipping"}}
       }
@@ -281,19 +317,22 @@ async function computeTotalOrderValue(fromDate,toDate){
   async function computeSalePerItem(fromDate,toDate,skip,limit){
     let result = await Order.aggregate([
       {
-        $match : {
-          "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
-        }
-      },{
-        $match : {
-          "statusTimeline.orderedAt" : {
-            $gte : fromDate,
-            $lt : toDate
+          $match: {
+            isCancelled: false,
+            isReturned: false
           }
-        }
       },{
         $addFields : {
           itemsLength : {$size : "$items"}
+        }
+      },{
+        $unwind : "$items"
+      },{
+        $match : {
+          "items.statusTimeline.orderedAt" : {
+            $gte : fromDate,
+            $lt : toDate
+          }
         }
       },{
         $unwind : "$items"
@@ -381,23 +420,24 @@ async function computeTotalOrderValue(fromDate,toDate){
   async function computeSalePerItemForPdfAndExcel(fromDate,toDate){
     let result = await Order.aggregate([
       {
-        $match : {
-          "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
+        $match: {
+          isCancelled: false,
+          isReturned: false
         }
-      },{
-        $match : {
-          "statusTimeline.orderedAt" : {
-            $gte : fromDate,
-            $lt : toDate
-          }
+    },{
+      $addFields : {
+        itemsLength : {$size : "$items"}
+      }
+    },{
+      $unwind : "$items"
+    },{
+      $match : {
+        "items.statusTimeline.orderedAt" : {
+          $gte : fromDate,
+          $lt : toDate
         }
-      },{
-        $addFields : {
-          itemsLength : {$size : "$items"}
-        }
-      },{
-        $unwind : "$items"
-      },{
+      }
+    },{
         $group : {_id : {productName : "$items.productName",productColor : "$items.color",productSize : "$items.size"},
          productId : {$first : "$items.productId"},
          itemsSold : {$sum : "$items.quantity"},
@@ -471,12 +511,19 @@ async function computeTotalOrderValue(fromDate,toDate){
   async function computeOrderBasedSales(fromDate,toDate,skip,limit){
     let result = await Order.aggregate([
       {
-        $match : {
-          "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
+        $match: {
+          isCancelled: false,
+          isReturned: false
         }
-      },{
+    },{
+      $addFields : {
+        itemsLength : {$size : "$items"}
+      }
+    },{
+      $unwind : "$items"
+    },{
         $match : {
-          "statusTimeline.orderedAt" : {
+          "items.statusTimeline.orderedAt" : {
             $gte : fromDate,
             $lt : toDate
           }
@@ -491,14 +538,8 @@ async function computeTotalOrderValue(fromDate,toDate){
       },{
         $unwind : "$paymentId"
       },{
-        $addFields : {
-          itemsLength : {$size : "$items"}
-        }
-      },{
-        $unwind : "$items"
-      },{
         $group : {_id : "$orderId",
-          orderedAt : {$first : "$statusTimeline.orderedAt"},
+          orderedAt : {$first : "$items.statusTimeline.orderedAt"},
          revenue : {$sum : {$multiply : ["$items.price","$items.quantity"]}},
          productDiscount : {$sum : {$subtract : [{$multiply : ["$items.quantity","$items.price"]},{$multiply : ["$items.quantity","$items.offerPrice"]}]}},
          couponDiscount : {$sum : { $divide: ["$discount", "$itemsLength"] }},
@@ -527,12 +568,19 @@ async function computeTotalOrderValue(fromDate,toDate){
   async function computeOrderBasedSalesForPdfAndExcel(fromDate,toDate){
     let result = await Order.aggregate([
       {
-        $match : {
-          "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
+        $match: {
+          isCancelled: false,
+          isReturned: false
         }
-      },{
+    },{
+      $addFields : {
+        itemsLength : {$size : "$items"}
+      }
+    },{
+      $unwind : "$items"
+    },{
         $match : {
-          "statusTimeline.orderedAt" : {
+          "items.statusTimeline.orderedAt" : {
             $gte : fromDate,
             $lt : toDate
           }
@@ -547,14 +595,8 @@ async function computeTotalOrderValue(fromDate,toDate){
       },{
         $unwind : "$paymentId"
       },{
-        $addFields : {
-          itemsLength : {$size : "$items"}
-        }
-      },{
-        $unwind : "$items"
-      },{
         $group : {_id : "$orderId",
-          orderedAt : {$first : "$statusTimeline.orderedAt"},
+          orderedAt : {$first : "$items.statusTimeline.orderedAt"},
          revenue : {$sum : {$multiply : ["$items.price","$items.quantity"]}},
          productDiscount : {$sum : {$subtract : [{$multiply : ["$items.quantity","$items.price"]},{$multiply : ["$items.quantity","$items.offerPrice"]}]}},
          couponDiscount : {$sum : { $divide: ["$discount", "$itemsLength"] }},

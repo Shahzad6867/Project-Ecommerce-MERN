@@ -69,9 +69,8 @@ const webhookHandler = async (req,res) => {
                         let product = await Product.findById(items[j].productId)
                             product.variants[items[j].variant].stockQuantity -=  items[j].quantity
                             await product.save()
-                            await Cart.findOneAndDelete({userId : new mongoose.Types.ObjectId(session.metadata.user), productId : items[j].productId,variant : items[j].variant})
                     }
-                
+                    await Cart.deleteMany({userId : new mongoose.Types.ObjectId(session.metadata.user)})
                     payment.status = "Paid Successfully"
                     payment.amountPaid = payment.amountToBePaid
                     payment.amountToBePaid = 0

@@ -84,7 +84,7 @@ router.post("/orders/:id/return-order",upload.single("returnOrderMedia"),orderMa
 router.post("/orders/:id/return-item",upload.single("returnOrderMedia"),orderManagementController.returnItem)
 router.get("/checkout/payment-processing/:id",userAuth.checkSession,orderManagementController.getPaymentProcessingPage)
 router.get("/order-confirmation/:id",userAuth.checkSession,orderManagementController.getOrderConfirmationPage)
-router.get("/order-status/:id",userAuth.checkSession,orderManagementController.getOrderStatus)
+router.get("/order-status/:id",userAuth.checkSession,orderManagementController.getPaymentStatus)
 router.get("/orders/:id/pending-payment",userAuth.checkSession,orderManagementController.retryPayment)
 
 // User Wallet

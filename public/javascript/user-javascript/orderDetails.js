@@ -47,15 +47,19 @@ feather.replace();
                     e.preventDefault()
                     return
             }
+            document.getElementById("cancelReturnBtn").disabled = true
+            document.getElementById("submitReturnBtn").disabled = true
         })
         function enableTextBox(){
             let returnReason = document.getElementById("returnReason").value
             if(returnReason === "Other"){
                 document.getElementById("returnMessage").disabled = false
+                document.getElementById("returnMessage").classList.remove("hidden") 
                 document.getElementById("returnReason").name = ""
                 document.getElementById("returnMessage").name = "returnReason"
             }else{
                 document.getElementById("returnMessage").disabled = true
+                document.getElementById("returnMessage").classList.add("hidden") 
                 document.getElementById("returnReason").name = "returnReason"
                 document.getElementById("returnMessage").name = ""
             }
@@ -76,7 +80,7 @@ feather.replace();
         buttons : [
             ["<button>OK</button>",function(instance,toast){
                 instance.hide({transitionOut : "fadeOut"},toast,'button')
-
+                document.getElementById("processingRequestOverlay").classList.remove("hidden")
                 fetch(`/orders/${orderId}/cancel-item?item=${itemId}`,{method : "PATCH"})
                 .then(res => window.location.href = `/orders/${orderId}` )
                 .catch(error => iziToast.error({
@@ -108,7 +112,7 @@ feather.replace();
         buttons : [
             ["<button>OK</button>",function(instance,toast){
                 instance.hide({transitionOut : "fadeOut"},toast,'button')
-
+                document.getElementById("processingRequestOverlay").classList.remove("hidden")
                 fetch(`/orders/${orderId}/cancel-order`,{method : "PATCH"})
                 .then(res => window.location.href = `/orders/${orderId}` )
                 .catch(error => iziToast.error({
@@ -132,7 +136,7 @@ feather.replace();
                     fetch(`/cart/reorder?orderId=${cartId}`,{method : "POST"})
                 .then(res => window.location.href = "/cart")
                 .catch(error => {
-                    iziToast({
+                    iziToast.error({
                         title : "Error",
                         message : error.message,
                         position : "topRight"
@@ -140,4 +144,25 @@ feather.replace();
                     
                 })
                 
+        }
+
+        const serverMessage = document.getElementById("serverMessage").value
+        if(serverMessage === "Item has been successfully cancelled.<br>Any applicable refund will be processed according to our refund policy."){
+            iziToast.info({
+                title : "Order",
+                message : serverMessage,
+                position : "topRight"
+            })
+        }else if(serverMessage === "Order has been successfully cancelled.<br>Any applicable refund will be processed according to our refund policy."){
+            iziToast.info({
+                title : "Order",
+                message : serverMessage,
+                position : "topRight"
+            })
+        }else if(serverMessage === "Please provide proof for Return Request"){
+            iziToast.info({
+                title : "Order",
+                message : serverMessage,
+                position : "topRight"
+            })
         }

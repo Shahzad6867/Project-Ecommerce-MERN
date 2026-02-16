@@ -5,7 +5,6 @@
     </div>
 
     <div class="w-full flex justify-between">
-        <input type="text" id="serverMessage" value="<%= message ? message : null %>" hidden>
         <div id="cartItemsList" class="w-[65%] mr-2">
             <% let subTotal = 0 %>
             <% let offerPrice = 0 %>
@@ -250,7 +249,7 @@
                                         
                                                 <div class="w-full px-2 flex justify-between items-center h-[60%]">
                                                     <h1 class="font-bold text-black text-lg"><%= userCoupons[i].name %></h1>
-                                                    <% if (cartItems[0]?.couponApplied !== null && userCoupons[i]._id.toString() === cartItems[0]?.couponApplied._id.toString() &&  (Number(subTotal) + (Number(subTotal) * 0.05)) >= cartItems[0]?.couponApplied.minAmount) { %>
+                                                    <% if (cartItems[0]?.couponApplied !== null && userCoupons[i]._id.toString() === cartItems[0]?.couponApplied._id.toString()) { %>
                                                         <button id="appliedBtn<%= userCoupons[i]._id %>" type="button" class="mr-2 rounded-lg bg-green-400 flex justify-between items-center text-black font-bold px-3 py-1"disabled>
                                                             <i data-feather="check" class=""></i>
                                                             Applied
@@ -286,7 +285,7 @@
                                         
                                                 <div class="w-full px-2 flex justify-between items-center h-[60%]">
                                                     <h1 class="font-bold text-black text-lg"><%= coupons[i].name %></h1>
-                                                    <% if (cartItems[0]?.couponApplied !== null && coupons[i]._id.toString() === cartItems[0]?.couponApplied._id.toString() &&  (Number(subTotal) + (Number(subTotal) * 0.05)) >= cartItems[0]?.couponApplied.minAmount) { %>
+                                                    <% if (cartItems[0]?.couponApplied !== null && coupons[i]._id.toString() === cartItems[0]?.couponApplied._id.toString() &&  (Number(subTotal) + (Number(subTotal) * 0.05) + 10) >= cartItems[0]?.couponApplied.minAmount && isApplied) { %>
                                                         <button id="appliedBtn<%= coupons[i]._id %>" type="button" class="mr-2 rounded-lg bg-green-400 flex justify-between items-center text-black font-bold px-3 py-1 "  disabled>
                                                             <i data-feather="check" class=""></i>
                                                             Applied
@@ -381,92 +380,6 @@
         </div>
     </div>
 </div>
-<script>
-    function applyCoupon(couponId,minAmount){
-        const grandTotalElement = document.getElementById("grandTotal")
-        const subTotal = Number(document.getElementById("subTotalInCart").innerText)
-        const taxElement = document.getElementById("tax")
-        const discountDiv = document.getElementById("discountDiv")
-        const discountValue = document.getElementById("discountedValue")
-        if(grandTotal < Number(minAmount)){
-            iziToast.info({
-                title : "Coupon",
-                message : `The minimum amount to apply this coupon is $${minAmount}`,
-                position : "topRight"
-            })
-            event.preventDefault()
-            return
-        }
-        fetch(`/cart/apply-coupon/${couponId}`,{method : "PATCH"})
-        .then(res => res.json())
-        .then(data => {
-            if(data.message === "Done"){
-                let discountedAmount = 0
-                 if (data.coupon.discountType === "percentage") { 
-                         discountedAmount = (subTotal * data.coupon.discountValue) / 100
-                         if (discountedAmount > data.coupon.maxDiscountAmount) { 
-                            discountedAmount = data.coupon.maxDiscountAmount
-                          } 
-                     } else { 
-                         discountedAmount = data.coupon.discountValue
-                } 
-                const tax = ((subTotal - discountedAmount) * 0.05)
-                const shipping = 10
-               taxElement.innerText =  tax.toFixed(2)
-               grandTotalElement.innerText = ((subTotal - discountedAmount) + tax + shipping).toFixed(2)
-               discountDiv.classList.remove("hidden")
-               discountValue.innerText = discountedAmount.toFixed(2)
-               document.getElementById(`applyBtn${data.coupon._id}`).classList.add("hidden")
-               document.getElementById(`appliedBtn${data.coupon._id}`).classList.remove("hidden")
-               if(data.olderCoupon !== null){
-                document.getElementById(`applyBtn${data.olderCoupon}`).classList.remove("hidden")
-                document.getElementById(`appliedBtn${data.olderCoupon}`).classList.add("hidden")
-               }else{
-                document.getElementById("appliedCouponDisplay").classList.remove("hidden")
-               }
-               document.getElementById("appliedCouponName").value = data.coupon.name
 
-            }
-        })
-        .catch(error => { 
-            iziToast.error({
-                title : "Error",
-                message : error.message,
-                position : "topRight"
-            })
-        })
-    }
-    function removeCoupon(){
-        fetch(`/cart/remove-coupon`,{method : "PATCH"})
-        .then(res => res.json())
-        .then(data => {
-            if(data.message === "Done"){
-                const grandTotalElement = document.getElementById("grandTotal")
-                const subTotal = Number(document.getElementById("subTotalInCart").innerText)
-                const taxElement = document.getElementById("tax")
-                const discountDiv = document.getElementById("discountDiv")
-                const discountValue = document.getElementById("discountedValue")
-                
-                const tax = (subTotal * 0.05)
-                const shipping = 10
-               taxElement.innerText =  tax.toFixed(2)
-               grandTotalElement.innerText = (subTotal + tax + shipping).toFixed(2)
-               discountDiv.classList.add("hidden")
-               discountValue.innerText = 0.00
-               document.getElementById(`applyBtn${data.coupon.couponApplied}`).classList.remove("hidden")
-               document.getElementById(`appliedBtn${data.coupon.couponApplied}`).classList.add("hidden")
-                document.getElementById("appliedCouponDisplay").classList.add("hidden")
-               document.getElementById("appliedCouponName").value = ""
-            }
-        })
-        .catch(error => { 
-            iziToast.error({
-                title : "Error",
-                message : error.message,
-                position : "topRight"
-            })
-        })
-    }
-</script>
-<script src="/javascript/user-javascript/cartManagementInCart.js"></script>
+<%- include("../../public/javascript/user-javascript/cartManagementInCart.ejs")%>
 <%- include("../partials/user-side/footer.ejs")%>

@@ -80,7 +80,7 @@ router.post("/coupons/edit-coupon",upload.single("bannerImage"),couponManagement
 router.delete("/coupons/delete-coupon",couponManagementController.deleteCoupon)
 
 //Sales Report 
-router.get("/reports",reportsController.getSalesReport)
+router.get("/reports",adminAuth.checkSession,reportsController.getSalesReport)
 router.get("/reports/sales/excel",reportsController.getSalesReportIntoExcel)
 router.get("/reports/sales/pdf",reportsController.getSalesReportIntoPdf)
 

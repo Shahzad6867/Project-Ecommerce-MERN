@@ -2,7 +2,7 @@ const Order = require("../../models/order.model.js");
 const User = require("../../models/user.model.js");
 
 async function computeTotalOrdersCount(){
-   let count = await Order.find().countDocuments()
+   let count = await Order.find({isCancelled : false,isReturned : false}).countDocuments()
    return count
 }
 async function computeTotalCustomersCount(){
@@ -12,10 +12,13 @@ async function computeTotalCustomersCount(){
 
 async function computeGrossSales(){
     let result = await Order.aggregate([
-      {
-        $unwind : "$items"
+       {
+        $match : {
+          isCancelled : false,
+          isReturned : false 
+        }
       },{
-        $group : {_id : null,grossSales : {$sum : {$multiply : ["$items.price","$items.quantity"]}} }
+        $group : {_id : null,grossSales : {$sum : "$subTotal"} }
       }
      ])
       return new Intl.NumberFormat("en-US",{
@@ -27,8 +30,12 @@ async function computeGrossSales(){
   }
 
 async function computeTotalProductDiscount(){
-    let result = await Order.aggregate([
-      {
+    let result = await Order.aggregate([{
+      $match : {
+        isCancelled : false,
+        isReturned : false
+      }
+    },{
         $unwind : "$items"
       },{
         $group : {_id : null, totalProductDiscount : {$sum : {$subtract : [{$multiply : ["$items.price","$items.quantity"]},{$multiply : ["$items.offerPrice","$items.quantity"]}] }}}
@@ -45,6 +52,11 @@ async function computeTotalProductDiscount(){
 async function computeTotalCouponDiscount(){
     let result = await Order.aggregate([
       {
+        $match : {
+          isCancelled : false,
+          isReturned : false
+        }
+      },{
         $group : {_id : null, totalCouponDiscount : {$sum : "$discount"}}
       }
      ])
@@ -58,7 +70,12 @@ async function computeTotalCouponDiscount(){
 
   async function computeTotalRefunds(){
     let result = await Order.aggregate([
-      {
+     {
+      $match : {
+        isCancelled : false,
+        isReturned : false
+      }
+     },{
         $lookup : {
           from : "payments",
           localField : "paymentId",
@@ -68,7 +85,7 @@ async function computeTotalCouponDiscount(){
       },{
         $unwind : "$paymentId"
       },{
-        $group : {_id : null, amountRefunded : {$sum : "$paymentId.amountRefunded"}}
+        $group : {_id : null , amountRefunded : {$sum : "$paymentId.amountRefunded"}}
       }
      ])
       return new Intl.NumberFormat("en-US",{
@@ -80,8 +97,18 @@ async function computeTotalCouponDiscount(){
   }
 
   async function computeNetSales(){
-    let result = await Order.aggregate([
-      {
+    let result = await Order.aggregate([{
+      $match : {
+        isCancelled : false,
+        isReturned : false
+      }
+    },{
+      $addFields : {
+        itemsLength : {$size : "$items"}
+      }
+    },{
+        $unwind : "$items"
+      },{
         $lookup : {
           from : "payments",
           localField : "paymentId",
@@ -91,7 +118,9 @@ async function computeTotalCouponDiscount(){
       },{
         $unwind : "$paymentId"
       },{
-        $group : {_id : null, netSales : {$sum : {$subtract : ["$subTotal","$paymentId.amountRefunded"]}}}
+        $group : {_id : "$orderId", amountRefunded : {$first : "$paymentId.amountRefunded"},netSalesBeforeRefund : {$sum : {$subtract : [{$multiply : ["$items.offerPrice","$items.quantity"]},{$divide : ["$discount","$itemsLength"]}]}}}
+      },{
+        $group : {_id : null , netSales : {$sum : {$subtract : ["$netSalesBeforeRefund","$amountRefunded"]}}}
       }
      ])
       return new Intl.NumberFormat("en-US",{
@@ -221,20 +250,30 @@ async function computeSalesLastTwelveMonths(){
       let result = await Order.aggregate([
         {
           $match : {
-            "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
+            isCancelled : false,
+            isReturned : false
+          }
+        },
+        {
+          $unwind : "$items"
+        },{
+          $match : {
+            "items.isCancelled" : false
           }
         },{
           $match : {
-            "statusTimeline.orderedAt" : {
+            "items.statusTimeline.orderedAt" : {
               $gte : yearly,
               $lte : now
             }
           }
         },{
           $group : {_id : {
-            $dateToString : {format : "%Y-%m" , date : "$statusTimeline.orderedAt"}
+            $dateToString : {format : "%Y-%m" , date : "$items.statusTimeline.orderedAt"}
           },
-          revenue : {$sum : "$grandTotal"}
+          revenue : {$sum : {
+            $multiply : ["$items.offerPrice", "$items.quantity"]
+          }}
         }
         }
       ])
@@ -256,10 +295,9 @@ async function computeSalesLastTwelveMonths(){
   }
   async function computeSalesLastThirtyDays(){
     let dateToday = new Date()
-    dateToday.setHours(0, 0, 0, 0)
   
     let lastThirtyDaysBefore = new Date(dateToday)
-    lastThirtyDaysBefore.setDate(dateToday.getDate() - 29)
+    lastThirtyDaysBefore.setDate(dateToday.getDate() - 30)
   
     let dateInThisMonth = []
     for (let d = new Date(lastThirtyDaysBefore); d <= dateToday ; d.setDate(d.getDate() + 1)) {
@@ -272,24 +310,34 @@ async function computeSalesLastTwelveMonths(){
           revenue: 0
         })
     }
-    console.log(dateInThisMonth)
+   
     let result = await Order.aggregate([
       {
         $match : {
-          "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
+          isCancelled : false,
+          isReturned : false
+        }
+      },
+      {
+        $unwind : "$items"
+      },{
+        $match : {
+          "items.isCancelled" : false
         }
       },{
         $match : {
-          "statusTimeline.orderedAt" : {
+          "items.statusTimeline.orderedAt" : {
             $gte : lastThirtyDaysBefore,
             $lte : dateToday
           }
         }
       },{
         $group : {_id : {
-          $dateToString : {format : "%Y-%m-%d" , date : "$statusTimeline.orderedAt"}
+          $dateToString : {format : "%Y-%m-%d" , date : "$items.statusTimeline.orderedAt"}
         },
-        revenue : {$sum : "$grandTotal"}
+        revenue : {$sum : {
+          $multiply : ["$items.offerPrice", "$items.quantity"]
+        }}
       }
       }
     ])
@@ -319,20 +367,30 @@ async function computeSalesLastTwelveMonths(){
     let result = await Order.aggregate([
       {
         $match : {
-          "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
+          isCancelled : false,
+          isReturned : false
+        }
+      },
+      {
+        $unwind : "$items"
+      },{
+        $match : {
+          "items.isCancelled" : false
         }
       },{
         $match : {
-          "statusTimeline.orderedAt" : {
+          "items.statusTimeline.orderedAt" : {
             $gte : sevenDaysBack,
             $lte : dateToday
           }
         }
       },{
         $group : {_id : {
-          $dateToString : {format : "%Y-%m-%d" , date : "$statusTimeline.orderedAt"}
+          $dateToString : {format : "%Y-%m-%d" , date : "$items.statusTimeline.orderedAt"}
         },
-        revenue : {$sum : "$grandTotal"}
+        revenue : {$sum : {
+          $multiply : ["$items.offerPrice", "$items.quantity"]
+        }}
       }
       }
     ])
@@ -363,23 +421,31 @@ async function computeSalesLastTwelveMonths(){
     let result = await Order.aggregate([
       {
         $match : {
-          "status" : {"$in" : ["Processed","Shipped","Out for Delivery","Delivered"],"$nin" : ["Cancelled","Return Order Requested"]}
+          isCancelled : false,
+          isReturned : false
+        }
+      },
+      {
+        $unwind : "$items"
+      },{
+        $match : {
+          "items.isCancelled" : false
         }
       },{
         $match : {
-          "statusTimeline.orderedAt" : {
+          "items.statusTimeline.orderedAt" : {
             $gte : twentyFourHoursBefore,
             $lte : dateToday
           }
         }
       },{
-        $group : {_id : "$statusTimeline.orderedAt",
-        revenue : {$sum : "$grandTotal"}
+        $group : {_id : "$items.statusTimeline.orderedAt",
+        revenue : {$sum : {
+          $multiply : ["$items.offerPrice", "$items.quantity"]
+        }}
       }
       }
     ])
-    console.log(result)
-    console.log(dateInThisMonth)
     for (let i = 0; i < result.length; i++) {
       for(let j = 0 ; j < dateInThisMonth.length ; j++){
         let todayCurrentHour = new Date(dateInThisMonth[j].date)

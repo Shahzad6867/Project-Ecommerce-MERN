@@ -49,7 +49,29 @@ const searchUser = async (req, res) => {
     try {
       const { search } = req.body;
       const ordersFullList = await Order.find({},{orderId : 1,_id : 0})
-      const orders = await Order.find({orderId : { $regex : search}}).populate("userId").populate("paymentId");
+      const orders = await Order.aggregate([{
+        $match : {orderId : { $regex : search}}
+      },{
+        $unwind : "$items"
+       },{
+        $lookup : {
+            from : "users",
+            localField : "userId",
+            foreignField : "_id",
+            as : "userId"
+        }
+    },{
+        $unwind : "$userId"
+    },{
+        $lookup : {
+            from : "payments",
+            localField : "paymentId",
+            foreignField : "_id",
+            as : "paymentId"
+        }
+    },{
+        $unwind : "$paymentId"
+    }])
       if (!orders) {
         req.session.message = "There is no existing Order based on the given Order ID";
         return res.redirect("/admin/orders");

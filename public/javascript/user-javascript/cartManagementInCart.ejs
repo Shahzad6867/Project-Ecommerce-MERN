@@ -1,5 +1,91 @@
+<script>
 feather.replace();
-    
+
+function applyCoupon(couponId,minAmount){
+    const grandTotalElement = document.getElementById("grandTotal")
+    const subTotal = Number(document.getElementById("subTotalInCart").innerText)
+    const taxElement = document.getElementById("tax")
+    const discountDiv = document.getElementById("discountDiv")
+    const discountValue = document.getElementById("discountedValue")
+    if(subTotal < Number(minAmount)){
+        iziToast.info({
+            title : "Coupon",
+            message : `Minimum subtotal of $${minAmount} required to apply this coupon`,
+            position : "topRight"
+        })
+        event.preventDefault()
+        return
+    }
+    fetch(`/cart/apply-coupon/${couponId}`,{method : "PATCH"})
+    .then(res => res.json())
+    .then(data => {
+        if(data.message === "Done"){
+            let discountedAmount = 0
+             if (data.coupon.discountType === "percentage") { 
+                     discountedAmount = (subTotal * data.coupon.discountValue) / 100
+                     if (discountedAmount > data.coupon.maxDiscountAmount) { 
+                        discountedAmount = data.coupon.maxDiscountAmount
+                      } 
+                 } else { 
+                     discountedAmount = data.coupon.discountValue
+            } 
+            const tax = ((subTotal - discountedAmount) * 0.05)
+            const shipping = 10
+           taxElement.innerText =  tax.toFixed(2)
+           grandTotalElement.innerText = ((subTotal - discountedAmount) + tax + shipping).toFixed(2)
+           discountDiv.classList.remove("hidden")
+           discountValue.innerText = discountedAmount.toFixed(2)
+           document.getElementById(`applyBtn${data.coupon._id}`).classList.add("hidden")
+           document.getElementById(`appliedBtn${data.coupon._id}`).classList.remove("hidden")
+           if(data.olderCoupon !== null){
+            document.getElementById(`applyBtn${data.olderCoupon}`).classList.remove("hidden")
+            document.getElementById(`appliedBtn${data.olderCoupon}`).classList.add("hidden")
+           }else{
+            document.getElementById("appliedCouponDisplay").classList.remove("hidden")
+           }
+           document.getElementById("appliedCouponName").value = data.coupon.name
+
+        }
+    })
+    .catch(error => { 
+        iziToast.error({
+            title : "Error",
+            message : error.message,
+            position : "topRight"
+        })
+    })
+}
+function removeCoupon(){
+    fetch(`/cart/remove-coupon`,{method : "PATCH"})
+    .then(res => res.json())
+    .then(data => {
+        if(data.message === "Done"){
+            const grandTotalElement = document.getElementById("grandTotal")
+            const subTotal = Number(document.getElementById("subTotalInCart").innerText)
+            const taxElement = document.getElementById("tax")
+            const discountDiv = document.getElementById("discountDiv")
+            const discountValue = document.getElementById("discountedValue")
+            
+            const tax = (subTotal * 0.05)
+            const shipping = 10
+           taxElement.innerText =  tax.toFixed(2)
+           grandTotalElement.innerText = (subTotal + tax + shipping).toFixed(2)
+           discountDiv.classList.add("hidden")
+           discountValue.innerText = 0.00
+           document.getElementById(`applyBtn${data.coupon.couponApplied}`).classList.remove("hidden")
+           document.getElementById(`appliedBtn${data.coupon.couponApplied}`).classList.add("hidden")
+            document.getElementById("appliedCouponDisplay").classList.add("hidden")
+           document.getElementById("appliedCouponName").value = ""
+        }
+    })
+    .catch(error => { 
+        iziToast.error({
+            title : "Error",
+            message : error.message,
+            position : "topRight"
+        })
+    })
+}
 
     
 
@@ -155,7 +241,6 @@ feather.replace();
     }
     const grandTotal = document.getElementById("grandTotal")
     if(grandTotal && Number(grandTotal.innerText) === 0){
-     console.log( document.getElementById("checkoutBtnInCart"))
      document.getElementById("checkoutBtnInCart").onclick = function(){
          iziToast.info({
              title : "Cart",
@@ -165,7 +250,6 @@ feather.replace();
      }
     }else if(grandTotal && Number(grandTotal.innerText) > 0){
        let isCouponApplied =  document.getElementById("isCouponApplied")
-       console.log(isCouponApplied)
        if(isCouponApplied.value === "false"){
         fetch("/cart/remove-coupon",{method : "PATCH"})
        }
@@ -174,37 +258,61 @@ feather.replace();
      }
     }
     document.getElementById("cartHeadItemCountInCart").innerText = Number(document.getElementById("subTotalItemsInCart").innerText)
-
-
-    let serverMessage = document.getElementById("serverMessage").value
-    if(serverMessage ===  "Some items in your cart are unavailable. Please remove them to continue"){
-        iziToast.info({
-            title : "Cart",
-            message : serverMessage,
-            position : "topCenter"
-        })
-    }
-      if(serverMessage !== "" && serverMessage !== "Some items in your cart are unavailable. Please remove them to continue"){
-        
-        serverMessage = serverMessage.split("_,")
-       
-      }
-       if(Array.isArray(serverMessage)){
+    let message = '<%-  JSON.stringify(message ) %>'
+    console.log(message)
+    let serverMessage = JSON.parse(message)
+     if(serverMessage){
+        if(Array.isArray(serverMessage)){
         for (let i = 0; i < serverMessage.length; i++) {
             if(i === serverMessage.length - 1){
                 let stringLen = serverMessage[i].length - 1
                 iziToast.error({
-                title : "Stock Availability",
+                title : "Cart",
                 message : serverMessage[i].slice(0,stringLen),
                 position : "topRight"
             })
             }else{
                 iziToast.error({
-                title : "Stock Availability",
+                title : "Cart",
                 message : serverMessage[i],
                 position : "topRight"
               })
             }
             
         }
-       }
+       }else if(serverMessage === "Some items in your cart are unavailable. Please remove them to continue" ){
+        iziToast.info({
+            title : "Cart",
+            message : serverMessage,
+            position : "topCenter"
+        })
+        }else if(serverMessage === "Some items in your cart are Out of Stock. Please remove them to continue"){
+            iziToast.info({
+                title : "Cart",
+                message : serverMessage,
+                position : "topCenter"
+            })
+        }else if(serverMessage === "Prices may have changed, Please verify it and proceed to checkout"){
+        iziToast.info({
+            title : "Cart",
+            message : serverMessage,
+            position : "topCenter"
+        })
+        }else if(serverMessage === "Offers may have changed, Please verify it and proceed to checkout"){
+            iziToast.info({
+                title : "Cart",
+                message : serverMessage,
+                position : "topCenter"
+            })
+        }else if(serverMessage === "Coupon expired. Select another coupon or proceed to checkout."){
+        iziToast.info({
+            title : "Cart",
+            message : serverMessage,
+            position : "topCenter"
+        })
+        }
+     }
+     
+      
+      
+</script>

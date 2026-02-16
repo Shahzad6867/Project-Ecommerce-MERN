@@ -1,6 +1,8 @@
 const mongoose = require("mongoose")
 const {Schema} = mongoose
 
+
+
 const itemSchema = Schema({
     productId : {
         type : mongoose.Schema.Types.ObjectId,
@@ -30,6 +32,18 @@ const itemSchema = Schema({
     productImage : {
         type : String
     },
+    status : {
+        type: String,  
+      default: "Placed"
+    },
+    statusTimeline :{
+        orderedAt : {type : Date, default : new Date()},
+        processedAt : {type : Date, default : null },
+        shippedAt : {type : Date,default : null},
+        outForDeliveryAt : {type : Date, default : null},
+        deliveredAt : {type : Date, default : null},
+        cancelledAt : { type : Date, default : null}
+    },
     isCancelled : {
         type : Boolean,
         default : false
@@ -54,33 +68,7 @@ const itemSchema = Schema({
 
 })
 
-const statusTimelineSchema = Schema({
-    orderedAt : {
-        type : Date,
-        default : Date.now()
-    },
-    processedAt : {
-        type : Date,
-        default : null
-    },
-    shippedAt : {
-        type : Date,
-        default : null
-    },
-    outForDeliveryAt : {
-        type : Date,
-        default : null
-    },
-    deliveredAt : {
-        type : Date,
-        default : null
-    },
-    cancelledAt : {
-        type : Date,
-        default : null
-    }
 
-})
 
 const orderSchema = Schema({
     orderId : {
@@ -150,15 +138,15 @@ const orderSchema = Schema({
         type : mongoose.Schema.Types.ObjectId,
         ref : "Payment"
     },
-    status : {
-        type: Array,  
-      default: ["Pending"]
-    },
+    
     isCancelled : {
         type : Boolean,
         default : false
     },
-    statusTimeline : statusTimelineSchema,
+    isReturned : {
+        type : Boolean,
+        default : false
+    },
     invoiceUrl : {
         type : String,
         default : null
@@ -170,17 +158,7 @@ const orderSchema = Schema({
     willBeCancelledAt : {
         type : Date,
         default:null
-    },
-    return: {
-        isRequested: { type: Boolean, default: false },
-        reason: { type: String, default : null },
-        proof : {type : String, default : null},
-        declineReason: { type: String, default : null },
-        requestedAt: {type: Date, default : null },
-        approvedAt: {type: Date, default : null },
-        declinedAt: {type: Date, default : null },
-        refundedAt: {type: Date, default : null }
-      }
+    }
 },{timestamps : true})
 
 module.exports = mongoose.model("Order",orderSchema)

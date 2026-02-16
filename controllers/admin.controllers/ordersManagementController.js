@@ -3,15 +3,16 @@ const ERROR_MESSAGES = require("../../constants/errorMessages.js")
 const HTTP_STATUS = require("../../constants/httpStatus.js")
 
 const getOrders = async(req,res) => {
-    const perPage = req.session.itemsPerPage || 5 
+    const perPage = Number(req.session.itemsPerPage) || 5 
     const page = req.query.page || 1
     const ordersFullList = await ordersService.getOrdersForSearch()
-     const orders = await ordersService.getOrders(perPage,page)
-     const count = await ordersService.getOrdersCount()
+    const status = req.query.status || "All"
+     const orders = await ordersService.getOrders(perPage,page,status)
+     const count = await ordersService.getOrdersCount(status)
     const pages = Math.ceil(count / perPage)
     const message = req.session.message || null
     delete req.session.message
-    res.render("admin-view/admin.orders.ejs",{message,orders,page,pages,count,ordersFullList})
+    res.render("admin-view/admin.orders.ejs",{message,orders,page,pages,perPage,count,ordersFullList,status})
 }
 const getOrderDetailPage = async (req,res) => {
     let user = req.session.user || req.user
@@ -24,7 +25,7 @@ const getOrderDetailPage = async (req,res) => {
 const updateStatus = async (req,res) => {
     try {
     let order = await ordersService.getOrder(req.params.id)
-    await ordersService.updateOrderStatus(order,req.query.status)
+    await ordersService.updateOrderStatus(order,req.query.status,req.query?.item,req.body?.declineReason)
     req.session.message = "Status Updated Successfully"
     return res.status(HTTP_STATUS.OK).json({
         success : true

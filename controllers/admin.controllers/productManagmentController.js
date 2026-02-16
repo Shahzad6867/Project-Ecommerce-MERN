@@ -16,7 +16,7 @@ const getProducts = async (req,res) => {
     let result = await Product.aggregate([
       {
           $lookup : {
-              from : "category",
+              from : "categories",
               localField : "categoryId",
               foreignField : "_id",
               as : "categoryId"
@@ -24,7 +24,7 @@ const getProducts = async (req,res) => {
       },
       {
           $match : {
-              "categoryId.categoryName" : "IOS"
+              "categoryId.categoryName" : "MOBILES"
           }
       },{
         $unwind : "$variants"  

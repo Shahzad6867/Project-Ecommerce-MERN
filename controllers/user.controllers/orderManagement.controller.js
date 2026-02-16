@@ -13,16 +13,22 @@ const mongoose = require("mongoose");
 const cloudinary = require("../../config/cloudinaryConfig.js")
 const stripe = require("../../config/stripeConfig.js")
 require("dotenv").config()
+const orderService = require("../../services/user-services/orderService.js")
+const adminOrderService = require("../../services/admin-services/ordersService.js")
 
 const getCheckout = async (req,res) => {
     let user = req.session.user || req.user
     let message = req.session.message || null
     delete req.session.message
+
     const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
     const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("categoryId").populate("brandId").populate("productOfferId").populate("categoryOfferId").populate("couponApplied")
     for(let i = 0 ; i < cartItems.length ; i++){
         if(cartItems[i].productId.variants[cartItems[i].variant].isBlocked || cartItems[i].categoryId.isDeleted || cartItems[i].brandId.isDeleted ){
             req.session.message = "Some items in your cart are unavailable. Please remove them to continue"
+            return res.redirect("/cart")
+        } else if(cartItems[i].productId.variants[cartItems[i].variant].stockQuantity === 0 || cartItems[i].productId.variants[cartItems[i].variant].stockStatus === "Out of Stock"){
+            req.session.message = "Some items in your cart are Out of Stock. Please remove them to continue"
             return res.redirect("/cart")
         } 
     }
@@ -41,150 +47,189 @@ function orderIdGenerator() {
 
 const placeOrder = async (req,res) => {
     
-    let coupon = null
+    
     let user = req.session.user || req.user
-    if( req.body.paymentMethod === "Pay with Stripe"){
-       if(req.body.discount){
-        coupon = await stripe.coupons.create({
-            amount_off : Math.floor(Number(req.body.discount) * 100),
-            duration : "once",
-            currency : "usd",
-            name : req.body.couponName
-        })
-        
-       }
-    }
-    if(req.body.discount){
-        let referralCoupon = await Coupon.findOne({_id : new mongoose.Types.ObjectId(req.body.couponId)})
-        if(referralCoupon.userId !== null && String(referralCoupon.userId) === String(user._id)){
-            await Coupon.findByIdAndDelete(referralCoupon._id)
-        }
-       }
-    
-
-    const items = []
+    let subTotal = 0
+    let grandTotal = 0
+    let shipping = 10
+    let tax = 0
+    let cartItems = await Cart.find({userId : user._id}).populate("productId").populate("categoryId").populate("brandId").populate("productOfferId").populate("categoryOfferId").populate("couponApplied")
     const lineItems = []
+    const items = []
     const stockUnavailable = []
-    const productBlocked = 0
-
-    
-    let grandTotalForCashOnDelivery = 0
-    if(Array.isArray(req.body.productId)){
-        for(let i = 0 ; i < req.body.productId.length ; i++){
-            let product = await Product.findById(req.body.productId[i])
-            if(product.variants[req.body.variants[i]].isBlocked === true || product.categoryId.isDeleted === true || product.brandId.isDeleted === true){
-                req.session.message = "Some items in your cart are unavailable. Please remove them to continue"
-                return res.redirect("/cart")
-             }
-            if( product.variants[req.body.variants[i]].stockStatus !== "Out of Stock" && product.variants[req.body.variants[i]].stockQuantity >= req.body.quantity[i]){
-                if(req.body.paymentMethod === "Pay with Stripe"){
-                    lineItems.push(
-                        {
-                            price_data : {
-                                currency : "usd",
-                                product_data : {name : req.body.productName[i]},
-                                unit_amount : req.body.offerPrice[i] * 100,
-                            },
-                            quantity : req.body.quantity[i],
-                            tax_rates : ["txr_1SvBzlBUciUB3yZurNMc9lzT"]
-        
-                    })
-                }
-                items.push({
-                    productId : req.body.productId[i],
-                    productName : req.body.productName[i],
-                    variant : req.body.variants[i],
-                    quantity : req.body.quantity[i],
-                    color : req.body.color[i],
-                    size : req.body.size[i],
-                    price : req.body.price[i],
-                    offerPrice : req.body.offerPrice[i],
-                    productImage : req.body.productImages[i]
-                  })
-                  grandTotalForCashOnDelivery += (Number(req.body.offerPrice[i]) * Number(req.body.quantity[i]))
-            }else{
-               
-                if(product.variants[req.body.variants[i]].stockQuantity > 0 && product.variants[req.body.variants[i]].stockQuantity < req.body.quantity[i]){
-                    stockUnavailable.push(`${product.productName}-${req.body.size[i]} has only Limited Stock, The maximum quantity you can order is ${product.variants[req.body.variants[i]].stockQuantity}, Please update the quantity in cart and proceed to Checkout_`)
-                }else if(product.variants[req.body.variants[i]].stockQuantity === 0 || product.variants[req.body.variants[i]].stockStatus === "Out of Stock"){
-                    stockUnavailable.push(`${product.productName}-${req.body.size[i]} is Out of Stock, Click on Proceed to Checkout to proceed with other items in cart_`)
-                }
-                
-            }
-           
-      
-          }
-          
-
-          if(stockUnavailable.length > 0){
-            req.session.message = stockUnavailable
-            return res.redirect("/cart")
-          }
-    }else{
-        
-        let product = await Product.findById(req.body.productId)
-        if(product.variants[req.body.variants].isBlocked === true || product.categoryId.isDeleted === true || product.brandId.isDeleted === true){
+    const now = new Date()
+    for(let i = 0 ; i < cartItems.length ; i++){
+        const productId = cartItems[i].productId._id
+        const productName = cartItems[i].productId.productName
+        const variant = cartItems[i].variant
+        const quantity = cartItems[i].quantity
+        const size = cartItems[i].productId.variants[variant].size
+        const color = cartItems[i].productId.variants[variant].color
+        const price = cartItems[i].productId.variants[variant].price
+        const productImage = cartItems[i].productId.variants[variant].productImages[0]
+        const reqBodyPrice = (Array.isArray(req.body.price)) ? Number(req.body.price[i]) : Number(req.body.price)
+        const reqBodyOfferPrice = (Array.isArray(req.body.offerPrice)) ? Number(req.body.offerPrice[i]) : Number(req.body.offerPrice)
+        let offerPrice = price
+        if(cartItems[i].productId.variants[variant].isBlocked === true || cartItems[i].categoryId.isDeleted === true || cartItems[i].brandId.isDeleted === true){
             req.session.message = "Some items in your cart are unavailable. Please remove them to continue"
             return res.redirect("/cart")
          }
-        if( product.variants[req.body.variants].stockStatus !== "Out of Stock" && product.variants[req.body.variants].stockQuantity >= req.body.quantity){
-            if(req.body.paymentMethod === "Pay with Stripe"){
-                lineItems.push({
-                        price_data : {
-                            currency : "usd",
-                            product_data : {name : req.body.productName},
-                            unit_amount : req.body.offerPrice * 100,
-                        },
-                        quantity : req.body.quantity,
-                        tax_rates : ["txr_1SvBzlBUciUB3yZurNMc9lzT"]
-    
-                })
-            }
-            items.push({
-                productId : req.body.productId,
-                productName : req.body.productName,
-                variant : req.body.variants,
-                quantity : req.body.quantity,
-                color : req.body.color,
-                size : req.body.size,
-                price : req.body.price,
-                offerPrice : req.body.offerPrice,
-                productImage : req.body.productImages
-              })
-              grandTotalForCashOnDelivery += (Number(req.body.offerPrice) * Number(req.body.quantity))
-        }else{
-           
-            if(product.variants[req.body.variants].stockQuantity > 0 && product.variants[req.body.variants].stockQuantity < req.body.quantity){
-                stockUnavailable.push(`${product.productName}-${req.body.size} has only Limited Stock, The maximum quantity you can order is ${product.variants[req.body.variants].stockQuantity}, Please update the quantity in cart and proceed to Checkout_`)
-            }else if(product.variants[req.body.variants].stockQuantity === 0 || product.variants[req.body.variants].stockStatus === "Out of Stock"){
-                stockUnavailable.push(`${product.productName}-${req.body.size} is Out of Stock, Click on Proceed to Checkout to proceed with other items in cart_`)
-            }
-            
+
+        if(cartItems[i].productId.variants[variant].stockQuantity > 0 && cartItems[i].productId.variants[variant].stockQuantity < quantity){
+            stockUnavailable.push(`${productName}-${size} has only Limited Stock, The maximum quantity you can order is ${cartItems[i].productId.variants[variant].stockQuantity}, Please update the quantity in cart and proceed to Checkout_`)
+        }else if(cartItems[i].productId.variants[variant].stockQuantity === 0 || cartItems[i].productId.variants[variant].stockQuantity === "Out of Stock"){
+            req.session.message = "Some items in your cart are Out of Stock. Please remove them to continue"
+            return res.redirect("/cart")
         }
-
         
-
         if(stockUnavailable.length > 0){
             req.session.message = stockUnavailable
-            console.log(stockUnavailable)
             return res.redirect("/cart")
-      }    
+          }
+
+          let productOfferPrice = null
+          let categoryOfferPrice = null
+
+          
+          const productOffer =
+          cartItems[i].productOfferId &&
+          cartItems[i].productOfferId.startDate <= now &&
+          cartItems[i].productOfferId.endDate >= now
+              ? cartItems[i].productOfferId
+              : null
+
+          const categoryOffer =
+          cartItems[i].categoryOfferId &&
+          cartItems[i].categoryOfferId.startDate <= now &&
+          cartItems[i].categoryOfferId.endDate >= now
+              ? cartItems[i].categoryOfferId
+              : null
+          
+          
+          if (productOffer) {
+          if (productOffer.discountType === "percentage") {
+              productOfferPrice =
+              price - (price * productOffer.discountValue) / 100
+          } else if (productOffer.discountType === "flat") {
+              productOfferPrice =
+              price - productOffer.discountValue
+          }
+          }
+
+          if (categoryOffer) {
+          if (categoryOffer.discountType === "percentage") {
+              const percentPrice =
+              price - (price * categoryOffer.discountValue) / 100
+
+              const maxPrice =
+              price - categoryOffer.maxDiscountAmount
+
+              categoryOfferPrice = Math.max(percentPrice, maxPrice)
+
+          } else if (categoryOffer.discountType === "flat") {
+              if (price > categoryOffer.productMinPrice) {
+              categoryOfferPrice =
+                  price - categoryOffer.discountValue
+              }
+          }
+          }
+
+          
+          if (productOfferPrice !== null && categoryOfferPrice !== null) {
+          offerPrice = Math.min(productOfferPrice, categoryOfferPrice)
+
+          } else if (productOfferPrice !== null) {
+          offerPrice = productOfferPrice
+
+          } else if (categoryOfferPrice !== null) {
+          offerPrice = categoryOfferPrice
+          }
+          
+          if(reqBodyPrice !== price){
+            req.session.message = "Prices may have changed, Please verify it and proceed to checkout"
+            return res.redirect("/cart")
+          }
+
+          if(reqBodyOfferPrice !== offerPrice){
+            req.session.message = "Offers may have changed, Please verify it and proceed to checkout"
+            return res.redirect("/cart")
+          }
+          
+          
+          subTotal += offerPrice * quantity
+        if(req.body.paymentMethod === "Pay with Stripe"){
+            lineItems.push(
+                {
+                    price_data : {
+                        currency : "usd",
+                        product_data : {name : productName},
+                        unit_amount : (Math.round(offerPrice * 100) / 100) * 100,
+                    },
+                    quantity : quantity,
+                    tax_rates : ["txr_1SvBzlBUciUB3yZurNMc9lzT"]
+
+            })
+        }
+        items.push({
+            productId : productId,
+            productName : productName,
+            variant : variant,
+            quantity : quantity,
+            color : color,
+            size : size,
+            price : price,
+            offerPrice : offerPrice,
+            productImage : productImage,
+          })
+       
     }
-    grandTotalForCashOnDelivery += Number(req.body.tax)
-    grandTotalForCashOnDelivery -= Number(req.body.discount) || 0
+    let discountAmount = 0
+    let stripeCoupon = null
+    if(JSON.parse(req.body.isCouponApplied) === true){
+        if (cartItems[0]?.couponApplied !== null &&  subTotal >= cartItems[0]?.couponApplied.minAmount ) { 
+            if(cartItems[0]?.couponApplied.endDate >= now){
+                if (cartItems[0]?.couponApplied.discountType === "percentage") {
+                    discountAmount = (subTotal * cartItems[0]?.couponApplied.discountValue) / 100 
+                    if (discountAmount > cartItems[0]?.couponApplied.maxDiscountAmount) { 
+                        discountAmount = cartItems[0]?.couponApplied.maxDiscountAmount 
+                    } 
+                }else{
+                    discountAmount = cartItems[0]?.couponApplied.discountValue 
+                }
+                if(cartItems[0].couponApplied.name === "REFERRALCOUPON"){
+                    await Coupon.deleteOne({_id : cartItems[0].couponApplied._id})
+                }
+            }else{
+                if(cartItems[0].couponApplied.name === "REFERRALCOUPON"){
+                    await Coupon.deleteOne({_id : cartItems[0].couponApplied._id})
+                    await Cart.updateMany({userId : user._id},{couponApplied : null})
+                }else{
+                    await Cart.updateMany({userId : user._id},{couponApplied : null})
+                }
+                req.session.message = "Coupon expired. Select another coupon or proceed to checkout."
+                return res.redirect("/cart")
+            }
+
+            if(req.body.paymentMethod === "Pay with Stripe"){
+                stripeCoupon = await stripe.coupons.create({
+                    amount_off : (Math.round(discountAmount * 100) / 100) * 100,
+                    duration : "once",
+                    currency : "usd",
+                    name : cartItems[0]?.couponApplied.name
+                })
+            }
+            
+        } 
+       
+
+    }
+    tax = (subTotal - discountAmount) * 0.05
+    grandTotal = Math.round((subTotal - discountAmount + tax + shipping) * 100) / 100
     if(req.body.paymentMethod === "Cash on Delivery"){
-        if(grandTotalForCashOnDelivery > 100){
+        if(grandTotal > 100){
             req.session.message = "Order amount greater than $100 will not be eligible for Cash on Delivery"
             return res.redirect("/checkout")
-        }else{
-            for(let j = 0 ; j < items.length ; j++){
-                let product = await Product.findById(items[j].productId)
-                    product.variants[items[j].variant].stockQuantity -=  items[j].quantity
-                    await product.save()
-                    await Cart.findOneAndDelete({userId : user._id, productId : items[j].productId,variant : items[j].variant})
-            }
         }
-       
     }
     
     let address = await Address.findOne({_id : req.body.addressId})
@@ -204,22 +249,19 @@ const placeOrder = async (req,res) => {
         userId : user._id,
         address : addressObj,
         items : items,
-        subTotal : req.body.subTotal,
-        shipping : req.body.shipping,
-        tax : req.body.tax,
-        discount : req.body.discount || 0,
-        couponCode : req.body.couponName || null,
-        grandTotal : req.body.grandTotal,
+        subTotal : subTotal,
+        shipping : shipping,
+        tax : tax,
+        discount : discountAmount,
+        couponCode : (discountAmount > 0) ? cartItems[0].couponApplied.name : null,
+        grandTotal : grandTotal,
         paymentId : null,
-        statusTimeline : {
-            orderedAt : Date.now()
-        }
     })
     confirmedOrder = await order.save()
     let payment = new Payment({
         userId : user._id,
         orderId : confirmedOrder._id,
-        amountToBePaid : req.body.grandTotal,
+        amountToBePaid : grandTotal,
         amountPaid : 0,
         paymentMethod : req.body.paymentMethod,
         status : "Pending",
@@ -229,99 +271,67 @@ const placeOrder = async (req,res) => {
     confirmedOrder.paymentId = savedPayment._id
     await confirmedOrder.save()
     if(req.body.paymentMethod === "Cash on Delivery"){
+            for(let j = 0 ; j < items.length ; j++){
+                let product = await Product.findById(items[j].productId)
+                    product.variants[items[j].variant].stockQuantity -=  items[j].quantity
+                    await product.save()
+            }
+            await Cart.deleteMany({userId : user._id})
         confirmedOrder = await Order.findOne({_id : confirmedOrder._id }).populate("paymentId")
-        const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
-        const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
-        const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
-        return res.render("user-view/order-confirmation-page.ejs",{user,confirmedOrder,productsFullList,cartItems,wishlistItemsCount})
+        return res.redirect(`/order-confirmation/${confirmedOrder._id}`)
     }else if(req.body.paymentMethod === "Pay with Stripe"){
         try{
-            for(let j = 0 ; j < items.length ; j++){
-                    await Cart.findOneAndDelete({userId : user._id, productId : items[j].productId,variant : items[j].variant})
-            }
+            await Cart.deleteMany({userId : user._id})
             let startDate = new Date()
             savedPayment.orderWillBeCancelledAt = new Date(startDate.getTime() + (48 * 60 * 60 * 1000))
             confirmedOrder.willBeCancelledAt = new Date(startDate.getTime() + (48 * 60 * 60 * 1000))
             await confirmedOrder.save()
             await savedPayment.save()
-            let session = null
-            if(req.body.discount && req.body.paymentMethod === "Pay with Stripe"){
-                session = await stripe.checkout.sessions.create({
-                    mode : "payment",
-                    line_items : lineItems,
-                    discounts : [{coupon : coupon.id}],
-                    shipping_options : [
-                        {
-                            shipping_rate_data : {
-                                type : "fixed_amount",
-                                fixed_amount : {amount : 1000, currency : "usd" },
-                                display_name : "Ground Shipping",
-                                delivery_estimate: {
-                                    minimum: {unit: 'business_day', value: 5},
-                                    maximum: {unit: 'business_day', value: 7},
-                                  }
-                            }
-                        }
-                    ],
-                    success_url : `http://localhost:1348/checkout/payment-processing/${confirmedOrder._id}`,
-                    cancel_url : `http://localhost:1348/order-confirmation/${confirmedOrder._id}?paymentId=${savedPayment._id}&status=Cancelled`,
-                    customer_email : user.email,
-                    metadata : {
-                        user : user._id.toString(),
-                        payment : savedPayment._id.toString(),
-                        for : "Order"
+            const sessionConfig = {
+                mode: "payment",
+                line_items: lineItems,
+                shipping_options: [
+                    {
+                        shipping_rate_data: {
+                            type: "fixed_amount",
+                            fixed_amount: { amount: 1000, currency: "usd" },
+                            display_name: "Ground Shipping",
+                            delivery_estimate: {
+                                minimum: { unit: "business_day", value: 5 },
+                                maximum: { unit: "business_day", value: 7 },
+                            },
+                        },
                     },
-                    payment_intent_data : {
-                        metadata : {
-                            user : user._id.toString(),
-                            payment : savedPayment._id.toString(),
-                            for : "Order"
-                        }
-                    }
-                })
-            }else{
-                session = await stripe.checkout.sessions.create({
-                    mode : "payment",
-                    line_items : lineItems,
-                    shipping_options : [
-                        {
-                            shipping_rate_data : {
-                                type : "fixed_amount",
-                                fixed_amount : {amount : 1000, currency : "usd" },
-                                display_name : "Ground Shipping",
-                                delivery_estimate: {
-                                    minimum: {unit: 'business_day', value: 5},
-                                    maximum: {unit: 'business_day', value: 7},
-                                  }
-                            }
-                        }
-                    ],
-                    success_url : `http://localhost:1348/checkout/payment-processing/${confirmedOrder._id}`,
-                    cancel_url : `http://localhost:1348/order-confirmation/${confirmedOrder._id}?paymentId=${savedPayment._id}&status=Cancelled`,
-                    customer_email : user.email,
-                    metadata : {
-                        user : user._id.toString(),
-                        payment : savedPayment._id.toString(),
-                        for : "Order"
+                ],
+                success_url: `http://localhost:1348/checkout/payment-processing/${confirmedOrder._id}`,
+                cancel_url: `http://localhost:1348/order-confirmation/${confirmedOrder._id}?paymentId=${savedPayment._id}&status=Cancelled`,
+                customer_email: user.email,
+                metadata: {
+                    user: user._id.toString(),
+                    payment: savedPayment._id.toString(),
+                    for: "Order",
+                },
+                payment_intent_data: {
+                    metadata: {
+                        user: user._id.toString(),
+                        payment: savedPayment._id.toString(),
+                        for: "Order",
                     },
-                    payment_intent_data : {
-                        metadata : {
-                            user : user._id.toString(),
-                            payment : savedPayment._id.toString(),
-                            for : "Order"
-                        }
-                    }
-                })
+                },
+            };
+            
+            // Add discount only if valid
+            if (stripeCoupon !== null && req.body.paymentMethod === "Pay with Stripe") {
+                sessionConfig.discounts = [{ coupon: stripeCoupon.id }];
             }
-                
-
-                return res.redirect(session.url)
+            
+            const session = await stripe.checkout.sessions.create(sessionConfig);
+            return res.redirect(session.url)
             } catch (error) {
                 console.log(error)
             }
     }else if(req.body.paymentMethod === "Pay with NovaWallet"){
-        let user = req.session.user || req.user
-        let wallet = await Wallet.findOne({userId : user._id})
+        let wallet = await Wallet.findOne({userId : new mongoose.Types.ObjectId(user._id)})
         if(wallet.walletBalance < confirmedOrder.grandTotal){
             await Order.findByIdAndDelete(confirmedOrder._id)
             await Payment.findByIdAndUpdate(savedPayment._id,{status : "Payment Failed"})
@@ -347,13 +357,10 @@ const placeOrder = async (req,res) => {
             let product = await Product.findById(items[j].productId)
                 product.variants[items[j].variant].stockQuantity -=  items[j].quantity
                 await product.save()
-                await Cart.findOneAndDelete({userId : user._id, productId : items[j].productId,variant : items[j].variant})
         }
+        await Cart.deleteMany({userId : user._id})
         confirmedOrder = await Order.findOne({_id : confirmedOrder._id }).populate("paymentId")
-        const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
-        const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
-        const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
-        return res.render("user-view/order-confirmation-page.ejs",{user,confirmedOrder,productsFullList,cartItems,wishlistItemsCount})
+        return res.redirect(`/order-confirmation/${confirmedOrder._id}`)
     }
     
 }
@@ -466,7 +473,7 @@ const getPaymentProcessingPage = async (req,res) => {
     const {id} = req.params
     res.render("user-view/payment-processing.ejs",{orderId : id,paymentId : null})
 }
-const getOrderStatus = async(req,res) => {
+const getPaymentStatus = async(req,res) => {
     try {
         const {id} = req.params
     const order = await Order.findById(id)
@@ -505,13 +512,14 @@ const getOrderConfirmationPage = async (req,res) => {
 async function cancelOrderWhileOrdersListing(orderId){
     let order = await Order.findOne({_id : orderId})
     let payment = await Payment.findOne({_id : order.paymentId})
-    if(order.status[order.status.length - 1] === "Pending"){
+    if(order.items.every(item => item.status === "Placed")){
         for(let i = 0 ; i < order.items.length ; i++){
        
             let product = await Product.findOne({_id : order.items[i].productId })
             product.variants[order.items[i].variant].stockQuantity += order.items[i].quantity
             await product.save()
             order.items[i].isCancelled = true
+            order.items[i].statusTimeline.cancelledAt = new Date()
                
             }
                 order.subTotal = 0
@@ -521,8 +529,6 @@ async function cancelOrderWhileOrdersListing(orderId){
                 payment.status = "Order Cancelled"
                 payment.orderWillBeCancelledAt = null
                 order.isCancelled = true
-                order.status.push("Cancelled")
-                order.statusTimeline.cancelledAt = new Date()
                 order.willBeCancelledAt = null
                 await order.save()
                 await payment.save()
@@ -538,9 +544,10 @@ const getOrders = async (req,res) => {
         for(let i = 0 ; i < pendingPaymentOrders.length ; i++){
          await cancelOrderWhileOrdersListing(pendingPaymentOrders[i])
         }
-        const orders = await Order.find({userId : user._id}).sort({createdAt : -1}).populate("paymentId")
+        const orders = await Order.find({userId : new mongoose.Types.ObjectId(user._id)}).sort({createdAt : -1}).populate("paymentId")
+        const ordersStatus = await orderService.getOrdersStatus(orders)
         const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
-        res.render("user-view/user.orders-listing.ejs",{user,productsFullList,cartItems,orders,wishlistItemsCount})
+        res.render("user-view/user.orders-listing.ejs",{user,productsFullList,cartItems,orders,wishlistItemsCount,ordersStatus})
     }catch(error){
         console.log(error)
     }
@@ -552,7 +559,9 @@ const getOrderDetailPage = async (req,res) => {
     const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
     const order = await Order.findOne({_id : req.params.id}).populate("paymentId")
     const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
-    res.render("user-view/user.order-details-page.ejs",{user,productsFullList,cartItems,order,wishlistItemsCount})
+    let message = req.session.message || null
+    delete req.session.message
+    res.render("user-view/user.order-details-page.ejs",{user,productsFullList,cartItems,order,wishlistItemsCount,message})
 }
 
 const cancelItem = async (req,res) => {
@@ -564,9 +573,14 @@ const cancelItem = async (req,res) => {
     let payment = await Payment.findOne({_id : order.paymentId})
     
     let everyItemCancelled = 0
-    if(order.status[order.status.length - 1] === "Pending"){
         for(let i = 0 ; i < order.items.length ; i++){
             if(String(order.items[i]._id) === String(itemId)){
+                if(order.items[i].status !== "Placed"){
+                    return res.status(409).json({
+                        success : false,
+                        message : `Cannot cancel the Order, Current Status : ${order.items[i].status}`
+                    })
+                }
                 let amount = 0
                 if(order.discount > 0){
                     let discountDividedByItems = order.discount / order.items.length 
@@ -588,6 +602,12 @@ const cancelItem = async (req,res) => {
                     })
                     await wallet.save()
                     payment.amountRefunded += amount
+                    order.items[i].refundOnCancelled = {
+                        refundId : null,
+                        amount : amount,
+                        status : "Refunded",
+                        refundedAt : new Date()
+                    }
                 }else if (payment.paymentMethod === "Pay with Stripe" && order.items[i].isCancelled === false && payment.status !== "Pending" && payment.status !== "Payment Failed") {
                     payment.amountToBeRefunded += amount
                     let refund = await stripe.refunds.create({
@@ -604,17 +624,39 @@ const cancelItem = async (req,res) => {
                     }
                 }
 
+                order.items[i].isCancelled = true
+                order.items[i].status = "Cancelled"
+                order.items[i].statusTimeline.cancelledAt = new Date()
                 
                 if(payment.paymentMethod === "Cash on Delivery"){
-                    const amountToBePaid = order.subTotal - amount 
-                    payment.amountToBePaid = amountToBePaid + order.tax
+                    const discount = order.discount / order.items.length 
+                    let amountOfItemsNotCancelled = 0
+                    let itemsCount = 0
+                    if(order.discount > 0){
+                        for(let i = 0 ; i < order.items.length ; i++){
+                            if(!order.items[i].isCancelled && order.items[i].statusTimeline.deliveredAt === null){
+                                itemsCount++
+                                amountOfItemsNotCancelled += (order.items[i].offerPrice  * order.items[i].quantity) - discount
+                            }
+                        }
+                    }
+                    const subTotal = amountOfItemsNotCancelled
+                    const tax = subTotal * 0.05
+                    const shipping = (amountOfItemsNotCancelled > 0) ? order.shipping : 0
+                    const amountToBePaid = Math.round((subTotal + tax + shipping) * 100) / 100
+                    payment.amountToBePaid = amountToBePaid  
+                    let nonCancelledItems = order.items.filter(item => !item.isCancelled)
+                    if(nonCancelledItems.every(item => item.statusTimeline.deliveredAt !== null)){
+                        payment.status = "Paid Successfully"
+                    }
+                     
                 }
                 
                 
                
                
                 
-                order.items[i].isCancelled = true
+               
                 await product.save()
                 await order.save()
                 await payment.save()
@@ -625,8 +667,6 @@ const cancelItem = async (req,res) => {
         }
         if(everyItemCancelled === order.items.length){
             order.isCancelled = true
-            order.status.push("Cancelled")
-            order.statusTimeline.cancelledAt = new Date()
             order.willBeCancelledAt = null
             payment.status = "Order Cancelled"
             payment.amountToBePaid = 0
@@ -634,16 +674,21 @@ const cancelItem = async (req,res) => {
             await order.save()
             await payment.save()
         }
+        order = await Order.findById(order._id)
+        let nonCancelledItems = order.items.filter(item => !item.isCancelled)
+        if(order.invoiceCreatedAt === null && order.invoiceUrl === null){
+        let allDelivered = nonCancelledItems.every(item => item.statusTimeline.deliveredAt !== null)
+        if (allDelivered) {
+            setImmediate(() => adminOrderService.generateAndUploadInvoice(order._id))
+          }             
+        } 
         req.session.message = "Item has been successfully cancelled.<br>Any applicable refund will be processed according to our refund policy."
         return res.status(200).json({
             success : true
         })
-    }else{
-        return res.status(409).json({
-            success : false,
-            message : `Cannot cancel the Order, Current Status : ${order.status[order.status.length-1]}`
-        })
-    }
+  
+       
+    
     } catch (error) {
         console.log(error)
     }
@@ -658,7 +703,7 @@ const cancelOrder = async (req,res) => {
     let payment = await Payment.findOne({_id : order.paymentId})
     let user = req.session.user || req.user
     let wallet = await Wallet.findOne({userId : user._id})
-    if(order.status[order.status.length - 1] === "Pending" ){
+    if(order.items.every(item => item.statusTimeline.processedAt === null) ){
         let sumOfAmounts = 0
         for(let i = 0 ; i < order.items.length ; i++){
             let amount = 0
@@ -682,7 +727,16 @@ const cancelOrder = async (req,res) => {
                 product.variants[order.items[i].variant].stockQuantity += order.items[i].quantity
                 await product.save()
             }    
-            }
+            if(order.items[i].isCancelled === false && payment.paymentMethod === "Cash on Delivery"){
+                order.items[i].isCancelled = true
+                order.items[i].status = "Cancelled"
+                order.items[i].statusTimeline.cancelledAt = new Date()
+                
+                let product = await Product.findOne({_id : order.items[i].productId })
+                product.variants[order.items[i].variant].stockQuantity += order.items[i].quantity
+                await product.save()
+            }    
+         }
                 if (payment.paymentMethod === "Pay with Stripe" && payment.status !== "Pending" && payment.status !== "Payment Failed") {
                     payment.amountToBeRefunded += sumOfAmounts
                     let refund = await stripe.refunds.create({
@@ -694,6 +748,8 @@ const cancelOrder = async (req,res) => {
                         if(item.isCancelled === false){
                             item.refundOnCancelled.refundId = refund.id
                             item.isCancelled = true
+                            item.status = "Cancelled"
+                            item.statusTimeline.cancelledAt = new Date()
                         }
                     })
                 }
@@ -709,9 +765,13 @@ const cancelOrder = async (req,res) => {
                  await wallet.save()
                  payment.amountRefunded += sumOfAmounts
                  for(let i = 0 ; i < order.items.length ; i++ ){
-                    order.items[i].refundOnCancelled.status = "Refunded"
-                    order.items[i].refundOnCancelled.refundedAt = new Date()
-                    order.items[i].isCancelled = true
+                    if(order.items[i].isCancelled === false){
+                        order.items[i].refundOnCancelled.status = "Refunded"
+                        order.items[i].refundOnCancelled.refundedAt = new Date()
+                        order.items[i].isCancelled = true
+                        order.items[i].status = "Cancelled"
+                        order.items[i].statusTimeline.cancelledAt = new Date()
+                    }
                  }
                }
                
@@ -720,11 +780,7 @@ const cancelOrder = async (req,res) => {
                 payment.status = "Order Cancelled"
                 payment.orderWillBeCancelledAt = null
                 order.isCancelled = true
-                order.status.push("Cancelled")
-                order.statusTimeline.cancelledAt = new Date()
                 order.willBeCancelledAt = null
-                
-               
                 await order.save()
                 await payment.save()
             
@@ -735,7 +791,7 @@ const cancelOrder = async (req,res) => {
     }else{
         return res.status(409).json({
             success : false,
-            message : `Cannot cancel the Order, Current Status : ${order.status[order.status.length-1]}`
+            message : "Order cannot be cancelled as some items are already being processed."
         })
     }
     
@@ -819,22 +875,24 @@ const returnOrder = async(req,res) => {
     try {
         const {id} = req.params
     let order = await Order.findById(id)
-    for(let i = 0 ; i < order.items.length ; i++){
-        if(order.items[i].isCancelled === false && order.items[i].return.isRequested === false){
-         order.items[i].return.isRequested = true
-         order.items[i].return.reason = req.body.returnReason 
-         order.items[i].return.requestedAt = new Date() 
-        }
+    if(!req.file){
+        req.session.message = "Please provide proof for Return Request"
+        return res.redirect(`/orders/${id}`)
     }
-    result = await cloudinary.uploader.upload(req.file.path,{
+    const result = await cloudinary.uploader.upload(req.file.path,{
         folder : "return-order-proofs",
         resource_type : "image"
       })
-    order.return.isRequested = true
-    order.return.reason = req.body.returnReason
-    order.return.requestedAt = new Date()
-    order.status.push("Return Order Requested")
-    order.return.proof = result.secure_url
+    for(let i = 0 ; i < order.items.length ; i++){
+        if(order.items[i].isCancelled === false && order.items[i].return.isRequested === false){
+         order.items[i].status = "Return Requested"
+         order.items[i].return.isRequested = true
+         order.items[i].return.reason = req.body.returnReason 
+         order.items[i].return.proof = result.secure_url 
+         order.items[i].return.requestedAt = new Date() 
+        }
+    }
+    order.isReturned = true
     await order.save()
     return res.redirect(`/orders/${id}`)
     } catch (error) {
@@ -848,29 +906,21 @@ const returnItem = async (req,res) => {
         const {id} = req.params
         const {itemIndex} = req.query
     let order = await Order.findById(id)
-    result = await cloudinary.uploader.upload(req.file.path,{
+    if(!req.file){
+        req.session.message = "Please provide proof for Return Request"
+        return res.redirect(`/orders/${id}`)
+    }
+    const result = await cloudinary.uploader.upload(req.file.path,{
         folder : "return-order-proofs",
         resource_type : "image"
       })
+    order.items[itemIndex].status = "Return Requested"
     order.items[itemIndex].return.isRequested = true
     order.items[itemIndex].return.reason = req.body.returnReason
     order.items[itemIndex].return.requestedAt = new Date()
     order.items[itemIndex].return.proof = result.secure_url
 
-    let counter = 0
-    for(let i = 0 ; i < order.items.length ; i++){
-        if(order.items[i].return.isRequested === true || order.items[i].isCancelled === true){
-            counter++
-        }
-    }
-    if(counter === order.items.length){
-        order.return.isRequested = true
-        order.return.reason = req.body.returnReason
-        order.return.requestedAt = new Date()
-        order.status.push("Return Order Requested")
-    }else{
-        order.status.push("Item Return Requested")
-    }
+    
     
     await order.save()
     res.redirect(`/orders/${id}`)
@@ -894,7 +944,7 @@ module.exports = {
     returnOrder,
     returnItem,
     getOrderConfirmationPage,
-    getOrderStatus,
+    getPaymentStatus,
     retryPayment,
     getPaymentProcessingPage
 }

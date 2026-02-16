@@ -9,14 +9,65 @@ const getOrdersForSearch = async () => {
     let result = await Order.find({},{ _id : 0,orderId : 1 })
     return result
 }
-const getOrders = async (perPage,page) => {
-    let result = await Order.find({}).populate("userId").populate("paymentId").sort({createdAt : -1}).skip(perPage * page - perPage).limit(perPage)
-    return result
+
+const getOrders = async (perPage,page,status) => {
+    let skip = (perPage * page) - perPage
+    let pipeline = []
+    pipeline.push({
+        $unwind : "$items"
+    })
+    if(status !== "All"){
+        pipeline.push({
+            $match : {
+                "items.status" : status
+            }
+        })
+        
+    }
+    pipeline.push({
+        $lookup : {
+            from : "users",
+            localField : "userId",
+            foreignField : "_id",
+            as : "userId"
+        }
+    },{
+        $unwind : "$userId"
+    },{
+        $lookup : {
+            from : "payments",
+            localField : "paymentId",
+            foreignField : "_id",
+            as : "paymentId"
+        }
+    },{
+        $unwind : "$paymentId"
+    },{
+        $sort : {createdAt : -1}
+    },{
+        $skip : skip
+    },{
+        $limit : perPage
+    })
+    let orders = await Order.aggregate(pipeline)
+    return orders
 }
 
-const getOrdersCount = async () => {
-    let count = await Order.countDocuments({})
-    return count
+const getOrdersCount = async (status) => {
+    let pipeline = []
+    pipeline.push({$unwind : "$items"})
+    if(status !== "All"){
+        pipeline.push({
+            $match : {
+                "items.status" : status
+            }
+        })
+        
+    }
+    pipeline.push({$count : "ordersCount"})
+    let count = await Order.aggregate(pipeline)
+    console.log(count)
+    return count[0]?.ordersCount
 }
 
 const getOrder = async (id) => {
@@ -185,12 +236,14 @@ async function generateAndUploadInvoice(orderId) {
 
         if (!order) return;
 
+        order.invoiceCreatedAt = new Date();
+        
         const html = createInvoice(order);
         const pdfBuffer = await generateInvoicePDF(html);
         const uploadResult = await uploadPDFToCloudinary(pdfBuffer);
 
         order.invoiceUrl = uploadResult.secure_url;
-        order.invoiceCreatedAt = new Date();
+       
         await order.save();
 
         console.log("Invoice generated for order:", order.orderId);
@@ -199,87 +252,56 @@ async function generateAndUploadInvoice(orderId) {
     }
 }
 
-const updateOrderStatus = async (order,status) => {
+const updateOrderStatus = async (order,status,itemIndex,declineReason) => {
+    order.items[itemIndex].status = status
     if(status === "Processed"){
-        order.status.push(status)
-        order.statusTimeline.processedAt = new Date()
-        await order.save()
+        order.items[itemIndex].statusTimeline.processedAt = new Date()
     }else if(status === "Shipped"){
-        order.status.push(status)
-        order.statusTimeline.shippedAt = new Date()
-        await order.save()
-
-        setImmediate(() => generateAndUploadInvoice(order._id))
+        order.items[itemIndex].statusTimeline.shippedAt = new Date()
     }else if(status === "Out for Delivery"){
-        order.status.push(status)
-        order.statusTimeline.outForDeliveryAt = new Date()
-        await order.save()
+        order.items[itemIndex].statusTimeline.outForDeliveryAt = new Date()
     }else if(status === "Delivered"){
         let payment = await Payment.findById(order.paymentId._id)
+        order.items[itemIndex].statusTimeline.deliveredAt = new Date()
         if(order.paymentId.paymentMethod === "Cash on Delivery"){
-            order.status.push(status)
-            payment.amountPaid = order.paymentId.amountToBePaid
-            payment.status = "Paid Successfully"
-            payment.paymentDate = new Date()
-            order.statusTimeline.deliveredAt = new Date()
-            await order.save()
-            await payment.save()
-        }else {
-            order.status.push(status)
-            order.statusTimeline.deliveredAt = new Date()
-            await order.save()
-        }
-    }else if(status === "Approve Return Request"){
-        let payment = await Payment.findById(order.paymentId._id)
-        let wallet = await Wallet.findOne({userId : order.userId})
-       
-       
-        let amount = 0
-        for(let i = 0 ; i < order.items.length ; i++){
-            if(order.items[i].return.isRequested === true && order.items[i].return.approvedAt === null && order.items[i].return.declinedAt === null && order.items[i].isCancelled === false){
-                if(order.discount > 0){
-                    let discountDividedByItems = order.discount / order.items.length 
-                    amount += (order.items[i].offerPrice * order.items[i].quantity) - discountDividedByItems
-                }else{
-                    amount += (order.items[i].offerPrice * order.items[i].quantity)
+            const discount = order.discount / order.items.length
+            let nonCancelledAmount = 0
+            let nonCancelledItems = order.items.filter(item => !item.isCancelled)
+            order.items.forEach(item => { if(!item.isCancelled){
+                nonCancelledAmount += (item.offerPrice * item.quantity) - discount
+            } })
+            
+            const tax = nonCancelledAmount * 0.05
+            const shipping = order.shipping / nonCancelledItems.length
+            const total = (Math.round((nonCancelledAmount + tax + (shipping * nonCancelledItems.length)) * 100) / 100)
+            let deliveredTotal = 0
+            let deliveredItems = 0
+            order.items.forEach(item => {
+                if(item.statusTimeline.deliveredAt !== null){
+                    deliveredTotal += (item.offerPrice * item.quantity) - discount 
+                    deliveredItems++
                 }
-                order.items[i].return.approvedAt = new Date()
-                order.items[i].return.refundedAt = new Date()
+            })
+            const deliveredTax = deliveredTotal * 0.05
+            const deliveredAmount = Math.round((deliveredTotal + deliveredTax + (shipping * deliveredItems)) * 100) / 100
+            payment.amountToBePaid = total - deliveredAmount
+            payment.amountPaid = deliveredAmount
+            payment.status = "Paid Partially"
+            payment.paymentDate = new Date()
+            if(nonCancelledItems.every(item => item.statusTimeline.deliveredAt !== null)){
+                payment.status = "Paid Successfully"
             }
+            await payment.save()
         }
-        amount = Math.round(amount * 100) / 100 
-        payment.amountRefunded += amount
-        order.status.push("Approved Return Request")
-        order.return.approvedAt = new Date()
-        order.return.refundedAt = new Date()
-        wallet.walletBalance += amount
-        wallet.transactions.push({
-            paymentId : payment._id,
-            transactionType : "Credit",
-            transactionReason : "Order Refund",
-            transactionAmount : amount
-        })
-        await wallet.save()
-        await order.save()
-        await payment.save()
         
-    }else if(status === "Decline Return Request"){
-        for(let i = 0 ; i < order.items.length ; i++){
-            if(order.items[i].return.isRequested === true && order.items[i].return.approvedAt === null && order.items[i].return.declinedAt === null){
-                order.items[i].return.declinedReason = req.body.declineReason
-                order.items[i].return.declinedAt = new Date()
-           } 
-        }
-        order.status.push("Declined Return Request")
-        order.return.declineReason = req.body.declineReason
-        order.return.declinedAt = new Date()
-        await order.save()
-    }
-}
-
-const updateOrderItemStatus = async (order,status,itemIndex) => {
-
-    if(status === "Approve Return Request"){
+        if(order.invoiceCreatedAt === null && order.invoiceUrl === null){
+            let nonCancelledItems = order.items.filter(item => !item.isCancelled)
+            let allDelivered = nonCancelledItems.every(item => item.statusTimeline.deliveredAt !== null)
+            if (allDelivered) {
+                setImmediate(() => generateAndUploadInvoice(order._id))
+            }
+        }   
+    }else if(status === "Return Request Approved"){
         let payment = await Payment.findById(order.paymentId._id)
         let wallet = await Wallet.findOne({userId : order.userId})
         let discountDividedByItems = 0
@@ -291,7 +313,6 @@ const updateOrderItemStatus = async (order,status,itemIndex) => {
         payment.amountRefunded += priceOfItem 
         order.items[itemIndex].return.approvedAt = new Date()
         order.items[itemIndex].return.refundedAt = new Date()
-        order.status.push("Item Return Approved")
         wallet.walletBalance += priceOfItem
         wallet.transactions.push({
             paymentId : payment._id,
@@ -300,14 +321,23 @@ const updateOrderItemStatus = async (order,status,itemIndex) => {
             transactionAmount : priceOfItem
         })
         await wallet.save()
-        await order.save()
         await payment.save()
-    }else if(status === "Decline Return Request"){
-        order.items[itemIndex].return.declineReason = req.body.declineReason
+        const nonCancelledItems = order.items.filter(item => !item.isCancelled)
+        let everyItemReturned = nonCancelledItems.every(item => item.return.approvedAt !== null)
+        if(everyItemReturned){
+            order.isReturned = true
+        }
+    }else if(status === "Return Request Declined"){
+        order.items[itemIndex].return.declineReason = declineReason
         order.items[itemIndex].return.declinedAt = new Date()
-        order.status.push("Item Return Declined")
-        await order.save()
     }
+
+    await order.save()
+}
+
+const updateOrderItemStatus = async (order,status,itemIndex) => {
+
+    
 }
 
 const updateProductStock = async (order,itemIndex,productVariant,quantity) => {
@@ -324,5 +354,6 @@ module.exports = {
     getOrder,
     updateOrderStatus,
     updateOrderItemStatus,
-    updateProductStock
+    updateProductStock,
+    generateAndUploadInvoice
 }

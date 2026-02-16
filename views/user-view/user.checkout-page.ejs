@@ -9,6 +9,7 @@
                  <div class="w-[65%]">
                     <!-- Address Selection -->
                     <input type="hidden" id="serverMessage"  value="<%= typeof message !== 'undefined' ? message : '' %>">
+                    
                     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-xl font-bold">Select Address</h2>
@@ -169,9 +170,7 @@
                         subTotal += offerPrice * quantity
                      %>
                                     <div class="py-4 px-2 mr-2 mb-2 border border-black rounded-md w-[49%] flex items-center">
-                                        <input type="text" name="productId" value="<%= cartItems[i].productId._id %>" hidden>
-
-                                        <input type="text" name="productImages" value="<%= cartItems[i].productId.variants[cartItems[i].variant].productImages[0] %>" hidden>
+                                        
                                         <img src="<%= cartItems[i].productId.variants[cartItems[i].variant].productImages[0] %>" class="product-image rounded border border-black" alt="Product">
                                         <div class="ml-4 flex-1">
                                             <% let productName = null %>
@@ -180,16 +179,11 @@
                                             <% }else {%>
                                                 <% productName = cartItems[i].productId.productName %>
                                                 <% } %>
-                                                <input type="text" name="productName" value="<%= cartItems[i].productId.productName %>" hidden>
 
                                             <h3 class="text-lg font-bold"><%= productName %></h3>
 
-                                            <input type="text" name="variants" value="<%= cartItems[i].variant %>" hidden>
-                                            <input type="text" name="color" value="<%= cartItems[i].productId.variants[cartItems[i].variant].color %>" hidden>
 
                                             <p class="text-md font-bold text-gray-500">Color: <span class="text-black font-bold"><%= cartItems[i].productId.variants[cartItems[i].variant].color %></span></p>
-
-                                            <input type="text" name="size" value="<%= cartItems[i].productId.variants[cartItems[i].variant].size %>" hidden>
 
                                             <p class="text-md font-bold text-gray-500">Size: <span class="text-black font-bold"><%= cartItems[i].productId.variants[cartItems[i].variant].size %></span></p>
                                             <div class="flex items-center mt-1">
@@ -202,7 +196,7 @@
                                             <input type="number" name="price" value="<%= cartItems[i].productId.variants[cartItems[i].variant].price %>" hidden>
 
                                             <div class="text-xl font-bold">$ 
-                                                <% if (offerPrice > 0 && offerPrice < cartItems[i].productId.variants[cartItems[i].variant].price ) { %>
+                                                <% if (offerPrice < cartItems[i].productId.variants[cartItems[i].variant].price ) { %>
                                                    <span ><%= offerPrice.toFixed(2) %></span> <span class="text-sm line-through text-gray-500">$ <%= cartItems[i].productId.variants[cartItems[i].variant].price.toFixed(2) %></span>
                                                     <input type="number" name="offerPrice" value="<%= offerPrice.toFixed(2) %>" hidden>
                                                 <% } else {%>
@@ -242,25 +236,26 @@
                             <% let isApplied = false %>
                             <% let discountedAmount = 0 %>
                             <% if (cartItems[0]?.couponApplied !== null &&  subTotal >= cartItems[0]?.couponApplied.minAmount && cartItems[0]?.couponApplied.endDate >= now ) { %>
-                                <% discountedAmount = (subTotal * cartItems[0]?.couponApplied.discountValue) / 100 %>
-                                <% if (discountedAmount > cartItems[0]?.couponApplied.maxDiscountAmount) { %>
-                                    <% discountedAmount = cartItems[0]?.couponApplied.maxDiscountAmount %>
-                                <% } %>
                                 <% isApplied = true %>
-                            <% } %>
+                                <% if (cartItems[0]?.couponApplied.discountType === "percentage") { %>
+                                     <% discountedAmount = (subTotal * cartItems[0]?.couponApplied.discountValue) / 100 %>
+                                     <% if (discountedAmount > cartItems[0]?.couponApplied.maxDiscountAmount) { %>
+                                         <% discountedAmount = cartItems[0]?.couponApplied.maxDiscountAmount %>
+                                 <% } %>
+                                 <% } else { %>
+                                     <% discountedAmount = cartItems[0]?.couponApplied.discountValue %>
+                                <% } %>
+                                
+                             <% } %>
                             <div class="flex justify-between">
                                
                                 <span class="text-gray-600">Subtotal (<%= itemsWithStock %> items)</span>
-                                <span class="font-medium">$<%= subTotal %></span>
+                                <span class="font-medium">$<%= subTotal.toFixed(2) %></span>
                                 <% subTotal = (isApplied === true) ? (subTotal - discountedAmount).toFixed(2) : subTotal.toFixed(2) %>
-                                <input type="number" name="subTotal" value="<%= subTotal %>" hidden>
                             </div>
                             <% if (isApplied === true) { %>
                                 <div class="flex justify-between">
                                     <span class="text-gray-600">Discount</span>
-                                    <input type="text" name="couponName" value="<%= cartItems[0].couponApplied.name %>" hidden>
-                                    <input type="text" name="couponId" value="<%= cartItems[0].couponApplied._id %>" hidden>
-                                    <input type="number" name="discount" value="<%= discountedAmount.toFixed(2) %>" hidden>
                                     <span class="font-medium">$<%= discountedAmount.toFixed(2) %></span>
                                 </div>
                                <% } %>
@@ -268,7 +263,6 @@
                                 
                                 <span class="text-gray-600">Tax</span>
                                 <% let tax = (subTotal * 0.05).toFixed(2)%>
-                                <input type="number" name="tax" value="<%= Number(tax) %>" hidden>
                                 <span class="font-medium">$<%= tax %></span>
                             </div>
                             
@@ -276,17 +270,15 @@
                             
                            <div class="flex justify-between">
                             <span class="text-gray-600">Shipping</span>
-                            <input type="number" name="shipping" value="10" hidden>
                             <span class="font-medium">$10</span>
                           </div>
                             <div class="flex justify-between text-lg font-bold pt-2">
                                 <span>Total</span>
                                 <% let grandTotal = (Number(subTotal) + Number(tax) + Number(10)).toFixed(2) %>
-                                <input type="number" id="grandTotal" name="grandTotal" value="<%= grandTotal %>" hidden>
-                                <span>$<%= grandTotal %></span>
+                                <span>$<span id="grandTotal"><%= grandTotal %></span></span>
                             </div>
                         </div>
-                        
+                        <input type="text" value="<%= isApplied %>" name="isCouponApplied" hidden>
                         <!-- Terms and Place Order -->
                         
                     </div>
@@ -712,7 +704,29 @@
             </form>
         </div>
     </div>
-    
+    <!-- Payment Processing Overlay -->
+<div id="paymentOverlay"
+class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+
+            <div class="bg-white rounded-xl shadow-lg px-8 py-6 my-[20rem] flex flex-col w-[30rem] mx-auto items-center">
+
+                    <p class="text-lg font-semibold text-gray-800 mb-3">
+                        Processing your order. Please wait...
+                    </p>
+                    <p class="text-sm font-semibold text-gray-500 mb-3">
+                        Do not refresh or close this page
+                    </p>
+
+                    <div class="flex space-x-2">
+                        <span class="dot bg-green-500"></span>
+                        <span class="dot bg-green-500"></span>
+                        <span class="dot bg-green-500"></span>
+                    </div>
+
+            </div>
+
+</div>
+
   
 <%- include("../../public/javascript/user-javascript/address-management.ejs")%>
 <script src="/javascript/user-javascript/checkout.js"></script>  

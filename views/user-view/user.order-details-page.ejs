@@ -1,5 +1,6 @@
 <%- include("../partials/user-side/navbar.ejs",{title : "Novamart - Order Details"})%>
     <div class="main-content">
+        <input type="text" id="serverMessage" value="<%= message %>" hidden>
         <div class="flex justify-between items-center mb-8">
             <div>
                 <h1 class="text-3xl font-bold">Order Details</h1>
@@ -11,7 +12,7 @@
                     })%></p>
                     </p>
                   <% } else{ %>
-                    <p class="text-gray-600">Order <%= order.orderId %> • Cancelled on <%= new Date(order.statusTimeline.cancelledAt).toLocaleDateString("en-IN", {
+                    <p class="text-gray-600">Order <%= order.orderId %> • Cancelled on <%= new Date(order.items[order.items.length - 1].statusTimeline.cancelledAt).toLocaleDateString("en-IN", {
                         day: "numeric",
                         month: "short",
                         year: "numeric"
@@ -19,395 +20,109 @@
                     <% } %>
                 
             </div>
+            
             <div class="flex">
                 <button type="button" class="px-4 py-2 mr-2 bg-white border text-black rounded-md hover:bg-gray-100 flex items-center" onclick="reorder('<%= order._id %>')" >
                     <i data-feather="repeat" class="w-4 h-4 mr-2"></i> Reorder
                 </button>
-                <% if (order.status.includes("Shipped") && !order.status.includes("Return Order Requested")) { %>
-                       <a href="<%= order.invoiceUrl %>" download>
-                        <button type="button" id="downloadInvoiceBtn" class="px-4 py-2 ml-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center" onclick="downloadInvoice('<%- order._id %>')">
-                            <i data-feather="download" class="w-4 h-4 mr-2"></i> Download Invoice
-                        </button>
-                       </a>
+                <% if (order.invoiceUrl !== null && order.invoiceCreatedAt !== null) { %>
+                        <a href="<%= order.invoiceUrl %>" download>
+                            <button type="button" id="downloadInvoiceBtn" class="px-4 py-2 ml-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center" onclick="downloadInvoice('<%- order._id %>')">
+                                <i data-feather="download" class="w-4 h-4 mr-2"></i> Download Invoice
+                            </button>
+                        </a>
                 <% } %>
-                <% if ((order.paymentId.status === "Pending" || order.paymentId.status === "Payment Failed") & order.paymentId.paymentMethod === "Pay with Stripe" && !order.status.includes("Cancelled")) { %>
+                <% if ((order.paymentId.status === "Pending" || order.paymentId.status === "Payment Failed") && order.paymentId.paymentMethod === "Pay with Stripe" && !order.isCancelled) { %>
                     <a href="/orders/<%= order._id %>/pending-payment"
-                      class="px-4 py-2 mr-2 bg-yellow-400 text-gray-700 hover:bg-yellow-300 rounded-md font-bold flex items-center">
+                      class="px-4 py-2 bg-yellow-400 text-gray-700 hover:bg-yellow-300 mr-2 rounded-md font-bold flex items-center">
                       <i data-feather="credit-card" class="w-4 h-4 mr-2"></i>
                       Complete Payment
                     </a>
                   <% } %>
-                <% if (order.status[order.status.length - 1] === "Pending" && order.paymentId.status !== "Payment Failed") { %>
+                <% if (!order.isCancelled && order.items.every(item => item.status === "Placed" || item.status === "Cancelled" ) && !( order.paymentId.paymentMethod === "Pay with Stripe" && ( order.paymentId.status === "Pending" || order.paymentId.status === "Payment Failed"))) { %>
                     <button type="button" class="px-4 py-2  bg-red-400 font-bold text-black rounded-md hover:bg-red-600 flex items-center" onclick="cancelOrder('<%= order._id %>')">
                         Cancel Order
                     </button>
                 <% } %>
-                
-                <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Delivered") && !order.status.includes("Approved Return Request") && !order.status.includes("Declined Return Request")) { %>
+                <% if ( !order.isCancelled && !order.isReturned && order.items.every(item => item.status === "Delivered" || item.status === "Cancelled" )) { %>
                     <button type="button" class="px-4 py-2 ml-2 btn-primary font-bold text-black rounded-md flex items-center" onclick="openReturnModalForOrder('<%= order._id %>')">
                         <i data-feather="rotate-ccw" class="w-4 h-4 mr-2"></i>
                         Return Order
                     </button>
                 <% } %>
-                
-                
-                <% if (order.status[order.status.length - 1] === "Return Order Requested" && !order.status.includes("Approved Return Request") && !order.status.includes("Declined Return Request")) { %>
-                    <button type="button" class="px-4 py-2 ml-2  font-bold bg-yellow-400  text-black rounded-md  flex items-center" disabled>
-                        <i data-feather="check" class="w-4 h-4 mr-2"></i>
-                        Return Order Requested
-                    </button>
-                <% } %>
-                
+
             </div>
-            
         </div>
+        <% if ((order.paymentId.status === "Pending" || order.paymentId.status === "Payment Failed") && order.paymentId.paymentMethod === "Pay with Stripe" && !order.isCancelled) { %>
+            <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-yellow-300 w-[66%] mb-3">
+                <i data-feather="alert-triangle" class="w-5 h-5 mr-1"></i>
+                <p class="text-sm text-black">
+                  Please complete the payment by <span class="font-bold" ><%= new Date(order.willBeCancelledAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
+                }) %>, </span><span class="font-bold"><%= new Date(order.willBeCancelledAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %></span>
+                  If payment is not received by then, this order will be automatically cancelled.
+                 </p>
+               </div>
+          <% } %>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             
-            <div class="lg:col-span-3 ">
-                
-               
-                
-                <div class="order-card p-6 mb-6 border">
-                    <h2 class="text-xl font-bold mb-4">Order Tracking</h2>
-                    <div class="flex justify-between">
-                        <% if (!order.isCancelled) { %>
-                            <div class="tracking-step active">
-                                <div class="tracking-dot "></div>
-                                <div class="mt-5 text-center">
-                                    <h3 class="font-medium">Placed</h3>
-                                    <p class="tracking-date"><%= new Date(order.statusTimeline.orderedAt).toLocaleDateString("en-IN", {
-                                    day: "numeric",
-                                    month: "short",
-                                    year: "numeric"
-                                }) %> • <%= new Date(order.statusTimeline.orderedAt).toLocaleTimeString('en-US', { 
-                                        hour: '2-digit', 
-                                        minute: '2-digit', 
-                                        hour12: true 
-                                    }) %></p>
-                                    <p class="text-sm text-gray-600 mt-1">Your order has been received</p>
-                                </div>
-                            </div>
-                        <% } else {%>
-                            <div class="tracking-step-cancelled cancelled">
-                                <div class="tracking-dot"></div>
-                                <div class="mt-5 text-center">
-                                    <h3 class="font-medium">Placed</h3>
-                                    <p class="tracking-date"><%= new Date(order.statusTimeline.orderedAt).toLocaleDateString("en-IN", {
-                                    day: "numeric",
-                                    month: "short",
-                                    year: "numeric"
-                                }) %> • <%= new Date(order.statusTimeline.orderedAt).toLocaleTimeString('en-US', { 
-                                        hour: '2-digit', 
-                                        minute: '2-digit', 
-                                        hour12: true 
-                                    }) %></p>
-                                    <p class="text-sm text-gray-600 mt-1">Your order has been received</p>
-                                </div>
-                            </div>
-                            
-                       <% } %>
-                       
-                        <% if (!order.isCancelled) { %>
-                            <div class="tracking-step <%= (order.statusTimeline.processedAt !== null) ? 'active' : '' %>">
-                                <div class="tracking-dot"></div>
-                                <div class="mt-5 text-center pl-3 w-[183.17px]">
-                                    <h3 class="font-medium">Processed</h3>
-                                    <% if (order.statusTimeline.processedAt !== null) { %>
-                                        <p class="tracking-date"><%= new Date(order.statusTimeline.processedAt).toLocaleDateString("en-IN", {
-                                            day: "numeric",
-                                            month: "short",
-                                            year: "numeric"
-                                        }) %> • <%= new Date(order.statusTimeline.processedAt).toLocaleTimeString('en-US', { 
-                                                hour: '2-digit', 
-                                                minute: '2-digit', 
-                                                hour12: true 
-                                            }) %></p>
-                                        <p class="text-sm text-gray-600 mt-1">We're preparing your order</p>
-                                    <% } %>
-                                   
-                                </div>
-                            </div>
-                            <div class="tracking-step <%= (order.statusTimeline.shippedAt !== null) ? 'active' : '' %>">
-                                <div class="tracking-dot"></div>
-                                <div class="mt-5 text-center pl-2 w-[183.17px]">
-                                    <h3 class="font-medium">Shipped</h3>
-                                    <% if (order.statusTimeline.shippedAt !== null) { %>
-                                        <p class="tracking-date"><%= new Date(order.statusTimeline.shippedAt).toLocaleDateString("en-IN", {
-                                            day: "numeric",
-                                            month: "short",
-                                            year: "numeric"
-                                        }) %> • <%= new Date(order.statusTimeline.shippedAt).toLocaleTimeString('en-US', { 
-                                                hour: '2-digit', 
-                                                minute: '2-digit', 
-                                                hour12: true 
-                                            }) %></p>
-                                        <p class="text-sm text-gray-600 mt-1">Your order is on the way</p>
-                                    <% } %>
-                                </div>
-                            </div>
-                            <div class="tracking-step <%= (order.statusTimeline.outForDeliveryAt !== null) ? 'active' : '' %>">
-                                <div class="tracking-dot"></div>
-                                <div class="mt-5 text-center pl-5 w-[186px]">
-                                    <h3 class="font-medium">Out for Delivery</h3>
-                                    <% if (order.statusTimeline.outForDeliveryAt !== null) { %>
-                                        <p class="tracking-date"><%= new Date(order.statusTimeline.outForDeliveryAt).toLocaleDateString("en-IN", {
-                                            day: "numeric",
-                                            month: "short",
-                                            year: "numeric"
-                                        }) %> • <%= new Date(order.statusTimeline.outForDeliveryAt).toLocaleTimeString('en-US', { 
-                                                hour: '2-digit', 
-                                                minute: '2-digit', 
-                                                hour12: true 
-                                            }) %></p>
-                                        <p class="text-sm text-gray-600 mt-1">Your order will arrive today</p>
-                                    <% } %>
-                                </div>
-                            </div>
-                            <div class="tracking-step <%= (order.statusTimeline.deliveredAt !== null) ? 'active' : '' %>">
-                                <div class="tracking-dot"></div>
-                                <div class="mt-5 text-center w-[190px]">
-                                    <h3 class="font-medium">Delivered</h3>
-                                    <% if (order.statusTimeline.deliveredAt !== null) { %>
-                                        <p class="tracking-date"><%= new Date(order.statusTimeline.deliveredAt).toLocaleDateString("en-IN", {
-                                            day: "numeric",
-                                            month: "short",
-                                            year: "numeric"
-                                        }) %> • <%= new Date(order.statusTimeline.deliveredAt).toLocaleTimeString('en-US', { 
-                                                hour: '2-digit', 
-                                                minute: '2-digit', 
-                                                hour12: true 
-                                            }) %></p>
-                                        <p class="text-sm text-gray-600 mt-1">Your order has been delivered</p>
-                                    <% } %>
-                                </div>
-                            </div>
-                        <% }else { %>
-                            <div class="tracking-step-cancelled <%= (order.statusTimeline.cancelledAt !== null) ? 'cancelled' : '' %>">
-                                <div class="tracking-dot"></div>
-                                <div class="mt-5 text-center w-[190px]">
-                                    <h3 class="font-medium">Cancelled</h3>
-                                    <% if (order.statusTimeline.cancelledAt !== null) { %>
-                                        <p class="tracking-date"><%= new Date(order.statusTimeline.cancelledAt).toLocaleDateString("en-US", {
-                                            day: "numeric",
-                                            month: "short",
-                                            year: "numeric"
-                                        }) %> • <%= new Date(order.statusTimeline.cancelledAt).toLocaleTimeString('en-US', { 
-                                                hour: '2-digit', 
-                                                minute: '2-digit', 
-                                                hour12: true 
-                                            }) %></p>
-                                        <p class="text-sm text-gray-600 mt-1">Order has been Cancelled</p>
-                                    <% } %>
-                                </div>
-                            </div>
-                         <% } %>
-                    </div>
-                </div>
-                <% if (order.status[order.status.length - 1] === "Order Cancelled") { %>
-                    <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-blue-300 w-full mb-3">
-                        <i data-feather="info" class="w-5 h-5 mr-1"></i>
-                        <p class="text-sm text-black">
-                          Order has been cancelled on <span class="font-bold" ><%= new Date(order.statusTimeline.cancelledAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
-                        }) %>, </span><span class="font-bold"><%= new Date(order.statusTimeline.cancelledAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>.</span>
-                          The amount has been refunded to your <strong> Orginal Payment Method </strong>
-                         </p>
-                       </div>
-                <% } %>
-                <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Approved Return Request")) { %>
-                    <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-blue-300 w-full mb-3">
-                        <i data-feather="info" class="w-5 h-5 mr-1"></i>
-                        <p class="text-sm text-black">
-                          Return Request has been Approved at <span class="font-bold" ><%= new Date(order.return.approvedAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
-                        }) %>, </span><span class="font-bold"><%= new Date(order.return.approvedAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>.</span>
-                          The amount has been refunded to your <strong> NovaWallet </strong>
-                         </p>
-                       </div>
-                <% } %>
-                <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Declined Return Request")) { %>
-                    <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-red-300 w-full mb-3">
-                        <i data-feather="info" class="w-5 h-5 mr-1"></i>
-                        <p class="text-sm text-black">
-                          Return Request has been Declined at <span class="font-bold" ><%= new Date(order.return.declinedAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
-                        }) %>, </span><span class="font-bold"><%= new Date(order.return.declinedAt).toLocaleTimeString('en-US', {   hour: '2-digit',minute: '2-digit',  hour12: true }) %>.</span>
-                          <strong> Reason : </strong><%= order.return.declineReason %>
-                         </p>
-                       </div>
-                <% } %>
-
-                <% if (order.status.includes("Return Order Requested")) { %>
-                    <div class="order-card p-6 mb-6 border">
-                        
-                        <h2 class="text-xl font-bold mb-4">Return Order Status</h2>
-                        
-                        <div class="flex justify-between">
-                                <div class=" <%= (order.return.declinedAt === null) ? 'tracking-step-return active' : 'tracking-step-cancelled cancelled' %> ">
-                                    <div class="tracking-dot "></div>
-                                    <div class="mt-5 text-center">
-                                        <h3 class="font-medium">Requested</h3>
-                                        <p class="tracking-date"><%= new Date(order.return.requestedAt).toLocaleDateString("en-US", {
-                                        day: "numeric",
-                                        month: "short",
-                                        year: "numeric"
-                                    }) %> • <%= new Date(order.return.requestedAt).toLocaleTimeString('en-US', { 
-                                            hour: '2-digit', 
-                                            minute: '2-digit', 
-                                            hour12: true 
-                                        }) %></p>
-                                        <p class="text-sm text-gray-600 mt-1">Requested for Return Order</p>
-                                    </div>
-                                </div>
-                           
-                           
-                            
-                                
-                                <% if (order.return.declinedAt === null) { %>
-                                <div class="tracking-step-return <%= (order.return.approvedAt !== null) ? 'active' : '' %>">
-                                    <div class="tracking-dot "></div>
-                                    <div class="mt-5 text-center w-[190px]">
-                                        <h3 class="font-medium">Approved</h3>
-                                        <% if (order.return.approvedAt !== null) { %>
-                                            <p class="tracking-date"><%= new Date(order.return.approvedAt).toLocaleDateString("en-IN", {
-                                                day: "numeric",
-                                                month: "short",
-                                                year: "numeric"
-                                            }) %> • <%= new Date(order.return.approvedAt).toLocaleTimeString('en-US', { 
-                                                    hour: '2-digit', 
-                                                    minute: '2-digit', 
-                                                    hour12: true 
-                                                }) %></p>
-                                            <p class="text-sm text-gray-600 mt-1">Your Request has been Approved</p>
-                                        <% } %>
-                                    </div>
-                                </div>
-                                <% } %>
-                                <% if (order.return.declinedAt !== null) { %>
-                                <div class="tracking-step-cancelled <%= (order.return.declinedAt !== null) ? 'cancelled' : '' %>">
-                                    <div class="tracking-dot"></div>
-                                    <div class="mt-5 text-center w-[190px]">
-                                        <h3 class="font-medium">Declined</h3>
-                                        
-                                            <p class="tracking-date"><%= new Date(order.return.declinedAt).toLocaleDateString("en-IN", {
-                                                day: "numeric",
-                                                month: "short",
-                                                year: "numeric"
-                                            }) %> • <%= new Date(order.return.declinedAt).toLocaleTimeString('en-US', { 
-                                                    hour: '2-digit', 
-                                                    minute: '2-digit', 
-                                                    hour12: true 
-                                                }) %></p>
-                                            <p class="text-sm text-gray-600 mt-1">Your Request has been Declined</p>
-                                       
-                                    </div>
-                                </div>
-                                <% } %>
-                        </div>
-                    </div>
-                <% } %>
-               
-
-               
-            </div>
+            
             <div class="lg:col-span-2">
                 <div class="order-card p-6 mb-6 border">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-bold ">Order Summary</h2>
-                        <div class="flex items-center">
-                           
-                            <span class="px-3 py-1 rounded-full text-sm font-bold
-                            <%= order.status[order.status.length - 1] === 'Pending' ? 'bg-gray-100 text-gray-700' :
-                           order.status[order.status.length - 1] === 'Processed' ? 'bg-yellow-100 text-yellow-700' : 
-                           order.status[order.status.length - 1] === 'Shipped' ? 'bg-blue-100 text-blue-700' : 
-                            order.status[order.status.length - 1] === 'Delivered' ? 'bg-green-100 text-green-700' : 
-                          order.status[order.status.length - 1] === 'Cancelled' ? 'bg-red-100 text-red-700' :
-                          order.status[order.status.length - 1] === 'Return Order Requested' ? 'bg-yellow-400 text-black' :
-                          order.status[order.status.length - 1] === 'Approved Return Request' ? 'bg-green-400 text-black' :
-                          order.status[order.status.length - 1] === 'Declined Return Request' ? 'bg-red-400 text-black' :
-                          order.status[order.status.length - 1] === 'Item Return Requested' ? 'bg-yellow-400 text-black' :
-                          order.status[order.status.length - 1] === 'Item Return Approved' ? 'bg-green-400 text-black' :
-                          order.status[order.status.length - 1] === 'Item Return Declined' ? 'bg-red-400 text-black' :
-                           'bg-gray-100 text-gray-700' %>">
-                            <%= order.status[order.status.length - 1] %>
-                          </span>
-                           
-                        </div>
-                        
+                    <div class="flex justify-between items-center ">
+                        <h2 class="text-xl font-bold ">Order Summary</h2> 
                     </div>
 
                    
                     <div class="divide-y divide-gray-200">
                         <% for( let i = 0; i < order.items.length; i++ ) { %>
                             
-                            <div class="py-4 flex items-center">
+                            <div class="py-2 flex items-center">
                                 
-                                <% if (!order.items[i].isCancelled && !order.isCancelled) { %>
-                                
-                                    <img src="<%= order.items[i].productImage %>" class="product-image border rounded" alt="Product">
-                                    <div class="py-4 flex flex-wrap items-center w-[50%]">
-                                        
-                                        <div class="ml-4 flex-1 ">
-                                            <h4 class="font-medium"><%= order.items[i].productName %></h4>
-                                            <p class="text-sm text-black">Color: <%= order.items[i].color %></p>
-                                            <p class="text-sm text-black">Size: <%= order.items[i].size %></p>
-                                            <p class="text-sm text-black mt-1">Qty: <%= order.items[i].quantity %></p>
-                                            <p class="font-medium text-black">Price : $<%= order.items[i].offerPrice %></p>
-                                        </div>
-                                        
-                                    </div>
-                                <% } else {%>
-                                    <img src="<%= order.items[i].productImage %>" class="product-image border rounded opacity-50" alt="Product">
+                              
+                                    <img src="<%= order.items[i].productImage %>" class="product-image border rounded <%= (order.items[i].isCancelled) ? "opacity-50" : "" %>" alt="Product">
                                     <div class="py-4 flex flex-wrap items-center w-[50%]">
                                        
                                         <div class="ml-4 flex-1 ">
-                                            <h4 class="font-medium text-gray-400"><%= order.items[i].productName %></h4>
-                                            <p class="text-sm text-gray-400">Color: <%= order.items[i].color %></p>
-                                            <p class="text-sm text-gray-400">Size: <%= order.items[i].size %></p>
-                                            <p class="text-sm text-gray-400 mt-1">Qty: <%= order.items[i].quantity %></p>
-                                            <p class="font-medium text-gray-400">Price : $<%= order.items[i].offerPrice %></p>
+                                            <h4 class="font-medium <%= (order.items[i].isCancelled) ? "text-gray-400" : "text-black" %>"><%= order.items[i].productName %></h4>
+                                            <p class="text-sm <%= (order.items[i].isCancelled) ? "text-gray-400" : "text-black" %>">Color: <%= order.items[i].color %></p>
+                                            <p class="text-sm <%= (order.items[i].isCancelled) ? "text-gray-400" : "text-black" %>">Size: <%= order.items[i].size %></p>
+                                            <p class="text-sm <%= (order.items[i].isCancelled) ? "text-gray-400" : "text-black" %> mt-1">Qty: <%= order.items[i].quantity %></p>
+                                            <p class="font-medium <%= (order.items[i].isCancelled) ? "text-gray-400" : "text-black" %>">Price : $<%= order.items[i].offerPrice %></p>
                                         </div>
                                        
                                     </div>
-                                <% } %>
-                                <% if (order.items.length > 1) { %>
-                                    <% if (order.status[order.status.length - 1] !== "Return Order Requested" && order.status.includes("Delivered") && !order.status.includes("Approved Return Request") && !order.status.includes("Declined Return Request") && order.items[i].return.isRequested === false && order.items[i].isCancelled === false ) { %>
-                                        <div class="flex justify-end w-[50%] items-center ">
-                                            <button type="button" class="px-4 py-2 btn-primary font-bold text-black rounded-xl" onclick="openReturnModalForItem('<%- order._id %>','<%- i %>')">
+                                
+                               
+                                
+                                    <div class="flex flex-col w-[50%] items-end h-[9rem]">
+
+                                        <span class="px-3 py-1 mt-3 rounded-full text-sm font-bold whitespace-nowrap
+                                            <% let status = order.items[i].status %>
+                                                <%= status === 'Placed' ? 'bg-gray-100 text-gray-700' :
+                                                    status === 'Processed' ? 'bg-yellow-100 text-yellow-700' : 
+                                                    status === 'Shipped' ? 'bg-blue-100 text-blue-700' : 
+                                                    status === 'Delivered' ? 'bg-green-100 text-green-700' : 
+                                                    status === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                                                    status === 'Return Requested' ? 'bg-yellow-400  text-black' :
+                                                    status === 'Return Request Approved' ? 'bg-green-400  text-black' :
+                                                    status === 'Return Request Declined' ? 'bg-red-400  text-black' :
+                                                        'bg-gray-100 text-gray-700' %>">
+                                            
+                                                    <%= status %>
+                                        </span>
+                                        <% if (order.items[i].status === "Placed" && !order.items[i].isCancelled && order.items.length > 1 && !( order.paymentId.paymentMethod === "Pay with Stripe" && ( order.paymentId.status === "Pending" || order.paymentId.status === "Payment Failed"))) { %>
+                                           <button type="button" class="bg-red-400 hover:bg-red-500 p-2 my-auto font-bold rounded-xl" onclick="cancelItem('<%= order._id %>','<%= order.items[i]._id %>')" >Cancel Item</button>
+                                        <% }%>
+                                        <% if (order.items[i].status === "Delivered" && !order.items[i].return.isRequested && order.items.length > 1) { %>
+                                            <button type="button" class="px-4 py-2 btn-primary font-bold my-auto text-black rounded-xl" onclick="openReturnModalForItem('<%- order._id %>','<%- i %>')">
                                                 Return Item
                                             </button>
-                                        </div>
-                                    <% }else if(order.status[order.status.length - 1] !== "Return Order Requested" && !order.status.includes("Approved Return Request") && !order.status.includes("Declined Return Request") && order.items[i].return.isRequested === true && order.items[i].return.approvedAt === null && order.items[i].return.declinedAt === null) {%>
-                                            <div class="flex justify-end w-[50%] items-center ">
-                                                <button type="button" class="px-4 py-2 bg-yellow-400 font-bold text-black rounded-xl " disabled>
-                                                    Return Item Requested
-                                                </button>
-                                            </div>
-                                    <% }else if( order.items[i].return.isRequested === true && order.items[i].return.approvedAt !== null) {%>
-                                        <div class="flex justify-end w-[50%] items-center ">
-                                            <button type="button" class="px-4 py-2 bg-green-400 font-bold text-black rounded-xl " >
-                                                Return Item Request Accepted
-                                            </button>
-                                        </div>
-                                        
-                                    <% }else if( order.items[i].return.isRequested === true && order.items[i].return.declinedAt !== null) {%>
-                                        <div class="flex justify-end w-[50%] items-center ">
-                                            <button type="button" class="px-4 py-2 bg-red-400 font-bold text-black rounded-xl">
-                                                Return Item Request Declined
-                                            </button>
-                                        </div>
-                                            
-                                    <% } %>  
-                                <% } %> 
-                                <% if (order.status[order.status.length - 1] === "Pending" && !order.items[i].isCancelled && order.paymentId.status !== "Payment Failed" ) { %>
-                                    <div class="flex justify-end w-[50%] items-center ">
-                                        <button type="button" class="bg-red-400 hover:bg-red-500 p-2 font-bold rounded-xl" onclick="cancelItem('<%= order._id %>','<%= order.items[i]._id %>')" >Cancel Item</button>
+                                         <% }%>
                                     </div>
-                                <% }else if(order.isCancelled || order.items[i].isCancelled) {%>
-                                    <div class="flex justify-end w-[50%] items-center ">
-                                        <button type="button" class="bg-red-100 text-red-500 p-2 font-bold rounded-xl" disabled>Cancelled</button>
-                                    </div>
-                                <% } %>    
+                                 
                             </div>
-                            <% if (order.items[i].isCancelled) { %>
+                            <% if (order.items[i].isCancelled && order.paymentId.paymentMethod !== "Cash on Delivery") { %>
                                 <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-red-300 w-full mb-3">
                                     <i data-feather="info" class="w-5 h-5 mr-1"></i>
                                     <p class="text-sm text-black">
@@ -415,7 +130,7 @@
                                      </p>
                                    </div>
                             <% } %>
-                            <% if (order.items[i].return.declinedAt !== null) { %>
+                            <% if (order.items[i].return.declinedAt !== null && order.items[i].status === "Return Request Declined") { %>
                                 <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-red-300 w-full mb-3">
                                     <i data-feather="info" class="w-5 h-5 mr-1"></i>
                                     <p class="text-sm text-black">
@@ -425,8 +140,8 @@
                                      </p>
                                    </div>
                             <% } %>
-                            <% if (order.items[i].return.approvedAt !== null && !order.status.includes("Approved Return Request")) { %>
-                                <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-blue-300 w-full mb-3">
+                            <% if (order.items[i].return.approvedAt !== null && order.items[i].status === "Return Request Approved" ) { %>
+                                <div class="flex items-center rounded-xl px-2 py-[0.2rem] bg-green-300 w-full mb-3">
                                     <i data-feather="info" class="w-5 h-5 mr-1"></i>
                                     <p class="text-sm text-black">
                                       Return Request has been Approved at <span class="font-bold" ><%= new Date(order.items[i].return.approvedAt).toLocaleDateString("en-IN", {day: "numeric",month: "short",year: "numeric"
@@ -437,7 +152,7 @@
                             <% } %>
                         <% } %>
                         
-                        <!-- More items would go here -->
+                      
                     </div>
                     <div class="border-t border-gray-200 pt-4">
                         <div class="flex justify-end">
@@ -451,25 +166,25 @@
                                         
                                     <% } %>
                                     <span class="text-gray-600">Subtotal (<%= sumOfQuantity %> items)</span>
-                                    <span class="font-medium">$<%= order.subTotal %></span>
+                                    <span class="font-medium">$<%= (order.subTotal).toFixed(2) %></span>
                                 </div>
                                 <div class="flex justify-between py-2">
                                     <span class="text-gray-600">Shipping</span>
-                                    <span class="font-medium">$<%= order.shipping %></span>
+                                    <span class="font-medium">$<%= (order.shipping).toFixed(2) %></span>
                                 </div>
                                 <div class="flex justify-between py-2">
                                     <span class="text-gray-600">Tax</span>
-                                    <span class="font-medium">$<%= order.tax %></span>
+                                    <span class="font-medium">$<%= (order.tax).toFixed(2) %></span>
                                 </div>
                                 <% if (order.discount !== null) { %>
                                     <div class="flex justify-between py-2">
                                         <span class="text-gray-600">Discount</span>
-                                        <span class="font-medium">- $<%= order.discount %></span>
+                                        <span class="font-medium">- $<%= (order.discount).toFixed(2) %></span>
                                     </div>
                                 <% } %>
                                 <div class="flex justify-between py-2 font-bold text-lg border-t border-gray-200 mt-2">
                                     <span>Total</span>
-                                    <span>$<%= order.grandTotal %></span>
+                                    <span>$<%= (order.grandTotal).toFixed(2) %></span>
                                 </div>
                             </div>
                         </div>
@@ -540,7 +255,6 @@
         
     </div>
 
-    <!-- Hidden invoice content for PDF generation -->
     <!-- Return Order Modal -->
 <div id="returnModal" class="modal-overlay">
     <div class="modal-box">
@@ -553,7 +267,7 @@
         <select id="returnReason" name="returnReason" onchange="enableTextBox()">
           <option value="">Select reason</option>
           <option value="Damaged Product">Damaged Product</option>
-          <option value="Wrong Item">Wrong Item Delivered</option>
+          <option value="Wrong Item Delivered">Wrong Item Delivered</option>
           <option value="Size Issue">Size / Fit Issue</option>
           <option value="Quality Issue">Quality Not As Expected</option>
           <option value="Changed Mind">Changed My Mind</option>
@@ -561,21 +275,41 @@
         </select>
   
         <!-- Message -->
-        <label>Additional details (required if ‘Other’ is selected)</label>
-        <textarea id="returnMessage"  rows="4" placeholder="Explain briefly..." disabled></textarea>
+        <textarea id="returnMessage" class="hidden"  rows="4" placeholder="Please provide a reason ..." disabled></textarea>
 
         <label for="returnOrderMedia" >Upload an Image</label>
         <input type="file" name="returnOrderMedia" id="returnOrderMedia" accept="image/*" class="border border-gray-300 p-2 rounded-md w-full">
   
         <!-- Buttons -->
         <div class="modal-actions">
-          <button type="button" class="btn-cancel rounded-lg" onclick="closeReturnModal()">Cancel</button>
-          <button type="submit" class="btn-submit rounded-lg font-bold text-black">Submit Return</button>
+          <button id="cancelReturnBtn" type="button" class="btn-cancel rounded-lg" onclick="closeReturnModal()">Cancel</button>
+          <button id="submitReturnBtn" type="submit" class="btn-submit rounded-lg font-bold text-black">Submit Return</button>
         </div>
       </form>
     </div>
   </div>
   
+  <div id="processingRequestOverlay"
+class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+
+            <div class="bg-white rounded-xl shadow-lg px-8 py-6 my-[20rem] flex flex-col w-[30rem] mx-auto items-center">
+
+                    <p class="text-lg font-semibold text-gray-800 mb-3">
+                        Processing your Request. Please wait...
+                    </p>
+                    <p class="text-sm font-semibold text-gray-500 mb-3">
+                        Do not refresh or close this page
+                    </p>
+
+                    <div class="flex space-x-2">
+                        <span class="dot bg-green-500"></span>
+                        <span class="dot bg-green-500"></span>
+                        <span class="dot bg-green-500"></span>
+                    </div>
+
+            </div>
+
+</div>
 
     <script src="/javascript/user-javascript/orderDetails.js"></script>
 <%- include("../partials/user-side/footer.ejs")%>

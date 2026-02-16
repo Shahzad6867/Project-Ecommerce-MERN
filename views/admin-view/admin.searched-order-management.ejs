@@ -39,11 +39,8 @@
             <th scope="col" class="px-2 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">Order ID</th>
             <th scope="col" class="px-2 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Customer</th>
             <th scope="col" class="px-2 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Date</th>
-            <th scope="col" class="px-2 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Items</th>
-            <th scope="col" class="px-2 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Amount</th>
-            <th scope="col" class="px-2 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Payment Method</th>
             <th scope="col" class="px-2 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Payment Status</th>
-            <th scope="col" class="px-2 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Order Status</th>
+            <th scope="col" class="px-2 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Item Status</th>
             <th scope="col" class="px-2 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider w-[110px]">Actions</th>
           
           </tr>
@@ -51,10 +48,10 @@
         <tbody class="bg-white divide-y divide-gray-200">
          <% if (orders.length > 0) { %>
           <% for(let i = 0; i < orders.length; i++ ) { %>
-            <% let sumOfQuantity = 0 %>
+           
            
               <tr>
-               
+                
                 <td class="px-2 py-4 whitespace-nowrap text-sm text-center text-gray-500">
                   <%= i + 1 %>
                 </td>
@@ -66,7 +63,7 @@
                     <div>
                     
                         <div class="text-sm font-medium uppercase text-gray-900">
-                       <%= orders[i].orderId %>
+                            <%= orders[i].orderId %>         
                         </div>
                       
 
@@ -81,36 +78,19 @@
                   <%= orders[i].userId.firstName %> <%= orders[i].userId.lastName %>
                 </td>
                 <td class="px-2 py-4 whitespace-nowrap  text-sm text-center text-gray-500">
-                  <%= new Date(orders[i].statusTimeline.orderedAt).toLocaleDateString("en-IN", {
+                  <%= new Date(orders[i].items.statusTimeline.orderedAt).toLocaleDateString("en-IN", {
                     day: "numeric",
                     month: "short",
                     year: "numeric"
-                }) %> • <%= new Date(orders[i].statusTimeline.orderedAt).toLocaleTimeString('en-US', { 
+                }) %> • <%= new Date(orders[i].items.statusTimeline.orderedAt).toLocaleTimeString('en-US', { 
                         hour: '2-digit', 
                         minute: '2-digit', 
                         hour12: true 
                     }) %>
                 </td>
         
-                <!-- Variant-specific details -->
-                <td class="px-2 py-2 text-center whitespace-nowrap text-sm font-large text-gray-500">
-                 
-                  <% for( let j = 0; j < orders[i].items.length; j++ ) { %>
-                    <% if (!orders[i].items[j].isCancelled) { %>
-                      <% sumOfQuantity += orders[i].items[j].quantity %>
-                   <% } %>
-                  <% } %>
-                     
-                       
-               
-                  <%= sumOfQuantity %>
-                </td>
-                <td class="px-2 py-2 whitespace-nowrap text-sm text-center font-large text-gray-500">
-                  $ <%= orders[i].grandTotal %> 
-                </td>
-                <td class="px-2 py-2 whitespace-nowrap text-sm text-center font-large text-gray-500">
-                   <%= orders[i].paymentId?.paymentMethod %> 
-                </td>
+                
+              
                 <td class="px-2 py-6 text-center text-sm whitespace-nowrap">
                   <span class="px-3 py-1 rounded-full text-sm font-bold whitespace-nowrap inline-block
                         <%= orders[i].paymentId?.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
@@ -127,20 +107,18 @@
                   
                     
                   <span class="px-3 py-1 rounded-full text-sm font-bold whitespace-nowrap inline-block
-
-                              <%= orders[i].status[orders[i].status.length - 1] === 'Pending' ? 'bg-gray-100 text-gray-700' :
-                             orders[i].status[orders[i].status.length - 1] === 'Processed' ? 'bg-yellow-100 text-yellow-700' : 
-                             orders[i].status[orders[i].status.length - 1] === 'Shipped' ? 'bg-blue-100 text-blue-700' : 
-                              orders[i].status[orders[i].status.length - 1] === 'Delivered' ? 'bg-green-100 text-green-700' : 
-                            orders[i].status[orders[i].status.length - 1] === 'Cancelled' ? 'bg-red-100 text-red-700' :
-                            orders[i].status[orders[i].status.length - 1] === 'Return Order Requested' ? 'bg-yellow-400  text-black' :
-                            orders[i].status[orders[i].status.length - 1] === 'Approved Return Request' ? 'bg-green-400  text-black' :
-                            orders[i].status[orders[i].status.length - 1] === 'Declined Return Request' ? 'bg-red-400  text-black' :
-                            orders[i].status[orders[i].status.length - 1] === 'Item Return Requested' ? 'bg-yellow-400  text-black' :
-                            orders[i].status[orders[i].status.length - 1] === 'Item Return Approved' ? 'bg-green-400  text-black' :
-                            orders[i].status[orders[i].status.length - 1] === 'Item Return Declined' ? 'bg-red-400  text-black' :
+                             <% let status = orders[i].items.status %>
+                              <%= status === 'Placed' ? 'bg-gray-100 text-gray-700' :
+                             status === 'Processed' ? 'bg-yellow-100 text-yellow-700' : 
+                             status === 'Shipped' ? 'bg-blue-100 text-blue-700' : 
+                              status === 'Delivered' ? 'bg-green-100 text-green-700' : 
+                            status === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                            status === 'Return Requested' ? 'bg-yellow-400  text-black' :
+                            status === 'Return Request Approved' ? 'bg-green-400  text-black' :
+                            status === 'Return Request Declined' ? 'bg-red-400  text-black' :
                              'bg-gray-100 text-gray-700' %>">
-                              <%= orders[i].status[orders[i].status.length - 1] %>
+                             
+                              <%= (status === "Placed") ? "Pending" : status %>
                     </span>
                 
                 </td>
@@ -155,16 +133,17 @@
                     
                 </td>
               </tr>
+           
            <% } %>
          <% } else {%>
           
           <tr>
             <td></td>
-            <td colspan="8" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
-             No Existing Orders on Given Order ID
+            <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-center italic text-gray-500">
+            <%= (status !== "All") ? "No orders found with "+status+" status" : "No order has been recorded" %>
             </td>
           </tr>
-          
+           
           <% } %>
            
           </tbody>

@@ -104,7 +104,7 @@
                                             <i data-feather="rotate-ccw" class="w-5 h-5"></i>
                                         </div>
                                         <div>
-                                            <h3 class="font-medium">Order <%= wallet.transactions[i].paymentId.order.orderId %></h3>
+                                            <h3 class="font-medium">Order <%= wallet.transactions[i].paymentId.order?.orderId %></h3>
                                             <p class="text-sm text-gray-500"><%= new Date(wallet.transactions[i].createdAt).toLocaleDateString("en-IN", {
                                                 day: "numeric",
                                                 month: "short",
@@ -187,7 +187,7 @@
         if(amount.value > 2000){
             iziToast.error({
                 title : "Wallet",
-                message : "The maximum allowed top-up amount is $250",
+                message : "The maximum allowed top-up amount is $2000",
                 position : "topCenter"
             })
             return false

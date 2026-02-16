@@ -100,13 +100,13 @@ const createNewProduct = async (productName,description,brandId,categoryId,isFea
 
 const restoreProduct = async (id,variant) => {
     let product = await getProduct(id)
-    product[0].variants[variant].isBlocked = false
-    await product[0].save()
+    product.variants[variant].isBlocked = false
+    await product.save()
 }
 const deleteProduct = async (id,variant) => {
     let product = await getProduct(id)
-    product[0].variants[variant].isBlocked = true
-    await product[0].save()
+    product.variants[variant].isBlocked = true
+    await product.save()
 }
 module.exports = {
     getProductsForSearch,

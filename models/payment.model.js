@@ -42,7 +42,7 @@ const paymentSchema = new Schema({
     },
     status : {
         type : String,
-        enum : ["Pending","Paid Successfully","Payment Failed","Order Cancelled"]
+        enum : ["Pending","Paid Successfully","Paid Partially","Payment Failed","Order Cancelled"]
     },
     relatedTo : {
         type : String,

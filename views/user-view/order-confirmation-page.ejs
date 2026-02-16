@@ -10,6 +10,7 @@
                 <h1 class="text-lg font-bold text-gray-800 my-2">Payment Status : <span class="px-3 py-1 rounded-full <%= confirmedOrder.paymentId.status === 'Pending' ? 'bg-yellow-200 text-yellow-600' : 
                   confirmedOrder.paymentId.status === 'Paid Successfully' ? 'bg-green-100 text-green-700' : 
                   confirmedOrder.paymentId.status === 'Payment Failed' ? 'bg-red-100 text-red-700' :
+                  confirmedOrder.paymentId.status === 'Order Cancelled' ? 'bg-red-100 text-red-700' :
                   'bg-gray-100 text-gray-700' %>"><%= confirmedOrder.paymentId.status %></span></h1>
             </div>
 
@@ -45,25 +46,25 @@
                 <div class="border-t border-gray-200 pt-4 mt-4">
                     <div class="flex justify-between py-2">
                         <span class="text-gray-600">Subtotal</span>
-                        <span class="font-medium">$<%= confirmedOrder.subTotal %></span>
+                        <span class="font-medium">$<%= (confirmedOrder.subTotal).toFixed(2) %></span>
                     </div>
                     <div class="flex justify-between py-2">
                         <span class="text-gray-600">Shipping</span>
-                        <span class="font-medium">$<%= confirmedOrder.shipping%></span>
+                        <span class="font-medium">$<%= (confirmedOrder.shipping).toFixed(2) %></span>
                     </div>
                     <div class="flex justify-between py-2">
                         <span class="text-gray-600">Tax</span>
-                        <span class="font-medium">$<%= confirmedOrder.tax %></span>
+                        <span class="font-medium">$<%= (confirmedOrder.tax).toFixed(2) %></span>
                     </div>
                     <% if (confirmedOrder.discount !== null) { %>
                         <div class="flex justify-between py-2">
                             <span class="text-gray-600">Discount</span>
-                            <span class="font-medium">- $<%= confirmedOrder.discount %></span>
+                            <span class="font-medium">- $<%= (confirmedOrder.discount).toFixed(2) %></span>
                         </div>
                     <% } %>
                     <div class="flex justify-between py-2 font-bold text-lg">
                         <span>Total</span>
-                        <span>$<%= confirmedOrder.grandTotal %></span>
+                        <span>$<%= (confirmedOrder.grandTotal).toFixed(2) %></span>
                     </div>
                 </div>
             </div>
@@ -116,9 +117,11 @@
                 </div>
             <% } else {%>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-                    <a href="/orders/<%= confirmedOrder._id %>/pending-payment" class="px-6 py-3 bg-red-500 hover:bg-red-700 text-gray-800 rounded-lg font-bold flex items-center justify-center mt-4">
-                        <i data-feather="rotate-ccw" class="mr-2"></i> Retry Payment
-                    </a>
+                    <% if (confirmedOrder.paymentId.status !== 'Order Cancelled') { %>
+                        <a href="/orders/<%= confirmedOrder._id %>/pending-payment" class="px-6 py-3 bg-red-500 hover:bg-red-700 text-gray-800 rounded-lg font-bold flex items-center justify-center mt-4">
+                            <i data-feather="rotate-ccw" class="mr-2"></i> Retry Payment
+                        </a>
+                    <% } %>
                     <a href="/orders/<%= confirmedOrder._id%>" class="px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold flex items-center justify-center mt-4">
                         <i data-feather="eye" class="mr-2"></i> View Order
                     </a>

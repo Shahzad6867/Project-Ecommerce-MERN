@@ -72,7 +72,7 @@ const getWallet = async (req,res) => {
               price_data : {
                 currency : "usd",
                 product_data : {name : "Wallet Top-up"},
-                unit_amount : Math.round(req.body.amount * 100) / 100,
+                unit_amount : (Math.round(req.body.amount * 100) / 100) * 100,
               },
               quantity : 1
             }
