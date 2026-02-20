@@ -18,49 +18,61 @@
                             </button>
                         </div>
                         
-                        <div class="flex flex-wrap gap-4" id="addressList">
+                        <div id="addressessDiv" class="flex gap-4 overflow-x-auto scrollbar-hide overflow-y-hidden whitespace-nowrap py-2 scroll-smooth" >
                             
-                            <% if (defaultAddress) { %>
-                                <div id="defaultAddressCard" class="address-card w-[30%] border border-gray-300 p-4 relative">
-                                    <div class="flex justify-between items-start mb-2">
-                                        <h3 class="font-medium">Default Address</h3>
-                                        <span class="default-badge text-xs px-2 py-1 rounded-full">Default</span>
+                            
+                                <% if (defaultAddress) { %>
+                                    <div id="defaultAddressCard" class="address-card min-w-[320px] max-w-[320px] flex-shrink-0 border border-gray-300 p-4 relative rounded-lg bg-white shadow-sm">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <h3 class="font-medium">Default Address</h3>
+                                            <span class="default-badge text-xs px-2 py-1 rounded-full">Default</span>
+                                        </div>
+                                        <div class="text-sm text-gray-600">
+                                            <p><strong>Name:</strong><span id="firstName0"> <%= defaultAddress?.firstName  %></span> <span id="lastName0"><%= defaultAddress?.lastName %></span></p>
+                                            <p><strong>Country:</strong><span id="country0"> <%= defaultAddress?.country  %></span></p>
+                                            <p><strong>State:</strong><span id="state0"> <%= defaultAddress?.state %></span></p>
+                                            <p><strong>City:</strong><span id="city0"> <%= defaultAddress?.city %></span></p>
+                                            <p><strong>Address:</strong><span id="address0"> <%= defaultAddress?.address %></span></p>
+                                            <p><strong>Pincode:</strong><span  id="pincode0" > <%= defaultAddress?.pincode %></span></p>
+                                            <p  class="mt-2"><strong>Phone:</strong><span id="mobileNo0"> <%= defaultAddress?.mobileNo  %></span></p>
+                                        </div>
+                                        <div class="flex justify-end space-x-2 mt-3">
+                                            <button type="button" id="editBtn0" onclick="editAddress(0,'<%- defaultAddress?._id %>')" class="crop-btn shadow-lg p-2 rounded-lg text-sm">
+                                                Edit
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div class="text-sm text-gray-600">
-                                        <p><strong>Name:</strong><span id="firstName0"> <%= defaultAddress?.firstName %></span> <span id="lastName0"><%= defaultAddress?.lastName %></span></p>
-                                        <p><strong>Country:</strong><span id="country0"> <%= defaultAddress?.country %></span></p>
-                                        <p><strong>State:</strong><span id="state0"> <%= defaultAddress?.state %></span></p>
-                                        <p><strong>City:</strong><span id="city0"> <%= defaultAddress?.city %></span></p>
-                                        <p><strong>Address:</strong><span id="address0"> <%= defaultAddress?.address %></span></p>
-                                        <p><strong>Pincode:</strong><span  id="pincode0" > <%= defaultAddress?.pincode %></span></p>
-                                        <p  class="mt-2"><strong>Phone:</strong><span id="mobileNo0"> <%= defaultAddress?.mobileNo  %></span></p>
-                                    </div>
-                                    <div class="flex justify-end space-x-2 mt-3">
-                                        <button type="button" id="editBtn0" onclick="editAddress(0,'<%- defaultAddress?._id %>')" class="crop-btn shadow-lg p-2 rounded-lg text-sm">
-                                            Edit
-                                        </button>
-                                    </div>
-                                </div>
-                            <% }else{ %>
-                                <div class="address-card w-[30%] border border-gray-300 p-4 relative">
-                                    <div class="flex justify-between items-start mb-2">
-                                        <h3 class="font-medium">Default Address</h3>
-                                        <span class="default-badge text-xs px-2 py-1 rounded-full">Default</span>
-                                    </div>
-                                    <div class="text-md text-gray-600">
-                                        <p>Please add a delivery address to continue with checkout.</p>
-                                    </div>
-                                    
-                                </div>
+                               <% } else { %>
+                                        <div class="address-card min-w-[320px] max-w-[320px] flex-shrink-0 border border-gray-300 p-4 relative rounded-lg bg-white shadow-sm"
+                                        >
+                                            <div class="flex justify-between items-start mb-2">
+                                                <h3 class="font-medium">Default Address</h3>
+                                                <span class="default-badge text-xs px-2 py-1 rounded-full">Default</span>
+                                            </div>
+                                            <div class="text-sm text-gray-600">
+                                                <p><strong>Name:</strong><span id="firstName0"> Not Provided</span> <span id="lastName0"></span></p>
+                                                <p><strong>Country:</strong><span id="country0"> Not Provided</span></p>
+                                                <p><strong>State:</strong><span id="state0"> Not Provided</span></p>
+                                                <p><strong>City:</strong><span id="city0"> Not Provided"%></span></p>
+                                                <p><strong>Address:</strong><span id="address0"> Not Provided</span></p>
+                                                <p><strong>Pincode:</strong><span  id="pincode0" > Not Provided</span></p>
+                                                <p  class="mt-2"><strong>Phone:</strong><span id="mobileNo0"> Not Provided</span></p>
+                                            </div>
+                                            <div class="flex justify-end space-x-2 mt-3">
+                                                <button type="button" id="editBtn0"  class="crop-btn shadow-lg p-2 rounded-lg text-sm">
+                                                    Edit
+                                                </button>
+                                            </div>
+                                        </div>   
                                 <% } %>
+                            
                              <% for( let i = 0; i < address.length; i++ ) { %>
                                 <% if (!address[i]?.isDefault) { %>
-                                    <div class="address-card w-[35%] border border-gray-300 p-4 relative">
+                                    <div class="address-card min-w-[320px] max-w-[320px] flex-shrink-0 border border-gray-300 p-4 relative rounded-lg bg-white shadow-sm"
+                                    >
                                         <div class="flex justify-between items-start mb-2">
                                             <h3 class="font-medium">Other Address <%= i + 1 %></h3>
-                                            <button type="button" id="resetDefaultAddressBtn<%= i + 1 %>" onclick="changeDefaultAddress('<%- address[i]?._id %>','/checkout')" class="bg-green-400 hover:bg-green-500 font-bold shadow-lg p-2 rounded-xl text-sm">
-                                                Set as Default
-                                            </button>
+                                           
                                         </div>
                                         <div class="text-sm text-gray-600">
                                            <p><strong>Name:</strong><span id="firstName<%= i+1 %>"> <%= address[i]?.firstName %></span> <span id="lastName<%= i+1 %>"><%= address[i]?.lastName %></span></p>
@@ -72,6 +84,9 @@
                                             <p  class="mt-2"><strong>Phone:</strong><span id="mobileNo<%= i+1 %>"> <%= address[i]?.mobileNo  %></span></p>
                                         </div>
                                         <div class="flex justify-end space-x-2 mt-3">
+                                             <button type="button" id="resetDefaultAddressBtn<%= i + 1 %>" onclick="changeDefaultAddress('<%- address[i]?._id %>','<%= i + 1%>')" class="bg-green-400 hover:bg-green-500 font-bold shadow-lg p-2 rounded-xl text-sm">
+                                                Set as Default
+                                            </button>
                                             <button type="button" id="editBtn<%= i + 1 %>" onclick="editAddress('<%= i + 1%>','<%- address[i]?._id %>')" class="crop-btn shadow-lg p-2 rounded-lg text-sm">
                                                 Edit
                                             </button>
@@ -288,7 +303,7 @@
                         <!-- Shipping Address -->
                         <h2 class="text-xl font-bold mb-4">Shipping Address</h2>
                         <div class="border-gray-200 pt-1">
-                            <input type="text" name="addressId" value="<%= defaultAddress?._id %>" hidden>
+                            <input type="text" id="addressId" name="addressId" value="<%= defaultAddress?._id %>" hidden>
                             <div class="w-full bg-yellow-300 border border-yellow-400 rounded-xl mb-2 flex-wrap p-2">
                                 <p class="flex font-bold"><i data-feather="info" class="w-4 h-4 mt-1 mr-1"></i>Info :</p>
                                 <ul class="list-disc ml-6 text-sm">
@@ -299,17 +314,15 @@
                                 
                             </div>
                             <div class="text-md font-bold ">
-                                <% if (defaultAddress) { %>
-                                    <p><strong>Name:</strong><span id="firstName0"> <%= defaultAddress?.firstName %></span> <span id="lastName0"><%= defaultAddress?.lastName %></span></p>
-                                    <p><strong>Country:</strong><span id="country0"> <%= defaultAddress?.country %></span></p>
-                                    <p><strong>State:</strong><span id="state0"> <%= defaultAddress?.state %></span></p>
-                                    <p><strong>City:</strong><span id="city0"> <%= defaultAddress?.city %></span></p>
-                                    <p><strong>Address:</strong><span id="address0"> <%= defaultAddress?.address %></span></p>
-                                    <p><strong>Pincode:</strong><span  id="pincode0" > <%= defaultAddress?.pincode %></span></p>
-                                    <p  class="mt-2"><strong>Phone:</strong><span id="mobileNo0"> <%= defaultAddress?.mobileNo  %></span></p>
-                                <% } else {%>
-                                    <p class="text-gray-600 font-medium">Please add a delivery address to continue with checkout.</p>
-                                <% } %>
+                                
+                                    <p><strong>Name:</strong><span id="shippingFirstName0"> <%= defaultAddress?.firstName || "Not Provided" %></span> <span id="shippingLastName0"><%= defaultAddress?.lastName || "" %></span></p>
+                                    <p><strong>Country:</strong><span id="shippingCountry0"> <%= defaultAddress?.country || "Not Provided"  %></span></p>
+                                    <p><strong>State:</strong><span id="shippingState0"> <%= defaultAddress?.state  || "Not Provided" %></span></p>
+                                    <p><strong>City:</strong><span id="shippingCity0"> <%= defaultAddress?.city || "Not Provided"  %></span></p>
+                                    <p><strong>Address:</strong><span id="shippingAddress0"> <%= defaultAddress?.address || "Not Provided"  %></span></p>
+                                    <p><strong>Pincode:</strong><span  id="shippingPincode0" > <%= defaultAddress?.pincode || "Not Provided"  %></span></p>
+                                    <p><strong>Phone:</strong><span id="shippingMobileNo0"> <%= defaultAddress?.mobileNo  || "Not Provided"  %></span></p>
+                               
                             </div>
                            
                         </div>
@@ -396,9 +409,10 @@
                     <i data-feather="x"></i>
                 </button>
             </div>
-            <form id="addressModal" action="/address" method="post" class="space-y-4"  novalidate>
-                <input type="text" name="redirect" value="/checkout" hidden>
-                
+            <form id="addAddressForm" action="/address"  class="space-y-4"  novalidate>
+                <input type="hidden" id="reqFromCheckout" >
+                <input type="hidden" id="editIndex">
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>

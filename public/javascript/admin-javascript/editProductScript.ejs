@@ -376,6 +376,11 @@
             const category = document.getElementById("category");
             const brand = document.getElementById("brand");
             const description = document.getElementById("description");
+            const isFeatured = document.getElementById("featuredProduct").value;
+            const isFeaturedYes = document.getElementById("yes");
+            const isFeaturedNo = document.getElementById("no");
+            
+            
 
             if (!productName) {
             iziToast.error({ title: "Error", message: "Please provide a name for the product", position: "topRight" });
@@ -414,13 +419,15 @@
                 break;
             }
             }
-
+           
+            
             if (
             !anyVariantChanged &&
             productName === initialProductName.toUpperCase().trim() &&
             category.value === '<%= product.categoryId._id %>' &&
             brand.value === '<%= product.brandId._id %>' &&
-            description.value.trim() === '<%= product.description.trim() %>'
+            description.value.trim() === '<%= product.description.trim() %>' &&
+            ((isFeatured === "true" && isFeaturedYes.checked) || (isFeatured === "false" && isFeaturedNo.checked) )
             ) {
             iziToast.error({
                 title: "Error",

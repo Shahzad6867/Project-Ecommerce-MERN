@@ -41,8 +41,10 @@
                 </div>
 
                 <div >
+                    <input type="hidden" id="featuredProduct" value="<%= product.isFeatured %>">
                     <fieldset>
                         <legend>Featured</legend>
+                        
                     <% if (product.isFeatured === true) { %>
                         <input type="radio" id="yes" name="isFeatured" value="true" checked>
                         <label for="yes">Yes</label><br>

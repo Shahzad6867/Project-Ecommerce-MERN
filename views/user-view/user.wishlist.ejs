@@ -147,12 +147,25 @@
                         <% } %>
                        
                     </div>
-                            <button type="button" id="addedToCartBtn<%= wishlistItems[i].productId._id %><%= wishlistItems[i].variant %>" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-bold text-sm flex items-center justify-center hidden" >
-                                <i data-feather="check" class="w-4 h-4 mr-2"></i> Added to Cart
-                            </button>
-                            <button type="button" id="addToCartBtn<%= wishlistItems[i].productId._id %><%= wishlistItems[i].variant %>" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-medium text-sm flex items-center justify-center" onclick="addToCartFromWishlist('<%- wishlistItems[i].productId._id  %>','<%- wishlistItems[i].variant %>')">
-                                <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> Add to Cart
-                            </button>
+                    <% if (!wishlistItems[i].productId.variants[wishlistItems[i].variant].isBlocked && !wishlistItems[i].categoryId.isDeleted && !wishlistItems[i].brandId.isDeleted && wishlistItems[i].productId.variants[wishlistItems[i].variant].stockQuantity !== 0 && wishlistItems[i].productId.variants[wishlistItems[i].variant].stockStatus !== "Out of Stock") { %>
+                        <button type="button" id="addedToCartBtn<%= wishlistItems[i].productId._id %><%= wishlistItems[i].variant %>" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-bold text-sm flex items-center justify-center hidden" >
+                            <i data-feather="check" class="w-4 h-4 mr-2"></i> Added to Cart
+                        </button>
+                        <button type="button" id="addToCartBtn<%= wishlistItems[i].productId._id %><%= wishlistItems[i].variant %>" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-medium text-sm flex items-center justify-center" onclick="addToCartFromWishlist('<%- wishlistItems[i].productId._id  %>','<%- wishlistItems[i].variant %>')">
+                            <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> Add to Cart
+                        </button>
+                     <% } else { %>
+                        <% if (wishlistItems[i].productId.variants[wishlistItems[i].variant].stockQuantity === 0 || wishlistItems[i].productId.variants[wishlistItems[i].variant].stockStatus === "Out of Stock") { %>
+                            <button type="button" class="w-full bg-red-400  text-gray-900 py-2 rounded-md font-bold text-sm flex items-center justify-center" disabled>
+                                Out of Stock
+                           </button>
+                        <% } else { %>
+                            <button type="button" class="w-full bg-red-400  text-gray-900 py-2 rounded-md font-bold text-sm flex items-center justify-center" disabled>
+                                Product Unavailable
+                           </button>
+                        <% } %>
+                    <% } %>
+                           
                             
                       
                 </div>     

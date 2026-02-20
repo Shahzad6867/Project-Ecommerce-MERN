@@ -303,8 +303,9 @@ const getHomepage = async(req,res) => {
     let message = req.session.message || null 
     delete req.session.message
     const products = await homeService.getProducts()
+    const search = req.query.search || null
     const {categories,productsFullList,cartItems,wishlistItems,wishlistItemsCount,cartItemsCount} = await homeService.getUserShopContext(user)
-    res.render("user-view/user.homepage.ejs",{message,categories,products,productsFullList,user,cartItems,cartItemsCount,wishlistItems,wishlistItemsCount})
+    res.render("user-view/user.homepage.ejs",{message,categories,products,productsFullList,user,cartItems,cartItemsCount,wishlistItems,wishlistItemsCount,search})
     } catch (error) {
       console.log(error)
     }
@@ -324,10 +325,11 @@ const getProductDetail = async(req,res) => {
     const productsFullList = await Product.find({},{productName : 1,variants : 1,categoryId : 1}).populate("categoryId","categoryName")
     const user = req.session.user || req.user
     const cartItems = await Cart.find({userId : user?._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
-    const isProductInCart = await Cart.findOne({productId : id,variant : variant})
+    const isProductInCart = await Cart.findOne({userId : user?._id,productId : id,variant : variant})
     const wishlistItems = await Wishlist.find({userId : user?._id})
     const wishlistItemsCount = await Wishlist.find({userId : user?._id}).countDocuments()
-    res.render("user-view/user.product-detail-page.ejs",{product,relatedProduct,productsFullList,variant,user,cartItems,isProductInCart,wishlistItems,wishlistItemsCount})
+    const search = req.query.search || null
+    res.render("user-view/user.product-detail-page.ejs",{product,relatedProduct,productsFullList,variant,user,cartItems,isProductInCart,wishlistItems,wishlistItemsCount,search})
     } catch (error) {
         console.log(error.message)
     }
@@ -340,48 +342,34 @@ try {
     const perPage = 8
     const page = req.query.page || 1
     const skip = (perPage * page) - perPage
-    const products = await homeService.getProducts(skip,perPage)
-    const user = req.session.user || req.user
-    let count = await homeService.getProductsCount()
-    const pages = Math.ceil(count / perPage)
-    const {categories,brands,productsFullList,cartItems,wishlistItems,wishlistItemsCount,cartItemsCount} = await homeService.getUserShopContext(user)
-    res.render("user-view/user.shop.ejs",{categories,products,brands,productsFullList,user,cartItemsCount,cartItems,wishlistItems,wishlistItemsCount,pages,page,count})
-    
-} catch (error) {
-    console.log(error)
-}
-}
-
-const shopFiltered = async (req,res) => {
-  try {
-    const { category, brand, minPrice, maxPrice } = req.body;
-    if(!category && !brand && !minPrice && !maxPrice){
-      return res.redirect("/shop")
-    }
-    const user = req.session.user || req.user
-    const perPage = 8
-    const page = req.query.page || 1
-    const skip = (perPage * page) - perPage
-    let query = {};
-
+    const sort = req.query?.sort || null
+    const category = req.query?.category || null
+    const brand = req.query?.brand || null
+    const minPrice = (req.query?.minPrice !== "") ? Number(req.query?.minPrice) : null
+    const maxPrice = (req.query?.maxPrice !== "") ? Number(req.query?.maxPrice) : null
+    const search = req.query.search || null
+    const query = {};
+    let categoryIds = null
     if (category ) {
       query.categoryId = {
         $in: (Array.isArray(category) ? category : [category])
           .map(id => new mongoose.Types.ObjectId(id))
       };
+      categoryIds = query.categoryId["$in"].map(id => String(id))
     }
-
+    let brandIds = null
     if (brand) {
       query.brandId = {
         $in: (Array.isArray(brand) ? brand : [brand])
           .map(id => new mongoose.Types.ObjectId(id))
       };
+      brandIds = query.brandId["$in"].map(id => String(id))
     }
     let priceQuery = null
-    if (minPrice || maxPrice) {
+    if (minPrice||maxPrice) {
       let priceMatch = {};
-      if (minPrice) priceMatch.$gte = parseFloat(minPrice);
-      if (maxPrice) priceMatch.$lte = parseFloat(maxPrice);
+      if (minPrice !== null) priceMatch.$gte = parseFloat(minPrice);
+      if (maxPrice !== null) priceMatch.$lte = parseFloat(maxPrice);
 
        priceQuery = {
         $match : {
@@ -389,37 +377,20 @@ const shopFiltered = async (req,res) => {
         }
       }
     }
-    let filteredProducts = (priceQuery !== null) ? await homeService.getProducts(skip,perPage,query,priceQuery) : await homeService.getProducts(skip,perPage,query)
-    const count = (priceQuery !== null) ? await homeService.getProductsCount(query,priceQuery) : await homeService.getProductsCount(query)
+    const products = await homeService.getProducts(skip,perPage,query,priceQuery,search,sort)
+    const user = req.session.user || req.user
+    let count = await homeService.getProductsCount(query,priceQuery,req.query?.search)
     const pages = Math.ceil(count / perPage)
-     const {categories,brands,productsFullList,cartItems,wishlistItems,wishlistItemsCount,cartItemsCount} = await homeService.getUserShopContext(user)
-      if(Array.isArray(req.body.category)){
-       req.body.category = req.body.category.map(value => String(value))
-      }else{
-        req.body.category = String(req.body.category)
-      }
-
-      if(Array.isArray(req.body.brand)){
-        req.body.brand = req.body.brand.map(value => String(value))
-       }else{
-         req.body.brand = String(req.body.brand)
-       }
-    res.render("user-view/user.shop-filtered.ejs", {
-      products: filteredProducts,
-      filters: req.body,
-      page,
-      pages, 
-      count,
-      categories,
-      brands,
-      productsFullList,
-      cartItems,cartItemsCount,user,wishlistItems,wishlistItemsCount
-    });
-
-  } catch (error) {
+   
+    const {categories,brands,productsFullList,cartItems,wishlistItems,wishlistItemsCount,cartItemsCount} = await homeService.getUserShopContext(user)
+    res.render("user-view/user.shop.ejs",{categories,products,brands,productsFullList,user,cartItemsCount,cartItems,wishlistItems,wishlistItemsCount,pages,page,count,search,sort,categoryIds,brandIds,minPrice,maxPrice})
+    
+} catch (error) {
     console.log(error)
-  }
-};
+}
+}
+
+
 
 
 
@@ -427,6 +398,5 @@ const shopFiltered = async (req,res) => {
 module.exports = {
     getHomepage,
     getProductDetail,
-    getShop,
-    shopFiltered
+    getShop
 }

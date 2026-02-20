@@ -14,11 +14,12 @@ const getWishlist = async (req,res) => {
     let message = req.session.message || null
     delete req.session.message
     const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
-    const wishlistItems = await Wishlist.find({userId : user._id}).populate("productId").populate("brandId").populate("productOfferId").populate("categoryOfferId")
+    const wishlistItems = await Wishlist.find({userId : user._id}).populate("productId").populate("categoryId").populate("brandId").populate("productOfferId").populate("categoryOfferId")
     const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
     const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
     const offers = await Offer.find({})
-    res.render("user-view/user.wishlist.ejs",{message,user,productsFullList,wishlistItems,offers,cartItems,wishlistItemsCount})
+    const search = req.query.search || null
+    res.render("user-view/user.wishlist.ejs",{message,user,productsFullList,wishlistItems,offers,cartItems,wishlistItemsCount,search})
 }
 
 const addToWishlist = async (req,res) => {

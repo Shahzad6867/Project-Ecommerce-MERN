@@ -52,7 +52,8 @@ const getWallet = async (req,res) => {
       }
     }])
     }
-    res.render("user-view/user.wallet.ejs",{message,user,cartItems,cartItemsCount,productsFullList,wallet : wallet[0],wishlistItemsCount})
+    const search = req.query.search || null
+    res.render("user-view/user.wallet.ejs",{message,user,cartItems,cartItemsCount,productsFullList,wallet : wallet[0],wishlistItemsCount,search})
   }
 
   const walletTopUp = async (req,res) => {

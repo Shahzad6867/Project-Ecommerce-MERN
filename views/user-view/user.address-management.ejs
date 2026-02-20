@@ -11,7 +11,7 @@
             </button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div id="addressessDiv" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <input id="serverMessage" type="text" value="<%= message %>"  hidden>
             <!-- Default Address -->
             <% if (defaultAddress !== null) { %>
@@ -33,7 +33,7 @@
                         <button id="editBtn0" class="btn-primary px-4 py-2 rounded-xl font-bold" onclick="editAddress(0,'<%- defaultAddress._id %>')" >
                             Edit
                         </button>
-                        <button class="text-gray-700 font-bold hover:text-black flex rounded-xl  bg-red-400 hover:bg-red-500 px-4 py-2 items-center text-sm" onclick="deleteAddress('<%- defaultAddress._id %>','<%- defaultAddress.userId %>')">
+                        <button id="deleteBtn0" class="text-gray-700 font-bold hover:text-black flex rounded-xl  bg-red-400 hover:bg-red-500 px-4 py-2 items-center text-sm" onclick="deleteAddress('<%- defaultAddress._id %>','<%- defaultAddress.userId %>')">
                             <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete
                         </button>
                     </div>
@@ -42,22 +42,22 @@
                 <div class="address-card p-6 relative">
                     <div class="flex justify-between items-start mb-4">
                         <h2 class="text-lg font-bold">Default Address</h2>
-                        <span class="text-xs text-gray-400 rounded-full bg-gray-200 font-medium px-2 py-1 rounded-full">Default</span>
+                        <span class="default-badge text-xs font-medium px-2 py-1 rounded-full">Default</span>
                     </div>
                     <div class="space-y-2 text-gray-700">
-                        <p><strong>Name:</strong> Not Provided</p>
-                        <p><strong>Country:</strong>  Not Provided</p>
-                        <p><strong>State:</strong> Not Provided</p>
-                        <p><strong>City:</strong> Not Provided</p>
-                        <p><strong>Address:</strong> Not Provided</p>
-                        <p><strong>Pincode:</strong> Not Provided</p>
-                        <p class="mt-2"><strong>Phone:</strong> Not Provided</p>
+                        <p><strong>Name:</strong><span id="firstName0"> Not Provided</span> <span id="lastName0"></span></p>
+                        <p><strong>Country:</strong><span id="country0"> Not Provided</span></p>
+                        <p><strong>State:</strong><span id="state0"> Not Provided</span></p>
+                        <p><strong>City:</strong><span id="city0"> Not Provided</span></p>
+                        <p><strong>Address:</strong><span id="address0"> Not Provided</span></p>
+                        <p><strong>Pincode:</strong><span  id="pincode0" > Not Provided</span></p>
+                        <p  class="mt-2"><strong>Phone:</strong><span id="mobileNo0"> Not Provided</span></p>
                     </div>
                     <div class="flex justify-end space-x-3 mt-4">
-                        <button class="text-gray-400 font-bold  flex rounded-xl  bg-gray-200  px-4 py-2 items-center text-sm" disabled >
+                        <button id="editBtn0" type="button" class="btn-primary px-4 py-2 rounded-xl font-bold"  >
                             Edit
                         </button>
-                        <button class="text-gray-400 font-bold  flex rounded-xl  bg-gray-200  px-4 py-2 items-center text-sm" disabled>
+                        <button id="deleteBtn0" type="button" class="text-gray-700 font-bold hover:text-black flex rounded-xl  bg-red-400 hover:bg-red-500 px-4 py-2 items-center text-sm" >
                             <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete
                         </button>
                     </div>
@@ -78,14 +78,14 @@
                         <p class="mt-2"><strong>Phone:</strong><span id="mobileNo<%= i + 1  %>"> <%= addressList[i].mobileNo  %></span></p>
                     </div>
                     <div class="flex justify-between mt-4">
-                        <button id="resetDefaultAddressBtn<%= i + 1 %>" class="text-gray-700 bg-green-300 hover:bg-green-400 pl-2 pr-3 font-bold py-2 rounded-xl flex items-center text-sm" onclick="changeDefaultAddress('<%- addressList[i]._id %>')">
+                        <button id="resetDefaultAddressBtn<%= i + 1 %>" class="text-gray-700 bg-green-300 hover:bg-green-400 pl-2 pr-3 font-bold py-2 rounded-xl flex items-center text-sm" onclick="changeDefaultAddress('<%- addressList[i]._id %>','<%= i + 1 %>')">
                             <i data-feather="check" class="w-4 h-4 mr-1"></i> Set as Default
                         </button>
                         <div class="flex space-x-3">
                             <button id="editBtn<%= i + 1  %>" class="btn-primary px-4 py-2 rounded-xl font-bold" onclick="editAddress('<%= i + 1%>','<%- addressList[i]._id %>')">
                                 Edit
                             </button>
-                            <button class="text-gray-700 font-bold hover:text-black flex rounded-xl  bg-red-400 hover:bg-red-500 px-4 py-2 items-center text-sm" onclick="deleteAddress('<%- addressList[i]._id %>','<%- addressList[i].userId %>')">
+                            <button id="deleteBtn<%= i + 1 %>" class="text-gray-700 font-bold hover:text-black flex rounded-xl  bg-red-400 hover:bg-red-500 px-4 py-2 items-center text-sm" onclick="deleteAddress('<%- addressList[i]._id %>','<%- addressList[i].userId %>')">
                                 <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete
                             </button>
                         </div>
@@ -108,7 +108,8 @@
                 <i data-feather="x"></i>
             </button>
         </div>
-        <form action="/address" method="post" class="space-y-4"  novalidate>
+        <form id="addAddressForm" action="/address"  class="space-y-4"  novalidate>
+            <input type="hidden" id="editIndex">
             
             
             <div class="grid grid-cols-2 gap-4">

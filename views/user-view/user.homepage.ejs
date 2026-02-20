@@ -117,15 +117,15 @@
             <h2 class="text-2xl font-bold mb-6">Featured Products</h2>
             <div class="scroll-x-div">
                 <!-- Product Card 1 -->
-
+                 <% let featuredProduct = 0 %>
                  <% for( let i = 0; i < products.length; i++ ) { %>
                     <% if (products[i].isFeatured) { %>
-                        <% for( let j = 0; j < products[i].variants.length; j++ ) { %>
+                        <% featuredProduct++ %>
                                 <%
                                
                                 const now = new Date()
-                                const price = products[i].variants[j].price
-                                const productOffer = products[i].variants[j].productOfferId
+                                const price = products[i].variants.price
+                                const productOffer = products[i].variants.productOfferId
                                 const categoryOffer = products[i].categoryOfferId
                                 
                                 let offerPrice = price
@@ -194,27 +194,27 @@
                         
                 <div class="product-card mr-2 bg-white rounded-lg shadow-sm p-4 transition-all w-[240px] flex-shrink-0">
                     <div class="h-40 mb-3 relative">
-                        <img src="<%= products[i].variants[j].productImages[0] %>" alt="Product" class="w-full h-full object-contain">
+                        <img src="<%= products[i].variants.productImages[0] %>" alt="Product" class="w-full h-full object-contain">
 
-                        <% let isProductInWishlist = wishlistItems.find(item => String(products[i]._id) === String(item.productId) && item.variant === j)%>
+                        <% let isProductInWishlist = wishlistItems.find(item => String(products[i]._id) === String(item.productId) && item.variant === products[i].variant)%>
                        
-                        <button  type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100" onclick="removeFromWishlist('<%= products[i]._id %>','<%= j %>')">
+                        <button  type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100" onclick="removeFromWishlist('<%= products[i]._id %>','<%= products[i].variant %>')">
                             <i data-feather="heart" class="w-4 h-4" fill="#FF2400" stroke="#FF2400"></i>
                         </button>
                       
                           <% if (user) { %>
-                            <button id="addWishBtn<%= products[i]._id %><%= j %>" type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 <%= (isProductInWishlist) ? 'hidden' : '' %>" onclick="addToWishlist(this,'<%= products[i]._id %>','<%= j %>')">
+                            <button id="addWishBtn<%= products[i]._id %><%= products[i].variant %>" type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 <%= (isProductInWishlist) ? 'hidden' : '' %>" onclick="addToWishlist(this,'<%= products[i]._id %>','<%= products[i].variant %>')">
                                 <i  data-feather="heart" class="w-4 h-4" ></i>
                             </button>
                             <% } else { %>
-                                <button id="addWishBtn<%= products[i]._id %><%= j %>" type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 <%= (isProductInWishlist) ? 'hidden' : '' %>" onclick="getUserToLogin()">
+                                <button id="addWishBtn<%= products[i]._id %><%= products[i].variant %>" type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 <%= (isProductInWishlist) ? 'hidden' : '' %>" onclick="getUserToLogin()">
                                     <i  data-feather="heart" class="w-4 h-4" ></i>
                                 </button>
                           <% } %>
                        
         
                        
-                        <a href="/product?id=<%= products[i]._id %>&variant=<%= j%>">
+                        <a href="/product?id=<%= products[i]._id %>&variant=<%= products[i].variant %>">
                             <button class="absolute top-12 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
                                 <i data-feather="eye" class="w-4 h-4"></i>
                             </button>
@@ -222,66 +222,59 @@
                     </div>
                     <h3 class="font-medium text-sm mb-1 truncate"><%= products[i].productName  %></h3>
                     <div class="flex items-center mb-1">
-                        <div class="text-yellow-400 flex">
-                            <i data-feather="star" class="w-4 h-4 fill-current"></i>
-                            <i data-feather="star" class="w-4 h-4 fill-current"></i>
-                            <i data-feather="star" class="w-4 h-4 fill-current"></i>
-                            <i data-feather="star" class="w-4 h-4 fill-current"></i>
-                            <i data-feather="star" class="w-4 h-4 fill-current"></i>
-                        </div>
-                        <span class="text-gray-500 text-xs ml-1">(4,567)</span>
+                        
                     </div>
                     <div class="flex items-center mb-2">
                         <span class="font-regular text-xs">Brand : <a href="#" class="text-blue-700"><%= (products[i].brandId.brandName) %></a></span>
                     </div>
                     <div class="flex items-center mb-2">
-                        <span class="font-regular text-gray-700 text-xs">Size : <a href="#" ><%= (products[i].variants[j].size) %></a></span>
+                        <span class="font-regular text-gray-700 text-xs">Size : <a href="#" ><%= (products[i].variants.size) %></a></span>
                     </div>
                     <div class="flex items-center mb-2">
-                        <% if (offerPrice > 0 && offerPrice < products[i].variants[j].price ) { %>
-                            <span class="font-bold text-lg">$ <span id="price<%= products[i]._id  %><%= j %>" ><%= offerPrice.toFixed(2) %></span></span>
-                            <span class="text-gray-500 text-sm line-through ml-2">$<%= (products[i].variants[j].price).toFixed(2)  %></span>
-                            <span class="text-green-600 text-xs font-medium ml-2"><%= (((products[i].variants[j].price - offerPrice) / products[i].variants[j].price) * 100).toFixed(0) %>% off</span>   
+                        <% if (offerPrice > 0 && offerPrice < products[i].variants.price ) { %>
+                            <span class="font-bold text-lg">$ <span id="price<%= products[i]._id  %><%= products[i].variant %>" ><%= offerPrice.toFixed(2) %></span></span>
+                            <span class="text-gray-500 text-sm line-through ml-2">$<%= (products[i].variants.price).toFixed(2)  %></span>
+                            <span class="text-green-600 text-xs font-medium ml-2"><%= (((products[i].variants.price - offerPrice) / products[i].variants.price) * 100).toFixed(0) %>% off</span>   
                         <% } else {%>
-                            <span class="font-bold text-lg">$ <span id="price<%= products[i]._id %><%= j %>"><%= (products[i].variants[j].price).toFixed(2) %></span></span>
+                            <span class="font-bold text-lg">$ <span id="price<%= products[i]._id %><%= products[i].variant %>"><%= (products[i].variants.price).toFixed(2) %></span></span>
                         <% } %>
 
                     </div>
                     <% if (user) { %>
-                        <% if (!products[i].variants[j].isBlocked && !products[i].categoryId.isDeleted && !products[i].brandId.isDeleted && products[i].variants[j].stockQuantity !== 0 && products[i].variants[j].stockStatus !== "Out of Stock") { %>
-                                <% let isProductInCart = cartItems.find(item =>  String(products[i]._id) === String(item.productId._id) && item.variant === j ) || null %>
+                        <% if (!products[i].variants.isBlocked && !products[i].categoryId.isDeleted && !products[i].brandId.isDeleted && products[i].variants.stockQuantity !== 0 && products[i].variants.stockStatus !== "Out of Stock") { %>
+                                <% let isProductInCart = cartItems.find(item =>  String(products[i]._id) === String(item.productId._id) && item.variant === products[i].variant ) || null %>
                                 <% if (isProductInCart) { %>
                                         <div class="flex  justify-between ">
-                                        <button type="button" id="addToCartBtn<%= products[i]._id %><%= j %>" class="w-[0%] bg-yellow-400 hover:bg-yellow-500 text-gray-900  rounded-md font-medium text-sm flex items-center justify-center" onclick="addToCartInitially(this,'<%- i %>','<%- j %>','<%- products[i]._id %>')">
+                                        <button type="button" id="addToCartBtn<%= products[i]._id %><%= products[i].variant %>" class="w-[0%] bg-yellow-400 hover:bg-yellow-500 text-gray-900  rounded-md font-medium text-sm flex items-center justify-center" onclick="addToCartInitially(this,'<%- i %>','<%- products[i].variant %>','<%- products[i]._id %>')">
                                             <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> 
                                         </button>
-                                            <div id="incDecQtyDiv<%= products[i]._id %><%= j %>" class="flex items-center justify-between w-[100%]  rounded-lg   border border-black w-full ">
-                                                <button id="decQtyBtn<%= products[i]._id %><%= j %>" type="button" class="text-center flex justify-center w-full h-full bg-yellow-400 hover:bg-yellow-300 py-1 rounded-l-lg"  onclick="decrementQuantity('<%= i %>','<%= j %>','<%= products[i]._id %>')">
+                                            <div id="incDecQtyDiv<%= products[i]._id %><%= products[i].variant %>" class="flex items-center justify-between w-[100%]  rounded-lg   border border-black w-full ">
+                                                <button id="decQtyBtn<%= products[i]._id %><%= products[i].variant %>" type="button" class="text-center flex justify-center w-full h-full bg-yellow-400 hover:bg-yellow-300 py-1 rounded-l-lg"  onclick="decrementQuantity('<%= i %>','<%= products[i].variant %>','<%= products[i]._id %>')">
                                                     <i data-feather="minus"></i>
                                                 </button> 
-                                                <input type="text" id="quantity<%= products[i]._id %><%= j %>" value="<%= isProductInCart.quantity %>" class=" w-[5rem] px-2 text-xl bg-white font-bold py-[0.22rem] border-black-x-sides text-center" disabled>
-                                                <button id="incQtyBtn<%= products[i]._id %><%= j %>" type="button" class="text-center flex justify-center w-full h-full py-1 bg-yellow-400 hover:bg-yellow-300 rounded-r-lg"  onclick="incrementQuantity('<%= i %>','<%= j %>','<%= products[i]._id %>')">
+                                                <input type="text" id="quantity<%= products[i]._id %><%= products[i].variant %>" value="<%= isProductInCart.quantity %>" class=" w-[5rem] px-2 text-xl bg-white font-bold py-[0.22rem] border-black-x-sides text-center" disabled>
+                                                <button id="incQtyBtn<%= products[i]._id %><%= products[i].variant %>" type="button" class="text-center flex justify-center w-full h-full py-1 bg-yellow-400 hover:bg-yellow-300 rounded-r-lg"  onclick="incrementQuantity('<%= i %>','<%= products[i].variant %>','<%= products[i]._id %>')">
                                                     <i data-feather="plus"></i>
                                                 </button>
                                             </div>
                                         </div>
                                 <% } else {%>
-                                        <div id="incDecQtyDiv<%= products[i]._id %><%= j %>" class="flex items-center justify-between w-[100%] bg-yellow-400  border border-black rounded-lg hidden">
-                                            <button id="decQtyBtn<%= products[i]._id %><%= j %>" type="button" class="text-center flex justify-center w-full h-full bg-yellow-400 hover:bg-yellow-300 py-1 rounded-l-lg" onclick="decrementQuantity('<%= i %>','<%= j %>','<%= products[i]._id %>')">
+                                        <div id="incDecQtyDiv<%= products[i]._id %><%= products[i].variant %>" class="flex items-center justify-between w-[100%] bg-yellow-400  border border-black rounded-lg hidden">
+                                            <button id="decQtyBtn<%= products[i]._id %><%= products[i].variant %>" type="button" class="text-center flex justify-center w-full h-full bg-yellow-400 hover:bg-yellow-300 py-1 rounded-l-lg" onclick="decrementQuantity('<%= i %>','<%= products[i].variant %>','<%= products[i]._id %>')">
                                                 <i data-feather="minus"></i>
                                             </button> 
-                                            <input type="text" id="quantity<%= products[i]._id %><%= j %>" value="1" class=" w-[5rem] bg-white px-2 text-xl  py-[0.22rem] border-black-x-sides text-center" disabled>
-                                            <button id="incQtyBtn<%= products[i]._id %><%= j %>" type="button" class="text-center flex justify-center w-full h-full py-1 bg-yellow-400 hover:bg-yellow-300 rounded-r-lg" onclick="incrementQuantity('<%= i %>','<%= j %>','<%= products[i]._id %>')">
+                                            <input type="text" id="quantity<%= products[i]._id %><%= products[i].variant %>" value="1" class=" w-[5rem] bg-white px-2 text-xl  py-[0.22rem] border-black-x-sides text-center" disabled>
+                                            <button id="incQtyBtn<%= products[i]._id %><%= products[i].variant %>" type="button" class="text-center flex justify-center w-full h-full py-1 bg-yellow-400 hover:bg-yellow-300 rounded-r-lg" onclick="incrementQuantity('<%= i %>','<%= products[i].variant %>','<%= products[i]._id %>')">
                                                 <i data-feather="plus"></i>
                                             </button>
                                         </div>
-                                        <button type="button" id="addToCartBtn<%= products[i]._id %><%= j %>" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-medium text-sm flex items-center justify-center" onclick="addToCartInitially(this,'<%- i %>','<%- j %>','<%- products[i]._id %>')">
+                                        <button type="button" id="addToCartBtn<%= products[i]._id %><%= products[i].variant %>" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-medium text-sm flex items-center justify-center" onclick="addToCartInitially(this,'<%- i %>','<%- products[i].variant %>','<%- products[i]._id %>')">
                                             <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> Add to Cart
                                         </button>
                                         
                                 <% } %>
                         <% } else { %>
-                            <% if (products[i].variants[j].stockQuantity === 0 || products[i].variants[j].stockStatus === "Out of Stock") { %>
+                            <% if (products[i].variants.stockQuantity === 0 || products[i].variants.stockStatus === "Out of Stock") { %>
                                 <button type="button" class="w-full bg-red-400  text-gray-900 py-2 rounded-md font-bold text-sm flex items-center justify-center" disabled>
                                     Out of Stock
                                </button>
@@ -293,15 +286,31 @@
                             
                         <% } %>
                     <% } else { %>
-                        <button type="button" id="addToCartBtn<%= products[i]._id %><%= j %>" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-medium text-sm flex items-center justify-center" onclick="getUserToLogin()">
+                        <button type="button" id="addToCartBtn<%= products[i]._id %><%= products[i].variant %>" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-medium text-sm flex items-center justify-center" onclick="getUserToLogin()">
                             <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> Add to Cart
                         </button>
                     <% } %>
                       
                 </div>     
                                <% } %> 
+                               <% if (featuredProduct > 5) { %>
+                                <a href="/shop?sort=featured"
+                                class="group relative mr-2 flex h-[22rem] w-[240px] flex-shrink-0 flex-col items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:translate-x-1  focus:outline-none focus:ring-2 focus:ring-black/20">
+                                
+                                 <div class="relative z-10 flex h-16 w-16 items-center justify-center rounded-full bg-black text-white transition-all duration-300 group-hover:scale-110 ">
+                                     <i data-feather="arrow-right"
+                                        class="h-7 w-7 transition-transform duration-300 group-hover:translate-x-1">
+                                     </i>
+                                 </div>
+                                 <p class="relative z-10 mt-4 text-base font-semibold text-gray-800 transition-colors duration-300 group-hover:text-black">
+                                     View More
+                                 </p>
+                             </a>
+                                      <% break %>     
+                               <% } %>
+                               
                             <% } %>  
-                           <% } %>
+                           
                 
                 <!-- More product cards... -->
             </div>
@@ -336,15 +345,15 @@
             <div class="relative">
                 <div class="deals-carousel scroll-x-div">
                     <%   const now = new Date() %>
+                    <% let dealProduct = 0 %>
                     <% for( let i = 0; i < products.length; i++ ) { %>
                          <% if (!products[i].isFeatured) { %>
-                        <% for( let j = 0; j < products[i].variants.length; j++ ) { %>
-                           
+                           <% dealProduct++ %>
                             <%
                                
                               
-                                const price = products[i].variants[j].price
-                                const productOffer = products[i].variants[j].productOfferId
+                                const price = products[i].variants.price
+                                const productOffer = products[i].variants.productOfferId
                                 const categoryOffer = products[i].categoryOfferId
                                 
                                 let offerPrice = price
@@ -410,89 +419,80 @@
                                 %>
                             <div class="product-card mr-2 bg-white rounded-lg shadow-sm p-4 transition-all w-[240px] flex-shrink-0">
                                 <div class="h-40 mb-3 relative">
-                                    <img src="<%= products[i].variants[j].productImages[0] %>" alt="Product" class="w-full h-full object-contain">
-                                    <% let isProductInWishlist = wishlistItems.find(item => String(products[i]._id) === String(item.productId) && item.variant === j)%>
-                                    <button  type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100" onclick="removeFromWishlist('<%= products[i]._id %>','<%= j %>')">
+                                    <img src="<%= products[i].variants.productImages[0] %>" alt="Product" class="w-full h-full object-contain">
+                                    <% let isProductInWishlist = wishlistItems.find(item => String(products[i]._id) === String(item.productId) && item.variant === products[i].variant)%>
+                                    <button  type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100" onclick="removeFromWishlist('<%= products[i]._id %>','<%= products[i].variant %>')">
                                         <i data-feather="heart" class="w-4 h-4" fill="#FF2400" stroke="#FF2400"></i>
                                     </button>
 
                                     <% if (user) { %>
-                                        <button id="addWishBtn<%= products[i]._id %><%= j %>" type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 <%= (isProductInWishlist) ? 'hidden' : '' %>" onclick="addToWishlist(this,'<%= products[i]._id %>','<%= j %>')">
+                                        <button id="addWishBtn<%= products[i]._id %><%= products[i].variant %>" type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 <%= (isProductInWishlist) ? 'hidden' : '' %>" onclick="addToWishlist(this,'<%= products[i]._id %>','<%= products[i].variant %>')">
                                             <i  data-feather="heart" class="w-4 h-4" ></i>
                                         </button>
                                         <% } else { %>
-                                            <button id="addWishBtn<%= products[i]._id %><%= j %>" type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 <%= (isProductInWishlist) ? 'hidden' : '' %>" onclick="getUserToLogin()">
+                                            <button id="addWishBtn<%= products[i]._id %><%= products[i].variant %>" type="button" class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 <%= (isProductInWishlist) ? 'hidden' : '' %>" onclick="getUserToLogin()">
                                                 <i  data-feather="heart" class="w-4 h-4" ></i>
                                             </button>
                                       <% } %>
                                         
-                                    <a href="/product?id=<%= products[i]._id %>&variant=<%= j%>">
+                                    <a href="/product?id=<%= products[i]._id %>&variant=<%= products[i].variant%>">
                                         <button class="absolute top-12 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
                                             <i data-feather="eye" class="w-4 h-4"></i>
                                         </button>
                                     </a>
                                 </div>
                                 <h3 class="font-medium text-sm mb-1 truncate"><%= products[i].productName  %></h3>
-                                <div class="flex items-center mb-1">
-                                    <div class="text-yellow-400 flex">
-                                        <i data-feather="star" class="w-4 h-4 fill-current"></i>
-                                        <i data-feather="star" class="w-4 h-4 fill-current"></i>
-                                        <i data-feather="star" class="w-4 h-4 fill-current"></i>
-                                        <i data-feather="star" class="w-4 h-4 fill-current"></i>
-                                        <i data-feather="star" class="w-4 h-4 fill-current"></i>
-                                    </div>
-                                    <span class="text-gray-500 text-xs ml-1">(4,567)</span>
-                                </div>
+                               
                                 <div class="flex items-center mb-2">
                                     <span class="font-regular text-xs">Brand : <a href="#" class="text-blue-700"><%= (products[i].brandId.brandName) %></a></span>
                                 </div>
                                 <div class="flex items-center mb-2">
-                                    <span class="font-regular text-gray-700 text-xs">Size : <a href="#" ><%= (products[i].variants[j].size) %></a></span>
+                                    <span class="font-regular text-gray-700 text-xs">Size : <a href="#" ><%= (products[i].variants.size) %></a></span>
                                 </div>
                                 <div class="flex items-center mb-2">
-                                    <% if (offerPrice > 0 && offerPrice < products[i].variants[j].price ) { %>
-                                        <span class="font-bold text-lg">$ <span id="price<%= products[i]._id  %><%= j %>" ><%= offerPrice.toFixed(2) %></span></span>
-                                        <span class="text-gray-500 text-sm line-through ml-2">$<%= (products[i].variants[j].price).toFixed(2)  %></span>
-                                        <span class="text-green-600 text-xs font-medium ml-2"><%= (((products[i].variants[j].price - offerPrice) / products[i].variants[j].price) * 100).toFixed(0) %>% off</span>   
+                                    <% if (offerPrice > 0 && offerPrice < products[i].variants.price ) { %>
+                                        <span class="font-bold text-lg">$ <span id="price<%= products[i]._id  %><%= products[i].variant %>" ><%= offerPrice.toFixed(2) %></span></span>
+                                        <span class="text-gray-500 text-sm line-through ml-2">$<%= (products[i].variants.price).toFixed(2)  %></span>
+                                        <span class="text-green-600 text-xs font-medium ml-2"><%= (((products[i].variants.price - offerPrice) / products[i].variants.price) * 100).toFixed(0) %>% off</span>   
                                     <% } else {%>
-                                        <span class="font-bold text-lg">$ <span id="price<%= products[i]._id %><%= j %>"><%= (products[i].variants[j].price).toFixed(2) %></span></span>
+                                        <span class="font-bold text-lg">$ <span id="price<%= products[i]._id %><%= products[i].variant %>"><%= (products[i].variants.price).toFixed(2) %></span></span>
                                     <% } %>
                                 </div>
                                 <% if (user) { %>
-                                    <% if (!products[i].variants[j].isBlocked && !products[i].categoryId.isDeleted && !products[i].brandId.isDeleted && products[i].variants[j].stockQuantity !== 0 && products[i].variants[j].stockStatus !== "Out of Stock") { %>
-                                            <% let isProductInCart = cartItems.find(item =>  String(products[i]._id) === String(item.productId._id) && item.variant === j ) || null %>
+                                    <% if (!products[i].variants.isBlocked && !products[i].categoryId.isDeleted && !products[i].brandId.isDeleted && products[i].variants.stockQuantity !== 0 && products[i].variants.stockStatus !== "Out of Stock") { %>
+                                            <% let isProductInCart = cartItems.find(item =>  String(products[i]._id) === String(item.productId._id) && item.variant === products[i].variant ) || null %>
                                             <% if (isProductInCart) { %>
                                                     <div class="flex  justify-between ">
-                                                    <button type="button" id="addToCartBtn<%= products[i]._id %><%= j %>" class="w-[0%] bg-yellow-400 hover:bg-yellow-500 text-gray-900  rounded-md font-medium text-sm flex items-center justify-center" onclick="addToCartInitially(this,'<%- i %>','<%- j %>','<%- products[i]._id %>')">
+                                                    <button type="button" id="addToCartBtn<%= products[i]._id %><%= products[i].variant %>" class="w-[0%] bg-yellow-400 hover:bg-yellow-500 text-gray-900  rounded-md font-medium text-sm flex items-center justify-center" onclick="addToCartInitially(this,'<%- i %>','<%- products[i].variant %>','<%- products[i]._id %>')">
                                                         <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> 
                                                     </button>
-                                                        <div id="incDecQtyDiv<%= products[i]._id %><%= j %>" class="flex items-center justify-between w-[100%]  rounded-lg   border border-black w-full ">
-                                                            <button id="decQtyBtn<%= products[i]._id %><%= j %>" type="button" class="text-center flex justify-center w-full h-full bg-yellow-400 hover:bg-yellow-300 py-1 rounded-l-lg"  onclick="decrementQuantity('<%= i %>','<%= j %>','<%= products[i]._id %>')">
+                                                        <div id="incDecQtyDiv<%= products[i]._id %><%= products[i].variant %>" class="flex items-center justify-between w-[100%]  rounded-lg   border border-black w-full ">
+                                                            <button id="decQtyBtn<%= products[i]._id %><%= products[i].variant %>" type="button" class="text-center flex justify-center w-full h-full bg-yellow-400 hover:bg-yellow-300 py-1 rounded-l-lg"  onclick="decrementQuantity('<%= i %>','<%= products[i].variant %>','<%= products[i]._id %>')">
                                                                 <i data-feather="minus"></i>
                                                             </button> 
-                                                            <input type="text" id="quantity<%= products[i]._id %><%= j %>" value="<%= isProductInCart.quantity %>" class=" w-[5rem] px-2 text-xl bg-white font-bold py-[0.22rem] border-black-x-sides text-center" disabled>
-                                                            <button id="incQtyBtn<%= products[i]._id %><%= j %>" type="button" class="text-center flex justify-center w-full h-full py-1 bg-yellow-400 hover:bg-yellow-300 rounded-r-lg"  onclick="incrementQuantity('<%= i %>','<%= j %>','<%= products[i]._id %>')">
+                                                            <input type="text" id="quantity<%= products[i]._id %><%= products[i].variant %>" value="<%= isProductInCart.quantity %>" class=" w-[5rem] px-2 text-xl bg-white font-bold py-[0.22rem] border-black-x-sides text-center" disabled>
+                                                            <button id="incQtyBtn<%= products[i]._id %><%= products[i].variant %>" type="button" class="text-center flex justify-center w-full h-full py-1 bg-yellow-400 hover:bg-yellow-300 rounded-r-lg"  onclick="incrementQuantity('<%= i %>','<%= products[i].variant %>','<%= products[i]._id %>')">
                                                                 <i data-feather="plus"></i>
                                                             </button>
                                                         </div>
                                                     </div>
                                             <% } else {%>
-                                                    <div id="incDecQtyDiv<%= products[i]._id %><%= j %>" class="flex items-center justify-between w-[100%] bg-yellow-400  border border-black rounded-lg hidden">
-                                                        <button id="decQtyBtn<%= products[i]._id %><%= j %>" type="button" class="text-center flex justify-center w-full h-full bg-yellow-400 hover:bg-yellow-300 py-1 rounded-l-lg" onclick="decrementQuantity('<%= i %>','<%= j %>','<%= products[i]._id %>')">
+                                                    <div id="incDecQtyDiv<%= products[i]._id %><%= products[i].variant %>" class="flex items-center justify-between w-[100%] bg-yellow-400  border border-black rounded-lg hidden">
+                                                        <button id="decQtyBtn<%= products[i]._id %><%= products[i].variant %>" type="button" class="text-center flex justify-center w-full h-full bg-yellow-400 hover:bg-yellow-300 py-1 rounded-l-lg" onclick="decrementQuantity('<%= i %>','<%= products[i].variant %>','<%= products[i]._id %>')">
                                                             <i data-feather="minus"></i>
                                                         </button> 
-                                                        <input type="text" id="quantity<%= products[i]._id %><%= j %>" value="1" class=" w-[5rem] bg-white px-2 text-xl  py-[0.22rem] border-black-x-sides text-center" disabled>
-                                                        <button id="incQtyBtn<%= products[i]._id %><%= j %>" type="button" class="text-center flex justify-center w-full h-full py-1 bg-yellow-400 hover:bg-yellow-300 rounded-r-lg" onclick="incrementQuantity('<%= i %>','<%= j %>','<%= products[i]._id %>')">
+                                                        <input type="text" id="quantity<%= products[i]._id %><%= products[i].variant %>" value="1" class=" w-[5rem] bg-white px-2 text-xl  py-[0.22rem] border-black-x-sides text-center" disabled>
+                                                        <button id="incQtyBtn<%= products[i]._id %><%= products[i].variant %>" type="button" class="text-center flex justify-center w-full h-full py-1 bg-yellow-400 hover:bg-yellow-300 rounded-r-lg" onclick="incrementQuantity('<%= i %>','<%= products[i].variant %>','<%= products[i]._id %>')">
                                                             <i data-feather="plus"></i>
                                                         </button>
                                                     </div>
-                                                    <button type="button" id="addToCartBtn<%= products[i]._id %><%= j %>" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-medium text-sm flex items-center justify-center" onclick="addToCartInitially(this,'<%- i %>','<%- j %>','<%- products[i]._id %>')">
+                                                    <button type="button" id="addToCartBtn<%= products[i]._id %><%= products[i].variant %>" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-medium text-sm flex items-center justify-center" onclick="addToCartInitially(this,'<%- i %>','<%- products[i].variant %>','<%- products[i]._id %>')">
                                                         <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> Add to Cart
                                                     </button>
                                                     
                                             <% } %>
                                     <% } else { %>
-                                        <% if (products[i].variants[j].stockQuantity === 0 || products[i].variants[j].stockStatus === "Out of Stock") { %>
+                                        <% if (products[i].variants.stockQuantity === 0 || products[i].variants.stockStatus === "Out of Stock") { %>
                                             <button type="button" class="w-full bg-red-400  text-gray-900 py-2 rounded-md font-bold text-sm flex items-center justify-center" disabled>
                                                 Out of Stock
                                            </button>
@@ -504,14 +504,29 @@
                                         
                                     <% } %>
                                 <% } else { %>
-                                    <button type="button" id="addToCartBtn<%= products[i]._id %><%= j %>" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-medium text-sm flex items-center justify-center" onclick="getUserToLogin()">
+                                    <button type="button" id="addToCartBtn<%= products[i]._id %><%= products[i].variant %>" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-md font-medium text-sm flex items-center justify-center" onclick="getUserToLogin()">
                                         <i data-feather="shopping-cart" class="w-4 h-4 mr-2"></i> Add to Cart
                                     </button>
                                 <% } %>
                             </div>
                             <% } %>
+                            <% if (dealProduct > 5) { %>
+                                <a href="/shop"
+                                class="group relative mr-2 flex h-[22rem] w-[240px] flex-shrink-0 flex-col items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:translate-x-1  focus:outline-none focus:ring-2 focus:ring-black/20">
+                                
+                                 <div class="relative z-10 flex h-16 w-16 items-center justify-center rounded-full bg-black text-white transition-all duration-300 group-hover:scale-110 ">
+                                     <i data-feather="arrow-right"
+                                        class="h-7 w-7 transition-transform duration-300 group-hover:translate-x-1">
+                                     </i>
+                                 </div>
+                                 <p class="relative z-10 mt-4 text-base font-semibold text-gray-800 transition-colors duration-300 group-hover:text-black">
+                                     View More
+                                 </p>
+                             </a>
+                                      <% break %>     
+                            <% } %>
                            <% } %>
-                          <% } %>
+                          
                         
                     <!-- More deal cards... -->
                 </div>

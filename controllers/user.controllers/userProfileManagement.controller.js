@@ -14,6 +14,7 @@ const getProfile = async (req, res) => {
   const theUser = req.session.user || req.user;
   const {productsFullList,cartItems,cartItemsCount,wishlistItemsCount,address,defaultAddress,user}  = await profileService.getUserDetails(theUser._id)
   const referralUrl = process.env.APP_BASE_URL + `?ref=${user.referralCode}`
+  const search = req.query?.search || null
   let message = req.session.message || null;
   delete req.session.message;
   res.render("user-view/user.profile-page.ejs", {
@@ -25,7 +26,8 @@ const getProfile = async (req, res) => {
     cartItems,
     cartItemsCount,
     referralUrl,
-    wishlistItemsCount
+    wishlistItemsCount,
+    search
   });
 };
 
@@ -34,13 +36,15 @@ const getEditProfile = async (req, res) => {
   const {productsFullList,cartItems,cartItemsCount,wishlistItemsCount,user}  = await profileService.getUserDetails(userId)
   let message = req.session.message || null;
   delete req.session.message;
+  const search = req.query?.search || null
   res.render("user-view/user.edit-profile.ejs", {
     user,
     productsFullList,
     message,
     cartItems,
     cartItemsCount,
-    wishlistItemsCount
+    wishlistItemsCount,
+    search
   });
 };
 const editProfile = async (req, res) => {
@@ -82,13 +86,9 @@ const editProfile = async (req, res) => {
 const getAddress = async (req, res) => {
   const theUser = req.session.user || req.user
   const {productsFullList,cartItems,cartItemsCount,wishlistItemsCount,address,defaultAddress,user}  = await profileService.getUserDetails(theUser._id)
-  if (defaultAddress.length > 0) {
-    defaultAddress = defaultAddress[0];
-  } else {
-    defaultAddress = null;
-  }
   const message = req.session.message || null;
   delete req.session.message;
+  const search = req.query?.search || null
   res.render("user-view/user.address-management.ejs", {
     productsFullList,
     user,
@@ -97,7 +97,8 @@ const getAddress = async (req, res) => {
     message,
     cartItems,
     cartItemsCount,
-    wishlistItemsCount
+    wishlistItemsCount,
+    search
   });
 };
 
@@ -115,12 +116,14 @@ const addAddress = async (req, res) => {
       isDefault,
     } = req.body;
     const user = req.session.user || req.user
-    await profileService.addNewAddress(user._id,firstName,lastName,country,state,city,pincode,mobileNo,address,isDefault)
-    if(req.body.redirect === "/checkout"){
-      return res.redirect("/checkout");
-    }
-    req.session.message = "Address added successfully!";
-    return res.redirect("/address");
+    const {newAddress,oldDefaultAddress} = await profileService.addNewAddress(user._id,firstName,lastName,country,state,city,pincode,mobileNo,address,isDefault)
+    
+    return res.status(200).json({
+      success : true,
+      message : "Address added successfully",
+      address : newAddress,
+      oldDefaultAddress
+    });
   } catch (error) {
     console.log(error);
     req.session.message = "Oops! some error has occured";
@@ -164,7 +167,7 @@ const editAddress = async (req, res) => {
       );
       return res.redirect("/checkout");
     }
-    await Address.findByIdAndUpdate(
+   const updatedAddress = await Address.findByIdAndUpdate(
       { _id: id },
       {
         $set: {
@@ -179,11 +182,18 @@ const editAddress = async (req, res) => {
           userId: addressToBeUpdated.userId,
           isDefault: addressToBeUpdated.isDefault,
         },
+      },
+      {
+        new : true
       }
     );
     
-    req.session.message = "Address updated Successfully";
-    return res.redirect("/address");
+  
+    return res.status(200).json({
+      success : true,
+      message : "Address updated Successfully",
+      address : updatedAddress
+    });
   } catch (error) {
     console.log(error);
     req.session.message = "Oops! some error has occured";
@@ -213,18 +223,23 @@ const resetDefaultAddress = async (req, res) => {
   const id = req.query.id;
 
   const idOfUser = req.session.user?._id || req.user?._id;
-  await Address.findOneAndUpdate(
+  const oldDefaultAddress = await Address.findOneAndUpdate(
     { userId: idOfUser, isDefault: true },
-    { $set: { isDefault: false } }
+    { $set: { isDefault: false } },
+    {new : true}
   );
   
-  await Address.findByIdAndUpdate({ _id: id }, { $set: { isDefault: true } });
+  const newAddress = await Address.findByIdAndUpdate({ _id: id }, { $set: { isDefault: true } },{new : true});
 
   if(req.query.redirect && req.query.redirect === "checkout"){
     return res.redirect("/checkout")
   }
-  req.session.message = "Your Default address has been Updated";
-  return res.redirect("/address");
+  
+  return res.status(200).json({
+    message : "Your Default address has been Updated",
+    address : newAddress,
+    oldDefaultAddress
+  })
 };
 
 

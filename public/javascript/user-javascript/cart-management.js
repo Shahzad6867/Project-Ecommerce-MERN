@@ -10,7 +10,6 @@
         fetch(`/cart?productId=${productId}&variant=${variant}&quantity=1`,{method : "POST"})
         .then(res => res.json())
         .then(data => {
-             
             if (data.message === "Product has been added to Cart") {
                 input.disabled = false
                 input.classList.remove("w-full")
@@ -274,63 +273,7 @@
                 })
     }
 
-    function deleteItemInCartFromCart(cartId,productId,variantIndex) {
-        let quantity = document.getElementById(`quantity${cartId}`)
-        let price = Number(document.getElementById(`price${cartId}${variantIndex}`).innerText)
-        let myCartHead = document.getElementById("cartHeadItemCount")
-        let myCartHeadInCart = document.getElementById("cartHeadItemCountInCart")
-        let cartItemQtyNotifier = document.getElementById("cartItemQty")
-        let subTotal = document.getElementById("subTotal")
-        let cartItem = document.getElementById(`cartItem${productId}${variantIndex}`)
-        let cartItemInCart = document.getElementById(`cartItemInCart${cartId}`)
-        let subTotalItemInCart = document.getElementById("subTotalItemsInCart")
-        let subTotalInCart = document.getElementById("subTotalInCart")
-        let tax = document.getElementById("tax")
-        let grandTotal = document.getElementById("grandTotal")
-        let cartItemsList = document.getElementById("cartItemsList")
-        fetch(`/cart/delete-cart-item?cartItemId=${cartId}&productId=${productId}`,{method : "DELETE"})
-                .then(res => res.json())
-                .then(data => {
-                  
-                myCartHead.innerText = Number(myCartHead.innerText) - Number(quantity.value)
-                cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - Number(quantity.value)
-                myCartHeadInCart.innerText = Number(myCartHeadInCart.innerText) - Number(quantity.value)
-                subTotalItemInCart.innerText = Number(subTotalItemInCart.innerText) - Number(quantity.value)
-                subTotal.innerText = Math.round((Number(subTotal.innerText) -  (Number(quantity.value) * price) ) * 100) / 100
-                subTotalInCart.innerText = Math.round((Number(subTotalInCart.innerText) -  (Number(quantity.value) * price) ) * 100) / 100
-                tax.innerText = Math.round((Number(subTotalInCart.innerText) * 0.05 ) * 100)
-                cartItem.remove()
-                if(document.getElementById("cartItemsDiv").children.length === 0){
-                    document.getElementById("cartItemsDiv").innerHTML = `<div id="nothingInCartCard" class="flex  items-center justify-center border border-gray-400 w-[96%] text-left px-3 py-8 text-gray-700  rounded-lg m-2">
-                                                                    <h1 class="font-bold">
-                                                                        Your cart is empty. Start shopping!
-                                                                    </h1>
-                                                                </div>`
-                }
-                grandTotal.innerText = (Number(subTotalInCart.innerText) + Number(tax.innerText)).toFixed(2)
-                cartItemInCart.remove()
-                if(Number(subTotal.innerText) === 0){
-                    document.getElementById("checkoutBtnInCart").disabled = true
-                }
-                if(cartItemsList.children.length === 0){
-                    cartItemsList.innerHTML = `<div class="bg-white rounded-lg border shadow-sm w-full min-h-[40%]  p-6">
-                    <div class="border-2 w-full h-[196px]  rounded-lg">
-                        <h1 class="text-2xl font-bold ml-[10rem] mt-[3.8rem]">Looks like you haven’t added anything yet !</h1>
-                        <a href="/shop"><button type="button"  class="btn-primary ml-[22rem] flex font-bold rounded-full px-4 py-2 mt-1 "><i data-feather="shopping-cart" class="mr-2"></i>Shop Now</button></a>
-                    </div>
-                </div>`
-                }
-                feather.replace()
-                iziToast.info({
-                    title: "Cart",
-                    message: data.message,
-                    position : "topRight"
-                });
-                })
-               
-                window.location.href = "/cart"     
-            
-    }
+    
     
     
     function getUserToLogin(){

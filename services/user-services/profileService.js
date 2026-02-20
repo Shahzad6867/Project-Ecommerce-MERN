@@ -18,7 +18,7 @@ const getUserDetails  = async (userId) => {
       const cartItems = await Cart.find({userId : userId}).populate("productId")
       const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(userId)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
       const wishlistItemsCount = await Wishlist.find({userId : userId}).countDocuments()
-      const address = await Address.findOne({
+      const address = await Address.find({
         userId: userId,
         isDefault: false,
       });
@@ -50,12 +50,14 @@ const deleteImageFromCloudinary = async (publicId) => {
 
 const addNewAddress = async (id,firstName,lastName,country,state,city,pincode,mobileNo,address,isDefault) => {
     let isDefaultToSave = null;
+    let oldDefaultAddress = null
     if (isDefault === undefined) {
       let isThereDefaultAddress = await Address.findOne({
         userId: id,
         isDefault: true,
       });
 
+     
       if (isThereDefaultAddress === null) {
         isDefaultToSave = true;
       } else {
@@ -63,9 +65,10 @@ const addNewAddress = async (id,firstName,lastName,country,state,city,pincode,mo
       }
     } else {
       isDefaultToSave = true;
-      await Address.findOneAndUpdate(
+      oldDefaultAddress = await Address.findOneAndUpdate(
         { userId: id, isDefault: true },
-        { $set: { isDefault: false } }
+        { $set: { isDefault: false } },
+        {new : true}
       );
     }
 
@@ -81,7 +84,8 @@ const addNewAddress = async (id,firstName,lastName,country,state,city,pincode,mo
       userId : id,
       isDefault : isDefaultToSave,
     });
-    await addressToBeSaved.save();
+    const newAddress = await addressToBeSaved.save();
+    return {newAddress,oldDefaultAddress}
 }
 
 module.exports = {

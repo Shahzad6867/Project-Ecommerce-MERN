@@ -1,6 +1,8 @@
 const Cart = require("../../models/cart.model")
 const Coupon = require("../../models/coupon.model");
+const usedCoupon = require("../../models/usedCoupon.model");
 const cartService = require("../../services/user-services/cartService.js")
+const mongoose = require("mongoose")
 
 const getCart = async (req,res) => {
     let user = req.session.user || req.user
@@ -10,9 +12,17 @@ const getCart = async (req,res) => {
     const cartItems = await cartService.getCartItems(user._id)
     const cartItemsCount = await cartService.getCartItemsCount(user._id)
     const wishlistItemsCount = await cartService.getWishlistItemsCount(user._id)
-    const coupons = await Coupon.find({userId : null})
+    const usedCoupons = await usedCoupon.aggregate([{
+        $match : {
+            userId : new mongoose.Types.ObjectId(user._id)
+        }
+    },{
+        $group : {_id : null , coupons : {$push : "$couponId"}}
+    }])
+    const search = req.query.search || null
+    const coupons = (usedCoupons.length > 0) ? await Coupon.find({_id : {$nin : usedCoupons[0].coupons}}): await Coupon.find({userId : null})
     const userCoupons = await Coupon.find({userId : user._id})
-    res.render("user-view/user.cart-management.ejs",{message,user,productsFullList,cartItems,cartItemsCount,coupons,userCoupons,wishlistItemsCount})
+    res.render("user-view/user.cart-management.ejs",{message,user,productsFullList,cartItems,cartItemsCount,coupons,userCoupons,wishlistItemsCount,search})
 }
 
 const addToCart = async (req,res) => {
@@ -130,13 +140,19 @@ const updateCartItem = async (req,res) => {
  }
  const deleteCartItem = async (req,res) => {
     try {
+        const user = req.session.user || req.user
         const {cartItemId,productId} = req.query
+        const oldCouponId = await cartService.getCartItems(user._id)
         await Cart.findByIdAndDelete({_id : cartItemId})
         let product = await cartService.getProduct(productId)
+        let cartItems = await cartService.getCartItems(user._id)
+        console.log(cartItems)
         return res.status(200).json({
             success : true,
             message : "Item have been removed from your Cart",
-            product
+            product,
+            couponApplied : (cartItems.length > 0 && cartItems[0]?.couponApplied !== null) ? cartItems[0]?.couponApplied : null,
+            oldCouponId : (oldCouponId.length > 0 && oldCouponId[0]?.couponApplied !== null) ? oldCouponId[0]?.couponApplied._id : null,
         })
        } catch (error) {
         console.log(error)

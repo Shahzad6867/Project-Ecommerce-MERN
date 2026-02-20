@@ -1,4 +1,6 @@
 const Coupon = require("../../models/coupon.model.js");
+const Cart = require("../../models/cart.model.js");
+const usedCoupon = require("../../models/usedCoupon.model.js");
 const cloudinary = require("../../config/cloudinaryConfig.js")
 
 const getCoupons = async (perPage,page) => {
@@ -63,6 +65,8 @@ const updateCoupon = async (id,couponName,description,endDate,discountType,disco
 }
 
 const deleteCoupon = async (id) => {
+    await Cart.updateMany({couponApplied : id},{$set : {couponApplied : null}})
+    await usedCoupon.deleteMany({couponId : id})
     await Coupon.findByIdAndDelete(id)
 }
 

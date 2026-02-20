@@ -8,6 +8,7 @@ function applyCoupon(couponId,minAmount){
     const discountDiv = document.getElementById("discountDiv")
     const discountValue = document.getElementById("discountedValue")
     if(subTotal < Number(minAmount)){
+        removeCoupon()
         iziToast.info({
             title : "Coupon",
             message : `Minimum subtotal of $${minAmount} required to apply this coupon`,
@@ -26,6 +27,7 @@ function applyCoupon(couponId,minAmount){
                      if (discountedAmount > data.coupon.maxDiscountAmount) { 
                         discountedAmount = data.coupon.maxDiscountAmount
                       } 
+                      
                  } else { 
                      discountedAmount = data.coupon.discountValue
             } 
@@ -35,14 +37,15 @@ function applyCoupon(couponId,minAmount){
            grandTotalElement.innerText = ((subTotal - discountedAmount) + tax + shipping).toFixed(2)
            discountDiv.classList.remove("hidden")
            discountValue.innerText = discountedAmount.toFixed(2)
-           document.getElementById(`applyBtn${data.coupon._id}`).classList.add("hidden")
-           document.getElementById(`appliedBtn${data.coupon._id}`).classList.remove("hidden")
+           
            if(data.olderCoupon !== null){
             document.getElementById(`applyBtn${data.olderCoupon}`).classList.remove("hidden")
             document.getElementById(`appliedBtn${data.olderCoupon}`).classList.add("hidden")
            }else{
             document.getElementById("appliedCouponDisplay").classList.remove("hidden")
            }
+           document.getElementById(`applyBtn${data.coupon._id}`).classList.add("hidden")
+           document.getElementById(`appliedBtn${data.coupon._id}`).classList.remove("hidden")
            document.getElementById("appliedCouponName").value = data.coupon.name
 
         }
@@ -72,8 +75,10 @@ function removeCoupon(){
            grandTotalElement.innerText = (subTotal + tax + shipping).toFixed(2)
            discountDiv.classList.add("hidden")
            discountValue.innerText = 0.00
-           document.getElementById(`applyBtn${data.coupon.couponApplied}`).classList.remove("hidden")
-           document.getElementById(`appliedBtn${data.coupon.couponApplied}`).classList.add("hidden")
+           if(data.coupon.couponApplied !== null){
+                document.getElementById(`applyBtn${data.coupon.couponApplied}`).classList.remove("hidden")
+                document.getElementById(`appliedBtn${data.coupon.couponApplied}`).classList.add("hidden")
+           }
             document.getElementById("appliedCouponDisplay").classList.add("hidden")
            document.getElementById("appliedCouponName").value = ""
         }
@@ -129,7 +134,7 @@ function removeCoupon(){
                     subTotalItemsInCart.innerText = Number(subTotalItemsInCart.innerText) + 1
                     grandTotal.innerText = Math.round((Number(subTotalInCart.innerText) + Number(tax.innerText) + shipping) * 100) / 100
                     feather.replace()
-                    
+                    applyCoupon(data.cart.couponApplied._id,data.cart.couponApplied.minAmount)
                 }else if(data.message === "Out of Stock" || data.message === "Product Unavailable"){
                     document.getElementById(`incDecQtyDiv${cartId}`).innerHTML = `
                      <button  type="button" class="text-center w-full rounded-lg px-2 py-2 bg-red-400 font-bold text-black mr-1 " >
@@ -203,7 +208,8 @@ function removeCoupon(){
                     myCartHead.innerText = Number(myCartHead.innerText) - 1
                     myCartHeadInCart.innerText = Number(myCartHeadInCart.innerText) - 1
                     grandTotal.innerText = Math.round((Number(subTotalInCart.innerText) + Number(tax.innerText) + shipping) * 100) / 100
-                    feather.replace()
+                    feather.replace()     
+                    applyCoupon(data.cart.couponApplied._id,data.cart.couponApplied.minAmount)
                     
                 }else if(data.message === "Out of Stock" || data.message === "Product Unavailable"){
                     document.getElementById(`incDecQtyDiv${cartId}`).innerHTML = `
@@ -238,6 +244,77 @@ function removeCoupon(){
             })
         }
         
+    }
+    function deleteItemInCartFromCart(cartId,productId,variantIndex) {
+        let quantity = document.getElementById(`quantity${cartId}`)
+        let price = Number(document.getElementById(`price${cartId}${variantIndex}`).innerText)
+        let myCartHead = document.getElementById("cartHeadItemCount")
+        let myCartHeadInCart = document.getElementById("cartHeadItemCountInCart")
+        let cartItemQtyNotifier = document.getElementById("cartItemQty")
+        let subTotal = document.getElementById("subTotal")
+        let cartItem = document.getElementById(`cartItem${productId}${variantIndex}`)
+        let cartItemInCart = document.getElementById(`cartItemInCart${cartId}`)
+        let subTotalItemInCart = document.getElementById("subTotalItemsInCart")
+        let subTotalInCart = document.getElementById("subTotalInCart")
+        let tax = document.getElementById("tax")
+        let grandTotal = document.getElementById("grandTotal")
+        let cartItemsList = document.getElementById("cartItemsList")
+        fetch(`/cart/delete-cart-item?cartItemId=${cartId}&productId=${productId}`,{method : "DELETE"})
+                .then(res => res.json())
+                .then(data => {
+               
+                myCartHead.innerText = Number(myCartHead.innerText) - Number(quantity.value)
+                cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - Number(quantity.value)
+                myCartHeadInCart.innerText = Number(myCartHeadInCart.innerText) - Number(quantity.value)
+                subTotalItemInCart.innerText = Number(subTotalItemInCart.innerText) - Number(quantity.value)
+                subTotal.innerText = Math.round((Number(subTotal.innerText) -  (Number(quantity.value) * price) ) * 100) / 100
+                subTotalInCart.innerText = Math.round((Number(subTotalInCart.innerText) -  (Number(quantity.value) * price) ) * 100) / 100
+                tax.innerText = Math.round((Number(subTotalInCart.innerText) * 0.05 ) * 100) / 100
+                cartItem.remove()
+                
+                if(document.getElementById("cartItemsDiv").children.length === 0){
+                    document.getElementById("cartItemsDiv").innerHTML = `<div id="nothingInCartCard" class="flex  items-center justify-center border border-gray-400 w-[96%] text-left px-3 py-8 text-gray-700  rounded-lg m-2">
+                                                                    <h1 class="font-bold">
+                                                                        Your cart is empty. Start shopping!
+                                                                    </h1>
+                                                                </div>`
+                }
+                const shipping = 10
+                grandTotal.innerText = (Number(subTotalInCart.innerText) + Number(tax.innerText) + shipping).toFixed(2)
+                cartItemInCart.remove()
+                if(data.couponApplied !== null){
+                    applyCoupon(data.couponApplied._id,data.couponApplied.minAmount)
+                }
+                if(Number(subTotal.innerText) === 0){
+                    document.getElementById("checkoutBtnInCart").disabled = true
+                }
+                if(cartItemsList.children.length === 0){
+                    cartItemsList.innerHTML = `<div class="bg-white rounded-lg border shadow-sm w-full min-h-[40%]  p-6">
+                    <div class="border-2 w-full h-[196px]  rounded-lg">
+                        <h1 class="text-2xl font-bold ml-[10rem] mt-[3.8rem]">Looks like you haven’t added anything yet !</h1>
+                        <a href="/shop"><button type="button"  class="btn-primary ml-[22rem] flex font-bold rounded-full px-4 py-2 mt-1 "><i data-feather="shopping-cart" class="mr-2"></i>Shop Now</button></a>
+                    </div>
+                </div>`
+                        document.getElementById("discountedValue").innerText = 0
+                        document.getElementById("shipping").innerText = "$0"
+                        document.getElementById("appliedCouponDisplay").classList.add("hidden")
+                        if(data.oldCouponId !== null){
+                            document.getElementById(`applyBtn${data.oldCouponId}`).classList.remove("hidden")
+                            document.getElementById(`appliedBtn${data.oldCouponId}`).classList.add("hidden")
+                        }
+                        grandTotal.innerText = 0
+                        
+                }
+                feather.replace()
+                iziToast.info({
+                    title: "Cart",
+                    message: data.message,
+                    position : "topRight"
+                });
+                })
+               
+                    
+            
     }
     const grandTotal = document.getElementById("grandTotal")
     if(grandTotal && Number(grandTotal.innerText) === 0){

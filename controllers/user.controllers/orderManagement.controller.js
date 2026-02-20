@@ -7,6 +7,7 @@ const Address = require("../../models/address.model.js");
 const Cart = require("../../models/cart.model.js");
 const Wishlist = require("../../models/wishlist.model.js");
 const Coupon = require("../../models/coupon.model.js");
+const usedCoupon = require("../../models/usedCoupon.model.js");
 const Order = require("../../models/order.model.js");
 const Payment = require("../../models/payment.model.js");
 const mongoose = require("mongoose");
@@ -35,7 +36,8 @@ const getCheckout = async (req,res) => {
     const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
     const address = await Address.find({userId : user._id,isDefault : false})
     const defaultAddress = await Address.findOne({userId : user._id,isDefault : true})
-    res.render("user-view/user.checkout-page.ejs",{user,productsFullList,cartItems,address,defaultAddress,message,wishlistItemsCount})
+    const search = req.query.search || null
+    res.render("user-view/user.checkout-page.ejs",{user,productsFullList,cartItems,address,defaultAddress,message,wishlistItemsCount,search})
 }
 
 function orderIdGenerator() {
@@ -198,6 +200,12 @@ const placeOrder = async (req,res) => {
                 }
                 if(cartItems[0].couponApplied.name === "REFERRALCOUPON"){
                     await Coupon.deleteOne({_id : cartItems[0].couponApplied._id})
+                }else{
+                    let userUsedCoupon = new usedCoupon({
+                        couponId : cartItems[0].couponApplied._id,
+                        userId : user._id
+                    })
+                    await userUsedCoupon.save()
                 }
             }else{
                 if(cartItems[0].couponApplied.name === "REFERRALCOUPON"){
@@ -507,7 +515,8 @@ const getOrderConfirmationPage = async (req,res) => {
    const productsFullList = await Product.find({}, { productName: 1, variants: 1, categoryId: 1 }).populate("categoryId", "categoryName");
    const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
    const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
-   return res.render("user-view/order-confirmation-page.ejs",{user,confirmedOrder,productsFullList,cartItems,wishlistItemsCount})
+   const search = req.query.search || null
+   return res.render("user-view/order-confirmation-page.ejs",{user,confirmedOrder,productsFullList,cartItems,wishlistItemsCount,search})
 }
 async function cancelOrderWhileOrdersListing(orderId){
     let order = await Order.findOne({_id : orderId})
@@ -516,15 +525,12 @@ async function cancelOrderWhileOrdersListing(orderId){
         for(let i = 0 ; i < order.items.length ; i++){
        
             let product = await Product.findOne({_id : order.items[i].productId })
-            product.variants[order.items[i].variant].stockQuantity += order.items[i].quantity
-            await product.save()
-            order.items[i].isCancelled = true
-            order.items[i].statusTimeline.cancelledAt = new Date()
-               
+                product.variants[order.items[i].variant].stockQuantity += order.items[i].quantity
+                await product.save()
+                order.items[i].isCancelled = true
+                order.items[i].statusTimeline.cancelledAt = new Date()
             }
-                order.subTotal = 0
-                order.tax = 0
-                order.grandTotal = 0
+                
                 payment.amountToBePaid = order.grandTotal
                 payment.status = "Order Cancelled"
                 payment.orderWillBeCancelledAt = null
@@ -547,7 +553,42 @@ const getOrders = async (req,res) => {
         const orders = await Order.find({userId : new mongoose.Types.ObjectId(user._id)}).sort({createdAt : -1}).populate("paymentId")
         const ordersStatus = await orderService.getOrdersStatus(orders)
         const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
-        res.render("user-view/user.orders-listing.ejs",{user,productsFullList,cartItems,orders,wishlistItemsCount,ordersStatus})
+        const result = await Order.aggregate([
+            {
+                $match : {
+                    isCancelled : false,
+                    isReturned : false
+                }
+            },{
+              $lookup : {
+                from : "payments",
+                localField : "paymentId",
+                foreignField : "_id",
+                as : "paymentId"
+              }  
+            },{
+                $unwind : "$paymentId"
+            },{
+                $match : {
+                   "paymentId.paymentMethod" : "Pay with Stripe"
+                }
+            },{
+                $match : {
+                    "items.statusTimeline.deliveredAt" : {$ne : null}
+                }
+            },{
+                $match : {
+                    grandTotal : {
+                        $gte : 1000,
+                        $lt : 10000
+                    } 
+                }
+            },{
+                $group : {_id : null, totalOrderAmount : {$sum : "$grandTotal"}}
+            }
+        ])
+        const search = req.query.search || null
+        res.render("user-view/user.orders-listing.ejs",{user,productsFullList,cartItems,orders,wishlistItemsCount,ordersStatus,search})
     }catch(error){
         console.log(error)
     }
@@ -559,9 +600,10 @@ const getOrderDetailPage = async (req,res) => {
     const cartItems = await Cart.find({userId : user._id}).populate("productId").populate("productOfferId").populate("categoryOfferId")
     const order = await Order.findOne({_id : req.params.id}).populate("paymentId")
     const wishlistItemsCount = await Wishlist.find({userId : user._id}).countDocuments()
+    const search = req.query.search || null
     let message = req.session.message || null
     delete req.session.message
-    res.render("user-view/user.order-details-page.ejs",{user,productsFullList,cartItems,order,wishlistItemsCount,message})
+    res.render("user-view/user.order-details-page.ejs",{user,productsFullList,cartItems,order,wishlistItemsCount,message,search})
 }
 
 const cancelItem = async (req,res) => {
@@ -714,8 +756,10 @@ const cancelOrder = async (req,res) => {
                  }else{
                     amount += (order.items[i].offerPrice  * order.items[i].quantity)
                  }
-                
-                amount = Math.round(amount * 100) / 100
+                 const nonCancelledItems = order.items.filter(item => !item.isCancelled)
+                 const taxPerItem = order.tax / nonCancelledItems.length
+                 const shippingPerItem = order.shipping / nonCancelledItems.length
+                amount = Number((amount + taxPerItem + shippingPerItem).toFixed(2))
                 sumOfAmounts += amount
                 order.items[i].refundOnCancelled = {
                     refundId : null,
@@ -741,7 +785,7 @@ const cancelOrder = async (req,res) => {
                     payment.amountToBeRefunded += sumOfAmounts
                     let refund = await stripe.refunds.create({
                         payment_intent : payment.paymentIntentId,
-                        amount : sumOfAmounts * 100,
+                        amount : Math.round(sumOfAmounts * 100),
                         reason : "requested_by_customer"
                     })
                     order.items.forEach(item => {

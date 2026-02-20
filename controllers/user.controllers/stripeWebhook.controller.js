@@ -26,7 +26,7 @@ const webhookHandler = async (req,res) => {
         return res.status(400).send(`Webhook Error: ${error.message}`);
     }
     
-    console.log(event.data.object)
+    
     try {
         const session = event.data.object
 
@@ -91,12 +91,12 @@ const webhookHandler = async (req,res) => {
                 }
             }
 
-            if(event.type === "refund.updated" && event.data.object.status === "succeeded"){
+            if(event.type === "charge.refund.updated" && event.data.object.status === "succeeded"){
                 let payment = await Payment.findOne({paymentIntentId : event.data.object.payment_intent})
                 let order = await Order.findById(payment.orderId)
 
                 for(let i = 0 ; i < order.items.length ; i++){
-                    if(order.items[i].isCancelled && (order.items[i].refundOnCancelled.refundId === event.data.object.id)){
+                    if(order.items[i].isCancelled && (order.items[i].refundOnCancelled.refundId === event.data.object.id) && order.items[i].refundOnCancelled.status !== "Refunded"){
                         order.items[i].refundOnCancelled.status = "Refunded"
                         order.items[i].refundOnCancelled.refundedAt = new Date()
                         payment.amountRefunded += order.items[i].refundOnCancelled.amount

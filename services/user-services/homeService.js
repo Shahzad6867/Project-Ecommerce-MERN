@@ -15,18 +15,23 @@ const getUserShopContext = async (user) => {
     const cartItemsCount = await Cart.aggregate([{$match : {userId : new mongoose.Types.ObjectId(user?._id)}},{$group : {_id : "$userId", totalQuantity : {$sum : "$quantity"}}}])
     return {categories,brands,productsFullList,cartItems,wishlistItems,wishlistItemsCount,cartItemsCount}
 }
-const getProducts = async (skip, limit,query,priceQuery) => {
+const getProducts = async (skip,limit,query,priceQuery,search,sort) => {
     const pipeline = []
-    if(typeof query === "object"){
+    if(typeof search === "string" && search !== null){
+      pipeline.push({$match : { productName: { $regex: search, $options: "i" } }})
+    }
+    if(typeof query === "object" && query !== null){
         pipeline.push({$match : query})
     }
+    pipeline.push({ $unwind: {
+      path: "$variants",
+      includeArrayIndex: "variant" 
+    }})
 
-    pipeline.push({ $unwind: "$variants" })
-
-    if(typeof priceQuery === "object"){
+    if(typeof priceQuery === "object" && priceQuery !== null){
         pipeline.push(priceQuery)
     }
-
+    
     pipeline.push(
       {
         $lookup: {
@@ -77,40 +82,39 @@ const getProducts = async (skip, limit,query,priceQuery) => {
         }
       }
     )
-  
-   
+
+    if(sort !== null && (sort === "low-high" || sort === "high-low")){
+      pipeline.push({ $sort : {"variants.price" : (sort === "high-low") ? -1 : 1} })
+    }
+    if(sort !== null && (sort === "z-a" || sort === "a-z")){
+      pipeline.push({ $sort : { productName : (sort === "z-a") ? -1 : 1} })
+    }
+    if(sort !== null && sort === "featured"){
+      pipeline.push({ $sort : { isFeatured : -1} })
+    }
     if (typeof skip === "number" && typeof limit === "number") {
       pipeline.push({ $skip: skip })
       pipeline.push({ $limit: limit })
     }
 
-    pipeline.push({
-        $group: {
-          _id: "$_id",
-          productName: { $first: "$productName" },
-          description: { $first: "$description" },
-          isDeleted: { $first: "$isDeleted" },
-          categoryId: { $first: "$categoryId" },
-          brandId: { $first: "$brandId" },
-          createdAt: { $first: "$createdAt" },
-          updatedAt: { $first: "$updatedAt" },
-          isFeatured: { $first: "$isFeatured" },
-          categoryOfferId: { $first: "$categoryOfferId" },
-          variants: { $push: "$variants" }
-        }
-      })
-    return Product.aggregate(pipeline)
+    let result = await Product.aggregate(pipeline).collation({locale : "en", strength : 2})
+    return result
   }
   
-const getProductsCount = async (query,priceQuery) => {
+const getProductsCount = async (query,priceQuery,search) => {
     let pipeline = []
-    if(typeof query === "object"){
+    if(typeof search === "string" && search !== null){
+      pipeline.push({$match : { productName: { $regex: search, $options: "i" } }})
+    }
+    if(typeof query === "object" && query !== null){
         pipeline.push({$match : query})
     }
+    
     pipeline.push({$unwind : "$variants"})
-    if(typeof priceQuery === "object"){
+    if(typeof priceQuery === "object" && priceQuery !== null){
         pipeline.push(priceQuery)
     }
+    
     pipeline.push({$count : "products_count"})
     let count = await Product.aggregate(pipeline)
     return count[0]["products_count"]

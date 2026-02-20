@@ -9,11 +9,11 @@ const getFullProducts = async () => {
     return result
 }
 const getCartItems = async (userId) => {
-    let result = await Cart.find({userId : userId}).populate("productId").populate("categoryId").populate("brandId").populate("productOfferId").populate("categoryOfferId").populate("couponApplied")
+    let result = await Cart.find({userId : new mongoose.Types.ObjectId(userId)}).populate("productId").populate("categoryId").populate("brandId").populate("productOfferId").populate("categoryOfferId").populate("couponApplied")
     return result
 }
 const getCartItem = async (userId,productId,variant) => {
-   let result = await Cart.findOne({userId : userId,productId : productId,variant : variant})
+   let result = await Cart.findOne({userId : userId,productId : productId,variant : variant}).populate("couponApplied")
    return result
 }
 const getProduct = async (productId) => {
@@ -41,6 +41,8 @@ const addItemToCart = async (userId,productId,variant,quantity) => {
     }else{
         return {message : "Product Unavailable",product}
     }
+    const cartItems = await getCartItems(userId)
+   
     const cartItem = new Cart({
         userId : userId,
         productId : product._id,
@@ -49,8 +51,8 @@ const addItemToCart = async (userId,productId,variant,quantity) => {
         variant : variant,
         quantity : quantity,
         categoryOfferId : product.categoryOfferId,
-        productOfferId : product.variants[variant].productOfferId
-        
+        productOfferId : product.variants[variant].productOfferId,
+        couponApplied : (cartItems.length > 0 && cartItems[0]?.couponApplied !== null) ? cartItems[0]?.couponApplied : null
     })
     await cartItem.save()
     return {message : "Done",product,cartItem}

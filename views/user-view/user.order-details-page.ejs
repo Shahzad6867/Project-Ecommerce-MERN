@@ -75,6 +75,14 @@
 
                    
                     <div class="divide-y divide-gray-200">
+                        <% let nonCancelledItemsLen = 0 %>
+                        <% let sumOfQuantity = 0 %>
+                        <% order.items.forEach(element => {
+                            if(!element.isCancelled){
+                                nonCancelledItemsLen++
+                            }
+                             sumOfQuantity += element.quantity             
+                        }); %>
                         <% for( let i = 0; i < order.items.length; i++ ) { %>
                             
                             <div class="py-2 flex items-center">
@@ -111,7 +119,8 @@
                                             
                                                     <%= status %>
                                         </span>
-                                        <% if (order.items[i].status === "Placed" && !order.items[i].isCancelled && order.items.length > 1 && !( order.paymentId.paymentMethod === "Pay with Stripe" && ( order.paymentId.status === "Pending" || order.paymentId.status === "Payment Failed"))) { %>
+                                        
+                                        <% if (order.items[i].status === "Placed" && !order.items[i].isCancelled && nonCancelledItemsLen > 1 && !( order.paymentId.paymentMethod === "Pay with Stripe" && ( order.paymentId.status === "Pending" || order.paymentId.status === "Payment Failed"))) { %>
                                            <button type="button" class="bg-red-400 hover:bg-red-500 p-2 my-auto font-bold rounded-xl" onclick="cancelItem('<%= order._id %>','<%= order.items[i]._id %>')" >Cancel Item</button>
                                         <% }%>
                                         <% if (order.items[i].status === "Delivered" && !order.items[i].return.isRequested && order.items.length > 1) { %>
@@ -158,13 +167,6 @@
                         <div class="flex justify-end">
                             <div class="w-full ">
                                 <div class="flex justify-between py-2">
-                                    <% let sumOfQuantity = 0 %>
-                                    <% for( let i = 0; i < order.items.length; i++ ) { %>
-                                        <% if (!order.items[i].isCancelled) { %>
-                                            <% sumOfQuantity += order.items[i].quantity %>
-                                        <% } %>
-                                        
-                                    <% } %>
                                     <span class="text-gray-600">Subtotal (<%= sumOfQuantity %> items)</span>
                                     <span class="font-medium">$<%= (order.subTotal).toFixed(2) %></span>
                                 </div>
@@ -204,7 +206,7 @@
                     <div class="space-y-2 text-gray-700">
                         <p><%= order.address.firstName %> <%= order.address.lastName %></p>
                         <p><%= order.address.address %></p>
-                        <p><%= order.address.state %>, <%= (order.address.pincode !== "Not Applicable") ? order.address.pincode : ""%></p>
+                        <p><%= order.address.state %>, <%= order.address.city %> <%= (order.address.pincode !== "Not Applicable") ? order.address.pincode : ""%></p>
                         <p><%= order.address.country %></p>
                         <p ><strong>Phone:</strong> <%= order.address.mobileNo %></p>
                         <p><strong>Shipping Method:</strong> Standard Shipping (Free)</p>
@@ -241,8 +243,8 @@
                         <p><strong>Total Paid:</strong> $<%= order.paymentId.amountPaid %></p>
 
                         <% if (order.paymentId.amountRefunded > 0 || order.paymentId.amountToBeRefunded > 0) { %>
-                            <p><strong>Amount to be Refunded:</strong> $<%= order.paymentId.amountToBeRefunded %></p>
-                            <p><strong>Amount Refunded:</strong> $<%= order.paymentId.amountRefunded %></p>
+                            <p><strong>Amount to be Refunded:</strong> $<%= order.paymentId.amountToBeRefunded.toFixed(2) %></p>
+                            <p><strong>Amount Refunded:</strong> $<%= order.paymentId.amountRefunded.toFixed(2) %></p>
                         <% } %>
                     </div>
                 </div>
