@@ -123,7 +123,7 @@
     <!-- Pagination -->
     <div class="flex items-center justify-between mt-4">
       <div class="text-sm text-gray-500">
-        Showing <span class="font-medium">1</span> to <span class="font-medium"><%= users.length %></span> of <span class="font-medium"><%= count %></span> results
+        Showing <span class="font-medium"><%= (users.length > 0) ? 1 : 0 %></span> to <span class="font-medium"><%= users.length %></span> of <span class="font-medium"><%= count %></span> results
       </div>
       <div class="flex space-x-2">
         
@@ -139,8 +139,11 @@
             <% } %>
         
        </a>
-        <% let i = Number(page) > 4 ? Number(page) - 3 : 1 %>
-        <% for(;i <= pages; i++ ) { %>
+       <% let lowerBound = (Math.floor(page / 10) * 10) + 1 %>
+       <% let upperBound = lowerBound + 9 %>
+       <% lowerBound = (lowerBound > pages && pages > 0) ? pages - 9 : lowerBound %>
+       <% let displayedPages = (upperBound > pages) ? pages : upperBound %>
+       <% for(let i = lowerBound ; i <= displayedPages; i++ ) { %>
         <a href="/admin/users?page=<%= i %>">
           <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
             <%= i %>

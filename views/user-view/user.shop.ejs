@@ -13,6 +13,11 @@
             name="search"
             value="<%= search || '' %>"
           >
+          <input
+          type="hidden"
+          name="sort"
+          value="<%= sort || '' %>"
+        >
         <!-- Category Filter -->
         <div>
           <h3 class="font-medium mb-2">Category</h3>
@@ -266,9 +271,17 @@
                 <% } %>
             
       </div>
+       <% if (productCount === 0) { %>
+        <div class="bg-white rounded-lg border shadow-sm w-full min-h-[10rem]  p-6">
+          <div class="border-2 w-full h-[196px]  rounded-lg">
+              <h1 class="text-2xl font-bold ml-[10rem] mt-[3.8rem]">Looks like you haven’t added anything yet !</h1>
+              <a href="/shop"><button type="button"  class="btn-primary ml-[22rem] flex font-bold rounded-full px-4 py-2 mt-1 "><i data-feather="shopping-cart" class="mr-2"></i>Shop Now</button></a>
+          </div>
+      </div>
+       <% } %>
       <div class="flex items-center justify-between mt-4">
         <div class="text-sm text-gray-500">
-          Showing <span class="font-medium">1</span> to <span class="font-medium"><%= productCount %></span> of <span class="font-medium"><%= count %></span> results
+          Showing <span class="font-medium"><%= (productCount > 0) ? 1 : 0 %></span> to <span class="font-medium"><%= productCount %></span> of <span class="font-medium"><%= count %></span> results
         </div>
         <div class="flex space-x-2">
           
@@ -284,8 +297,11 @@
               <% } %>
           
          </a>
-          <% let i = Number(page) > 4 ? Number(page) - 3 : 1 %>
-          <% for(;i <= pages; i++ ) { %>
+         <% let lowerBound = (Math.floor(page / 10) * 10) + 1 %>
+         <% let upperBound = lowerBound + 9 %>
+         <% lowerBound = (lowerBound > pages && pages > 0) ? pages - 9 : lowerBound %>
+         <% let displayedPages = (upperBound > pages) ? pages : upperBound %>
+         <% for(let i = lowerBound ; i <= displayedPages; i++ ) { %>
           <a href="/shop?page=<%= i %><%= (search !== null) ? "&search="+search : "" %><%= (sort !== null) ? "&sort="+sort : "" %><%= filteredCategories + filteredBrands %>">
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
               <%= i %>

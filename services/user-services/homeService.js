@@ -117,7 +117,7 @@ const getProductsCount = async (query,priceQuery,search) => {
     
     pipeline.push({$count : "products_count"})
     let count = await Product.aggregate(pipeline)
-    return count[0]["products_count"]
+    return (count[0]?.products_count) ? count[0]["products_count"] : 0
 }
 module.exports = {
     getUserShopContext,

@@ -38,22 +38,6 @@ const updateStatus = async (req,res) => {
     }
 }
 
-const updateItemStatus = async (req,res) => {
-    try {
-    let order = await ordersService.getOrder(req.params.id)
-    await ordersService.updateOrderItemStatus(order,req.query.status,req.query.itemIndex)
-    return res.status(HTTP_STATUS.OK).json({
-        success : true,
-        message : "Done"
-    })
-    } catch (error) {
-        console.log(error)
-        return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-            message : ERROR_MESSAGES.SERVER_ERROR
-        })
-    }
-}
-
 const updateProductStock = async (req,res) => {
     try {
         const {orderId,itemIndex,productVariant,quantity} = req.query
@@ -77,6 +61,5 @@ module.exports = {
     getOrders,
     getOrderDetailPage,
     updateStatus,
-    updateItemStatus,
     updateProductStock
 }

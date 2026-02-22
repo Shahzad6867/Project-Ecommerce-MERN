@@ -48,9 +48,10 @@ const searchUser = async (req, res) => {
   const searchOrders = async (req, res) => {
     try {
       const { search } = req.body;
+      const status = req.query.status || "All"
       const ordersFullList = await Order.find({},{orderId : 1,_id : 0})
       const orders = await Order.aggregate([{
-        $match : {orderId : { $regex : search}}
+        $match : {orderId : { $regex: search, $options: "i" }}
       },{
         $unwind : "$items"
        },{
@@ -77,7 +78,7 @@ const searchUser = async (req, res) => {
         return res.redirect("/admin/orders");
       }
       let message = null
-      return res.render("admin-view/admin.searched-order-management.ejs", { orders,search,ordersFullList,message});
+      return res.render("admin-view/admin.searched-order-management.ejs", { orders,search,ordersFullList,message,status});
     } catch (error) {
       console.error(error);
       req.session.message = "Something Went Wrong";

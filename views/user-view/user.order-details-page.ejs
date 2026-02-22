@@ -170,6 +170,12 @@
                                     <span class="text-gray-600">Subtotal (<%= sumOfQuantity %> items)</span>
                                     <span class="font-medium">$<%= (order.subTotal).toFixed(2) %></span>
                                 </div>
+                                <% if (order.discount !== null) { %>
+                                    <div class="flex justify-between py-2">
+                                        <span class="text-gray-600">Discount</span>
+                                        <span class="font-medium">- $<%= (order.discount).toFixed(2) %></span>
+                                    </div>
+                                <% } %>
                                 <div class="flex justify-between py-2">
                                     <span class="text-gray-600">Shipping</span>
                                     <span class="font-medium">$<%= (order.shipping).toFixed(2) %></span>
@@ -178,12 +184,7 @@
                                     <span class="text-gray-600">Tax</span>
                                     <span class="font-medium">$<%= (order.tax).toFixed(2) %></span>
                                 </div>
-                                <% if (order.discount !== null) { %>
-                                    <div class="flex justify-between py-2">
-                                        <span class="text-gray-600">Discount</span>
-                                        <span class="font-medium">- $<%= (order.discount).toFixed(2) %></span>
-                                    </div>
-                                <% } %>
+                                
                                 <div class="flex justify-between py-2 font-bold text-lg border-t border-gray-200 mt-2">
                                     <span>Total</span>
                                     <span>$<%= (order.grandTotal).toFixed(2) %></span>

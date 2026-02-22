@@ -15,7 +15,7 @@ const dashboardController = require("../controllers/admin.controllers/dashboardC
 const adminAuth = require("../middlewares/admin.auth.js")
 const upload = require("../config/multerConfig.js")
 
-// 
+// Authentication
 router.get("/login",adminAuth.isLogged,adminLoginController.getAdminLogin)
 router.post("/login",adminLoginController.adminLogin)
 router.get("/logout",adminLoginController.logoutAdmin)
@@ -57,7 +57,6 @@ router.get("/orders",adminAuth.checkSession,orderManagementController.getOrders)
 router.post("/orders",searchController.searchOrders)
 router.get("/orders/:id",adminAuth.checkSession,orderManagementController.getOrderDetailPage)
 router.patch("/orders/:id/update-status",orderManagementController.updateStatus)
-router.patch("/orders/:id/update-item-status",orderManagementController.updateItemStatus)
 router.patch("/orders/update-product-stock",orderManagementController.updateProductStock)
 
 

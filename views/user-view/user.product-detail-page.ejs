@@ -187,7 +187,7 @@
           </div>
         <div class="flex items-center gap-3 mt-4">
           <% if (product.variants[variant].stockQuantity !== 0 || product.variants[variant].stockStatus !== "Out of Stock") { %>
-            <%= isProductInCart %>
+        
             <% if (isProductInCart && !product.variants[variant].isBlocked && !product.categoryId.isDeleted && !product.brandId.isDeleted) { %>
               <div id="incDecQtyDiv" class="flex items-center mt-2">
                 <button id="decQtyBtn" type="button" class="text-center rounded-full px-2 py-2 crop-btn mr-1 " onclick="decrementQuantityFromProductPage('<%- variant %>','<%- product._id %>')">

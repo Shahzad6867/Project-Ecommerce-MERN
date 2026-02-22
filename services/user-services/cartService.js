@@ -31,6 +31,12 @@ const getWishlistItemsCount = async (userId) => {
 const addItemToCart = async (userId,productId,variant,quantity) => {
     await Wishlist.findOneAndDelete({userId : userId,productId : productId,variant : variant})
     const product = await getProduct(productId)
+    const isProductInCart = await Cart.findOne({userId : new mongoose.Types.ObjectId(userId),productId : productId,variant : variant})
+    if(isProductInCart !== null){
+        isProductInCart.quantity += 1
+        await isProductInCart.save()
+         return {message : "Done",product,isProductInCart}
+    }
     let stock = product.variants[variant].stockQuantity 
     if(!product.isDeleted){
         if(stock === 0 || product.variants[variant].stockStatus === "Out of Stock"){

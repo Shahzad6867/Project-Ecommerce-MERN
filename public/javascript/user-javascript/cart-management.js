@@ -231,7 +231,7 @@
     }
     function deleteItemFromCart(cartId,productId,variantIndex) {
         let quantity = document.getElementById(`quantity${productId}${variantIndex}`)
-        let price = Number(document.getElementById(`price${productId}${variantIndex}`).innerText)
+        let price = (document.getElementById("isInCartPage")?.value !== "Yes") ? Number(document.getElementById(`price${productId}${variantIndex}`).innerText) : Number(document.getElementById(`price${cartId}${variantIndex}`).innerText)
         let addToCartBtn = document.getElementById(`addToCartBtn${productId}${variantIndex}`)
         let cartItemQtyToBeUpdated = document.getElementById(`cartItemQty${productId}${variantIndex}`)
         let myCartHead = document.getElementById("cartHeadItemCount")
@@ -241,6 +241,7 @@
         fetch(`/cart/delete-cart-item?cartItemId=${cartId}&productId=${productId}`,{method : "DELETE"})
                 .then(res => res.json())
                 .then(data => {
+                    if(document.getElementById("isInCartPage")?.value !== "Yes"){
                     if(document.getElementById("isInProductPage")?.value === "Yes"){
                         addToCartBtn.classList.remove("hidden")
                         document.getElementById(`incDecQtyDiv`).classList.add("hidden")
@@ -251,11 +252,20 @@
                         addToCartBtn.classList.remove("w-[0%]")
                         document.getElementById(`incDecQtyDiv${productId}${variantIndex}`).classList.add("hidden")
                     }
-                    
-                myCartHead.innerText = Number(myCartHead.innerText) - Number(quantity.value)
-                cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - Number(quantity.value)
+                    myCartHead.innerText = Number(myCartHead.innerText) - Number(quantity.value)
+                    cartItemQtyNotifier.innerText = Number(cartItemQtyNotifier.innerText) - Number(quantity.value)
+                    subTotal.innerText = Math.round((Number(subTotal.innerText) -  (Number(quantity.value) * price) ) * 100) / 100
+                    iziToast.info({
+                        title: "Cart",
+                        message: data.message,
+                        position : "topRight"
+                    });
+                }else{
+                   quantity = document.getElementById(`quantity${cartId}`)
+                   deleteItemInCartFromCart(cartId,productId,variantIndex)
+                }
+              
                 quantity.value = 1
-                subTotal.innerText = Math.round((Number(subTotal.innerText) -  (Number(quantity.value) * price) ) * 100) / 100
                 cartItem.remove()
                 if(document.getElementById("cartItemsDiv").children.length === 0){
                     document.getElementById("cartItemsDiv").innerHTML = `<div id="nothingInCartCard" class="flex  items-center justify-center border border-gray-400 w-[96%] text-left px-3 py-8 text-gray-700  rounded-lg m-2">
@@ -263,13 +273,10 @@
                                                                         Your cart is empty. Start shopping!
                                                                     </h1>
                                                                 </div>`
+                    document.getElementById("checkoutBtn").disabled = true
                 }
                 feather.replace()
-                iziToast.info({
-                    title: "Cart",
-                    message: data.message,
-                    position : "topRight"
-                });
+                
                 })
     }
 

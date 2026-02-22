@@ -66,7 +66,6 @@ const getOrdersCount = async (status) => {
     }
     pipeline.push({$count : "ordersCount"})
     let count = await Order.aggregate(pipeline)
-    console.log(count)
     return count[0]?.ordersCount
 }
 
@@ -335,10 +334,7 @@ const updateOrderStatus = async (order,status,itemIndex,declineReason) => {
     await order.save()
 }
 
-const updateOrderItemStatus = async (order,status,itemIndex) => {
 
-    
-}
 
 const updateProductStock = async (order,itemIndex,productVariant,quantity) => {
     const product = await Product.findOne({_id : order.items[itemIndex].productId })
@@ -353,7 +349,6 @@ module.exports = {
     getOrdersCount,
     getOrder,
     updateOrderStatus,
-    updateOrderItemStatus,
     updateProductStock,
     generateAndUploadInvoice
 }

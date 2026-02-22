@@ -103,7 +103,6 @@ const getProducts = async (req,res) => {
       const variantEntries = Object.keys(variants).map(async (index) => {
         
         const variant = variants[index];
-        console.log(product.variants[index])
         const filesOfVariant = req.files.filter(
          
           (file) => file.fieldname === `variants[${index}][productImages]`

@@ -4,8 +4,23 @@
 <%- include("../partials/admin-side/navbar.ejs") %>
 <!-- Sidebar -->
    <div class="main-content">
-    <div id="updationOverlay" class="absolute flex justify-center  w-full h-[150vh] opacity-50 z-[99] top-[4rem] left-0 bg-black hidden">
-        <h1 class="text-white text-5xl mt-[20rem]">Updating ...</h1>
+    <div id="updationOverlay"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    
+                <div class="bg-white rounded-xl shadow-lg px-8 py-6 my-[20rem] flex flex-col w-[20rem] mx-auto items-center">
+    
+                        <p class="text-lg font-medium text-gray-800 mb-3">
+                            Updating Status
+                        </p>
+    
+                        <div class="flex space-x-2">
+                            <span class="dot bg-green-500"></span>
+                            <span class="dot bg-green-500"></span>
+                            <span class="dot bg-green-500"></span>
+                        </div>
+    
+                </div>
+    
     </div>
     </div>
         <div class="w-full px-10 ">
@@ -155,6 +170,12 @@
                                         <span class="text-gray-600">Subtotal (<%= sumOfQuantity %> items)</span>
                                         <span class="font-medium">$<%= (order.subTotal).toFixed(2) %></span>
                                     </div>
+                                    <% if (order.discount !== null) { %>
+                                        <div class="flex justify-between py-2">
+                                            <span class="text-gray-600">Discount</span>
+                                            <span class="font-medium">- $<%= (order.discount).toFixed(2) %></span>
+                                        </div>
+                                    <% } %>
                                     <div class="flex justify-between py-2">
                                         <span class="text-gray-600">Shipping</span>
                                         <span class="font-medium">$<%= (order.shipping).toFixed(2) %></span>
@@ -163,12 +184,7 @@
                                         <span class="text-gray-600">Tax</span>
                                         <span class="font-medium">$<%= (order.tax).toFixed(2) %></span>
                                     </div>
-                                    <% if (order.discount !== null) { %>
-                                        <div class="flex justify-between py-2">
-                                            <span class="text-gray-600">Discount</span>
-                                            <span class="font-medium">- $<%= (order.discount).toFixed(2) %></span>
-                                        </div>
-                                    <% } %>
+                                    
                                     <div class="flex justify-between py-2 font-bold text-lg border-t border-gray-200 mt-2">
                                         <span>Total</span>
                                         <span>$<%= (order.grandTotal).toFixed(2) %></span>

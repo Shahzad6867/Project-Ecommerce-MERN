@@ -8,7 +8,7 @@ const getSalesReport = async (req, res) => {
     try {
     const {today,fromDate,toDate} = reportsService.computeFromAndToDate(req.query.fromDate,req.query.toDate)
     let reportBasedOn = req.query.reportBasedOn || "today"
-    const perPage = 5
+    const perPage = 1
     const productWisePage  = req.query.productWisePage || 1
     const orderWisePage  = req.query.orderWisePage || 1
     const skipForProduct = (perPage * productWisePage) - perPage

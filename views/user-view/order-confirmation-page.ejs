@@ -48,6 +48,12 @@
                         <span class="text-gray-600">Subtotal</span>
                         <span class="font-medium">$<%= (confirmedOrder.subTotal).toFixed(2) %></span>
                     </div>
+                    <% if (confirmedOrder.discount !== null) { %>
+                        <div class="flex justify-between py-2">
+                            <span class="text-gray-600">Discount</span>
+                            <span class="font-medium">- $<%= (confirmedOrder.discount).toFixed(2) %></span>
+                        </div>
+                    <% } %>
                     <div class="flex justify-between py-2">
                         <span class="text-gray-600">Shipping</span>
                         <span class="font-medium">$<%= (confirmedOrder.shipping).toFixed(2) %></span>
@@ -56,12 +62,7 @@
                         <span class="text-gray-600">Tax</span>
                         <span class="font-medium">$<%= (confirmedOrder.tax).toFixed(2) %></span>
                     </div>
-                    <% if (confirmedOrder.discount !== null) { %>
-                        <div class="flex justify-between py-2">
-                            <span class="text-gray-600">Discount</span>
-                            <span class="font-medium">- $<%= (confirmedOrder.discount).toFixed(2) %></span>
-                        </div>
-                    <% } %>
+                   
                     <div class="flex justify-between py-2 font-bold text-lg">
                         <span>Total</span>
                         <span>$<%= (confirmedOrder.grandTotal).toFixed(2) %></span>

@@ -14,6 +14,8 @@ const mongoose = require("mongoose");
 const cloudinary = require("../../config/cloudinaryConfig.js")
 const stripe = require("../../config/stripeConfig.js")
 require("dotenv").config()
+const fs = require("fs")
+const path = require("path")
 const orderService = require("../../services/user-services/orderService.js")
 const adminOrderService = require("../../services/admin-services/ordersService.js")
 
@@ -165,7 +167,7 @@ const placeOrder = async (req,res) => {
                     price_data : {
                         currency : "usd",
                         product_data : {name : productName},
-                        unit_amount : (Math.round(offerPrice * 100) / 100) * 100,
+                        unit_amount : Math.round(Number(offerPrice.toFixed(2)) * 100),
                     },
                     quantity : quantity,
                     tax_rates : ["txr_1SvBzlBUciUB3yZurNMc9lzT"]
@@ -187,6 +189,7 @@ const placeOrder = async (req,res) => {
     }
     let discountAmount = 0
     let stripeCoupon = null
+    let userUsedCoupon = null
     if(JSON.parse(req.body.isCouponApplied) === true){
         if (cartItems[0]?.couponApplied !== null &&  subTotal >= cartItems[0]?.couponApplied.minAmount ) { 
             if(cartItems[0]?.couponApplied.endDate >= now){
@@ -201,11 +204,11 @@ const placeOrder = async (req,res) => {
                 if(cartItems[0].couponApplied.name === "REFERRALCOUPON"){
                     await Coupon.deleteOne({_id : cartItems[0].couponApplied._id})
                 }else{
-                    let userUsedCoupon = new usedCoupon({
+                     userUsedCoupon = new usedCoupon({
                         couponId : cartItems[0].couponApplied._id,
                         userId : user._id
                     })
-                    await userUsedCoupon.save()
+                    
                 }
             }else{
                 if(cartItems[0].couponApplied.name === "REFERRALCOUPON"){
@@ -220,7 +223,7 @@ const placeOrder = async (req,res) => {
 
             if(req.body.paymentMethod === "Pay with Stripe"){
                 stripeCoupon = await stripe.coupons.create({
-                    amount_off : (Math.round(discountAmount * 100) / 100) * 100,
+                    amount_off : Math.round(Number(discountAmount.toFixed(2)) * 100),
                     duration : "once",
                     currency : "usd",
                     name : cartItems[0]?.couponApplied.name
@@ -275,6 +278,9 @@ const placeOrder = async (req,res) => {
         status : "Pending",
         relatedTo : "Order"
     })
+    if(userUsedCoupon !== null){
+        await userUsedCoupon.save()
+    }
     let savedPayment = await payment.save()
     confirmedOrder.paymentId = savedPayment._id
     await confirmedOrder.save()
@@ -927,6 +933,7 @@ const returnOrder = async(req,res) => {
         folder : "return-order-proofs",
         resource_type : "image"
       })
+      fs.unlinkSync(path.resolve(req.file.path))
     for(let i = 0 ; i < order.items.length ; i++){
         if(order.items[i].isCancelled === false && order.items[i].return.isRequested === false){
          order.items[i].status = "Return Requested"
@@ -958,6 +965,7 @@ const returnItem = async (req,res) => {
         folder : "return-order-proofs",
         resource_type : "image"
       })
+      fs.unlinkSync(path.resolve(req.file.path))
     order.items[itemIndex].status = "Return Requested"
     order.items[itemIndex].return.isRequested = true
     order.items[itemIndex].return.reason = req.body.returnReason
