@@ -205,10 +205,14 @@
             <% } %>
         
        </a>
-       <% let lowerBound = (Math.floor(page / 10) * 10) + 1 %>
-       <% let upperBound = lowerBound + 9 %>
+       <% let lowerBound = 0%>
+       <% let upperBound = 0 %>
+       <% let displayedPages = 0 %>
+      <% if (pages > 0) { %>
+        <% lowerBound = (Math.floor(page / 10) * 10) + 1 %>
+       <% upperBound = lowerBound + 9 %>
        <% lowerBound = (lowerBound > pages && pages > 0) ? pages - 9 : lowerBound %>
-       <% let displayedPages = (upperBound > pages) ? pages : upperBound %>
+       <% displayedPages = (upperBound > pages) ? pages : upperBound %>
         <% for(let i = lowerBound ; i <= displayedPages; i++ ) { %>
         <a href="/admin/orders?status=<%= status %>&page=<%= i %>">
           <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
@@ -216,6 +220,7 @@
           </button>
         </a>
         <% } %>
+      <% } %>
         <a href="/admin/orders?status=<%= status %>&page=<%= Number(page) < pages ? Number(page) + 1 : pages %>">
           <% if (Number(page) === pages) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
