@@ -405,9 +405,9 @@ const cancelOrder = async (req, res) => {
         const nonCancelledItems = order.items.filter(
           (item) => !item.isCancelled
         );
-        const taxPerItem = order.tax / nonCancelledItems.length;
-        const shippingPerItem = order.shipping / nonCancelledItems.length;
-        amount = Number((amount + taxPerItem + shippingPerItem).toFixed(2));
+        const taxPerItem = Number((order.tax / nonCancelledItems.length).toFixed(2));
+        const shippingPerItem = Number((order.shipping / nonCancelledItems.length).toFixed(2))
+        amount = Number((Math.round((amount + taxPerItem + shippingPerItem) * 100) / 100).toFixed(2));
         sumOfAmounts += amount;
         order.items[i].refundOnCancelled = {
           refundId: null,
@@ -442,7 +442,7 @@ const cancelOrder = async (req, res) => {
       payment.amountToBeRefunded += sumOfAmounts;
       let refund = await stripe.refunds.create({
         payment_intent: payment.paymentIntentId,
-        amount: Math.round(sumOfAmounts * 100),
+        amount: Math.floor(sumOfAmounts * 100),
         reason: "requested_by_customer",
       });
       order.items.forEach((item) => {
