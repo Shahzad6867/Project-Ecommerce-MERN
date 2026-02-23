@@ -5,22 +5,6 @@
  
             <div class="flex justify-between items-center mb-8">
                 <h1 class="text-3xl font-bold">My Orders</h1>
-                <div class="flex items-center">
-                    <div class="relative mr-4">
-                        <select class="border border-gray-300 rounded-md px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-green-500">
-                            <option>All Orders</option>
-                            <option>Processing</option>
-                            <option>Shipped</option>
-                            <option>Delivered</option>
-                            <option>Cancelled</option>
-                        </select>
-                        
-                    </div>
-                    <div class="relative">
-                        <input type="text" placeholder="Search orders..." class="border border-gray-300 rounded-md px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-green-500">
-                        <i data-feather="search" class="absolute left-3 top-2 text-gray-500"></i>
-                    </div>
-                </div>
             </div>
             <% if (orders.length > 0) { %>
                 <div class="space-y-6">
@@ -159,10 +143,11 @@
                               
 
                               <% if ((orders[i].paymentId.status === "Pending" || orders[i].paymentId.status === "Payment Failed") && orders[i].paymentId.paymentMethod === "Pay with Stripe" && !orders[i].isCancelled) { %>
-                                <a href="/orders/<%= orders[i]._id %>/pending-payment"
-                                  class="px-4 py-2 bg-yellow-400 text-gray-700 hover:bg-yellow-300 rounded-md font-bold flex items-center">
-                                  <i data-feather="credit-card" class="w-4 h-4 mr-2"></i>
-                                  Complete Payment
+                                <a href="/orders/<%= orders[i]._id %>/pending-payment">
+                                  <button type="button" class="px-4 py-2 bg-yellow-400 text-gray-700 hover:bg-yellow-300 rounded-md font-bold flex items-center" onclick="openProcessingRequestOverlay()">
+                                    <i data-feather="credit-card" class="w-4 h-4 mr-2"></i>
+                                       Complete Payment
+                                  </button>
                                 </a>
                               <% } %>
                               
@@ -187,4 +172,30 @@
             <% } %>
        </div>
     </div>
+    <div id="processingRequestOverlay"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    
+                <div class="bg-white rounded-xl shadow-lg px-8 py-6 my-[20rem] flex flex-col w-[30rem] mx-auto items-center">
+    
+                        <p class="text-lg font-semibold text-gray-800 mb-3">
+                            Processing your Request. Please wait...
+                        </p>
+                        <p class="text-sm font-semibold text-gray-500 mb-3">
+                            Do not refresh or close this page
+                        </p>
+    
+                        <div class="flex space-x-2">
+                            <span class="dot bg-green-500"></span>
+                            <span class="dot bg-green-500"></span>
+                            <span class="dot bg-green-500"></span>
+                        </div>
+    
+                </div>
+    
+    </div>
+    <script>
+      function openProcessingRequestOverlay(){
+        document.getElementById("processingRequestOverlay").classList.remove("hidden")
+      }
+    </script>
     <%- include("../partials/user-side/footer.ejs")%>

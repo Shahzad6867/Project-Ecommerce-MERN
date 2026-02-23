@@ -1,133 +1,153 @@
 <script>
-const input = document.querySelector("#phoneNumber");
-let iti = window.intlTelInput(input, {
-  utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js", // for formatting and validation
-  initialCountry: "auto", // or a specific country code like "us"
-  geoIpLookup: function(callback) { // optional: lookup user's country based on IP
-    fetch("https://ipapi.co/json")
-      .then(res => res.json())
-      .then(data => {
-        countryCode = data.country_calling_code
-      return callback(data.country_code)
-      })
-      .catch(() => callback("us")); // default to US on error
-  },
-});
+  const input = document.querySelector("#phoneNumber");
+  let iti = window.intlTelInput(input, {
+    utilsScript:
+      "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js", // for formatting and validation
+    initialCountry: "auto", // or a specific country code like "us"
+    geoIpLookup: function (callback) {
+      // optional: lookup user's country based on IP
+      fetch("https://ipapi.co/json")
+        .then((res) => res.json())
+        .then((data) => {
+          countryCode = data.country_calling_code;
+          return callback(data.country_code);
+        })
+        .catch(() => callback("us")); // default to US on error
+    },
+  });
 
+  feather.replace();
 
-
-feather.replace();
-
-function doesTheCountryHavePincode(country){
+  function doesTheCountryHavePincode(country) {
     const noPostalCodeCountries = ["AE", "HK", "MO", "QA", "OM", "SA"];
-    const pincode = document.getElementById("pincode")
-    if(noPostalCodeCountries.includes(country)){
-       pincode.value = "Not Applicable"
-        pincode.disabled = true
-        iti.setCountry(country)
-    }else{
-        pincode.disabled = false
-       pincode.value = ""
-       iti.setCountry(country)
+    const pincode = document.getElementById("pincode");
+    if (noPostalCodeCountries.includes(country)) {
+      pincode.value = "Not Applicable";
+      pincode.disabled = true;
+      iti.setCountry(country);
+    } else {
+      pincode.disabled = false;
+      pincode.value = "";
+      iti.setCountry(country);
     }
+  }
 
-}
+  function openAddAddressModal() {
+    document.getElementById("addAddressModal").classList.remove("hidden");
+    document.getElementById("accountName").classList.remove("hidden");
+    document.getElementById("forAccountName").classList.remove("hidden");
+    document.getElementById("defaultAddress").classList.remove("hidden");
+    document.getElementById("forDefaultAddress").classList.remove("hidden");
+    document.getElementById(`firstName`).value = "";
+    document.getElementById(`lastName`).value = "";
+    document.getElementById(`countryList`).value = "";
+    document.getElementById(`state`).value = "";
+    document.getElementById(`address`).value = "";
+    document.getElementById(`pincode`).value = "";
+    document.getElementById(`pincode`).disabled = false;
+    document.getElementById(`city`).value = "";
+    document.getElementById(`phoneNumber`).value = "";
 
-function openAddAddressModal() {
-   document.getElementById('addAddressModal').classList.remove('hidden');
-   document.getElementById("accountName").classList.remove("hidden")
-   document.getElementById("forAccountName").classList.remove("hidden")
-   document.getElementById("defaultAddress").classList.remove("hidden")
-   document.getElementById("forDefaultAddress").classList.remove("hidden")
-   document.getElementById(`firstName`).value = ""
-   document.getElementById(`lastName`).value = ""
-   document.getElementById(`countryList`).value = ""
-   document.getElementById(`state`).value = ""
-   document.getElementById(`address`).value = ""
-   document.getElementById(`pincode`).value = ""
-   document.getElementById(`pincode`).disabled = false
-   document.getElementById(`city`).value = ""
-   document.getElementById(`phoneNumber`).value = ""
-   
-   document.getElementById("addressFormHeading").innerText = "Add New Address"
-   document.querySelector('#addAddressModal form').action = "/address"
-}
+    document.getElementById("addressFormHeading").innerText = "Add New Address";
+    document.querySelector("#addAddressModal form").action = "/address";
+  }
 
-function closeAddAddressModal() {
-    document.getElementById('addAddressModal').classList.add('hidden');
-}
+  function closeAddAddressModal() {
+    document.getElementById("addAddressModal").classList.add("hidden");
+  }
 
-function editAddress(index,id){
-    document.querySelector('#addAddressModal form').action = `/address/edit-address?id=${id}`
+  function editAddress(index, id) {
+    document.querySelector(
+      "#addAddressModal form"
+    ).action = `/address/edit-address?id=${id}`;
     const noPostalCodeCountries = ["AE", "HK", "MO", "QA", "OM", "SA"];
 
-   let editFirstName = document.getElementById(`firstName${index}`).innerText.trim()
-   let editLastName = document.getElementById(`lastName${index}`).innerText.trim()
-   let editCountry = document.getElementById(`country${index}`).innerText.trim()
-   let editState = document.getElementById(`state${index}`).innerText.trim()
-   let editAddress = document.getElementById(`address${index}`).innerText.trim()
-   let editPincode = document.getElementById(`pincode${index}`).innerText.trim()
-   let editMobileNo = document.getElementById(`mobileNo${index}`).innerText.trim()
-   let editCity = document.getElementById(`city${index}`).innerText.trim()
-   
+    let editFirstName = document
+      .getElementById(`firstName${index}`)
+      .innerText.trim();
+    let editLastName = document
+      .getElementById(`lastName${index}`)
+      .innerText.trim();
+    let editCountry = document
+      .getElementById(`country${index}`)
+      .innerText.trim();
+    let editState = document.getElementById(`state${index}`).innerText.trim();
+    let editAddress = document
+      .getElementById(`address${index}`)
+      .innerText.trim();
+    let editPincode = document
+      .getElementById(`pincode${index}`)
+      .innerText.trim();
+    let editMobileNo = document
+      .getElementById(`mobileNo${index}`)
+      .innerText.trim();
+    let editCity = document.getElementById(`city${index}`).innerText.trim();
 
-   document.getElementById("accountName").classList.add("hidden")
-   document.getElementById("forAccountName").classList.add("hidden")
-   document.getElementById("defaultAddress").classList.add("hidden")
-   document.getElementById("forDefaultAddress").classList.add("hidden")
-   document.getElementById("addressFormHeading").innerText = "Edit Address"
-   let editAddressModal = document.getElementById("addAddressModal")
-   editAddressModal.classList.remove("hidden")
-   iti.setNumber(editMobileNo)
+    document.getElementById("accountName").classList.add("hidden");
+    document.getElementById("forAccountName").classList.add("hidden");
+    document.getElementById("defaultAddress").classList.add("hidden");
+    document.getElementById("forDefaultAddress").classList.add("hidden");
+    document.getElementById("addressFormHeading").innerText = "Edit Address";
+    let editAddressModal = document.getElementById("addAddressModal");
+    editAddressModal.classList.remove("hidden");
+    iti.setNumber(editMobileNo);
 
+    document.getElementById(`firstName`).value = editFirstName;
+    document.getElementById(`lastName`).value = editLastName;
+    document.getElementById(`countryList`).value = editCountry;
+    document.getElementById(`state`).value = editState;
+    document.getElementById(`address`).value = editAddress;
+    document.getElementById(`pincode`).value = editPincode;
+    document.getElementById(`phoneNumber`).value = editMobileNo;
+    document.getElementById(`city`).value = editCity;
+    if (noPostalCodeCountries.includes(editCountry)) {
+      document.getElementById("pincode").disabled = true;
+    }
+    document.getElementById("editIndex").value = index;
+  }
 
-   document.getElementById(`firstName`).value = editFirstName
-   document.getElementById(`lastName`).value = editLastName
-   document.getElementById(`countryList`).value = editCountry 
-   document.getElementById(`state`).value = editState
-   document.getElementById(`address`).value = editAddress
-   document.getElementById(`pincode`).value = editPincode
-   document.getElementById(`phoneNumber`).value = editMobileNo
-   document.getElementById(`city`).value = editCity
-   if (noPostalCodeCountries.includes(editCountry)) {
-    document.getElementById('pincode').disabled = true
-   }
-   document.getElementById("editIndex").value = index
-}
-
-function deleteAddress(addressId,userId){
+  function deleteAddress(addressId, userId) {
     iziToast.question({
-        theme : "light",
-        title : "Delete Address",
-        message : "Are you sure you want to delete the Address ?",
-        position : "topCenter",
-        overlay : true,
-        close : false,
-        id : "deleteAddress",
-        zindex : 9999,
-        timeout : 30000,
-        backgroundColor : "white", 
-        buttons : [
-            ["<button>OK</button>",function(instance,toast){
-                instance.hide({transitionOut : "fadeOut"},toast,'button')
+      theme: "light",
+      title: "Delete Address",
+      message: "Are you sure you want to delete the Address ?",
+      position: "topCenter",
+      overlay: true,
+      close: false,
+      id: "deleteAddress",
+      zindex: 9999,
+      timeout: 30000,
+      backgroundColor: "white",
+      buttons: [
+        [
+          "<button>OK</button>",
+          function (instance, toast) {
+            instance.hide({ transitionOut: "fadeOut" }, toast, "button");
 
-                fetch(`/address/delete-address?id=${addressId}&userId=${userId}`,{method : "DELETE"})
-                .then(res => window.location.href = "/address" )
-                .catch(error => iziToast.error({
-                    title : error.name ,
-                    message : error.message,
-                    position : "topRight"
-                }))
-
-            }],
-            ["<button>Cancel</button>",function(instance,toast){
-                instance.hide({transitionOut : "fadeOut"},toast,'button')
-                console.log("Deletion Cancelled")
-            }]
-        ]
-    })
-}
-function changeDefaultAddress(addressId,index){
+            fetch(`/address/delete-address?id=${addressId}&userId=${userId}`, {
+              method: "DELETE",
+            })
+              .then((res) => (window.location.href = "/address"))
+              .catch((error) =>
+                iziToast.error({
+                  title: error.name,
+                  message: error.message,
+                  position: "topRight",
+                })
+              );
+          },
+        ],
+        [
+          "<button>Cancel</button>",
+          function (instance, toast) {
+            instance.hide({ transitionOut: "fadeOut" }, toast, "button");
+            console.log("Deletion Cancelled");
+          },
+        ],
+      ],
+    });
+  }
+  function changeDefaultAddress(addressId, index) {
     // if(redirect === "/checkout"){
     //     iziToast.question({
     //     theme : "light",
@@ -139,7 +159,7 @@ function changeDefaultAddress(addressId,index){
     //     id : "deleteAddress",
     //     zindex : 9999,
     //     timeout : 30000,
-    //     backgroundColor : "white", 
+    //     backgroundColor : "white",
     //     buttons : [
     //         ["<button>OK</button>",function(instance,toast){
     //             instance.hide({transitionOut : "fadeOut"},toast,'button')
@@ -161,435 +181,611 @@ function changeDefaultAddress(addressId,index){
     // })
     // }else{
     iziToast.question({
-        theme : "light",
-        title : "Update Default Address",
-        message : "Are you sure you want to set this address as your Default Address?",
-        position : "topCenter",
-        overlay : true,
-        close : false,
-        id : "deleteAddress",
-        zindex : 9999,
-        timeout : 30000,
-        backgroundColor : "white", 
-        buttons : [
-            ["<button>OK</button>",function(instance,toast){
-                instance.hide({transitionOut : "fadeOut"},toast,'button')
+      theme: "light",
+      title: "Update Default Address",
+      message:
+        "Are you sure you want to set this address as your Default Address?",
+      position: "topCenter",
+      overlay: true,
+      close: false,
+      id: "deleteAddress",
+      zindex: 9999,
+      timeout: 30000,
+      backgroundColor: "white",
+      buttons: [
+        [
+          "<button>OK</button>",
+          function (instance, toast) {
+            instance.hide({ transitionOut: "fadeOut" }, toast, "button");
 
-                fetch(`/address/reset-default-address?id=${addressId}`,{method : "PATCH"})
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById(`firstName0`).innerText = ` ${data.address.firstName}`
-                    document.getElementById(`lastName0`).innerText = ` ${data.address.lastName}`
-                    document.getElementById(`country0`).innerText = ` ${data.address.country}`
-                    document.getElementById(`state0`).innerText = ` ${data.address.state}`
-                    document.getElementById(`address0`).innerText = ` ${data.address.address}`
-                    document.getElementById(`pincode0`).innerText = ` ${data.address.pincode}`
-                    document.getElementById(`mobileNo0`).innerText = ` ${data.address.mobileNo}`
-                    document.getElementById(`city0`).innerText = ` ${data.address.city}`
-                    document.getElementById(`editBtn0`).onclick = function () {
-                        editAddress(0,data.address._id)
-                    }
-                    
-                    document.getElementById(`firstName${index}`).innerText = ` ${data.oldDefaultAddress.firstName}`
-                    document.getElementById(`lastName${index}`).innerText = ` ${data.oldDefaultAddress.lastName}`
-                    document.getElementById(`country${index}`).innerText = ` ${data.oldDefaultAddress.country}`
-                    document.getElementById(`state${index}`).innerText = ` ${data.oldDefaultAddress.state}`
-                    document.getElementById(`address${index}`).innerText = ` ${data.oldDefaultAddress.address}`
-                    document.getElementById(`pincode${index}`).innerText = ` ${data.oldDefaultAddress.pincode}`
-                    document.getElementById(`mobileNo${index}`).innerText = ` ${data.oldDefaultAddress.mobileNo}`
-                    document.getElementById(`city${index}`).innerText = ` ${data.oldDefaultAddress.city}`
-                    document.getElementById(`editBtn${index}`).onclick = function () {
-                        editAddress(index,data.oldDefaultAddress._id)
-                    }
-                    if(document.getElementById("reqFromCheckout")){
-                        document.getElementById("addressId").value = data.address._id
-                        document.getElementById(`shippingFirstName0`).innerText = ` ${data.address.firstName}`
-                        document.getElementById(`shippingLastName0`).innerText = ` ${data.address.lastName}`
-                        document.getElementById(`shippingCountry0`).innerText = ` ${data.address.country}`
-                        document.getElementById(`shippingState0`).innerText = ` ${data.address.state}`
-                        document.getElementById(`shippingAddress0`).innerText = ` ${data.address.address}`
-                        document.getElementById(`shippingPincode0`).innerText = ` ${data.address.pincode}`
-                        document.getElementById(`shippingMobileNo0`).innerText = ` ${data.address.mobileNo}`
-                        document.getElementById(`shippingCity0`).innerText = ` ${data.address.city}`
-                    }
-                    document.getElementById(`resetDefaultAddressBtn${index}`).onclick = function () {
-                        changeDefaultAddress(data.oldDefaultAddress._id,index)
-                    }
-                    if(!document.getElementById("reqFromCheckout")){
-                        document.getElementById(`deleteBtn${index}`).onclick = function () {
-                        deleteAddress(data.address._id,data.address.userId)
-                        }
-                        document.getElementById(`deleteBtn0`).onclick = function () {
-                            deleteAddress(data.address._id,data.address.userId)
-                        }
-                    }
-                    
-
-                    iziToast.success({
-                    title : "Address" ,
-                    message : data.message,
-                    position : "topRight"
-                      })
-
-                })
-                .catch(error => console.error(error.message))
-                
-
-            }],
-            ["<button>Cancel</button>",function(instance,toast){
-                instance.hide({transitionOut : "fadeOut"},toast,'button')
-                console.log("Deletion Cancelled")
-            }]
-        ]
-    })
- 
-}
-
-document.getElementById("accountName").addEventListener("click", function() {
-    let useSameName = document.getElementById("accountName")
-    let firstName = '<%- user.firstName %>'
-    let lastName = '<%- user.lastName %>'
-    if(useSameName.checked === true){
-        document.getElementById("firstName").value = firstName
-        document.getElementById("lastName").value = lastName
-    }else{
-        document.getElementById("firstName").value = ""
-        document.getElementById("lastName").value = ""
-    }
-})
-
-// Form submission would go here
-document.querySelector('#addAddressModal form').addEventListener('submit',function (e){
-const firstName = document.getElementById("firstName").value.trim()
-const lastName = document.getElementById("lastName").value.trim()
-const city = document.getElementById("city").value.trim()
-const state = document.getElementById("state").value.trim()
-const country = document.getElementById("countryList").value
-const pincode = document.getElementById("pincode").value.trim()
-const mobileNo = document.getElementById("phoneNumber")
-const address = document.getElementById("address").value.trim()
-const defaultAddress = document.getElementById("defaultAddress")
-
-
-    const nameRegex =/^[A-Za-z]+(?:[ '-][A-Za-z]+)*(?:\d{0,5})?$/
-    const addressRegex = /^[A-Za-z0-9 ,./-]{5,}$/
-    const noPostalCodeCountries = ["AE", "HK", "MO", "QA", "OM", "SA"];
-
-    if(!nameRegex.test(firstName)){
-        iziToast.error({
-            title : "Error",
-            message : "Please enter a valid First Name",
-            position : "topRight"
-        })
-        e.preventDefault()
-        return 
-    }
-
-    if(!nameRegex.test(lastName)){
-        iziToast.error({
-            title : "Error",
-            message : "Please enter a valid Last Name",
-            position : "topRight"
-        })
-        e.preventDefault()
-        return 
-    }
-
-    if(!nameRegex.test(city)){
-        iziToast.error({
-            title : "Error",
-            message : "Please enter a valid City Name",
-            position : "topRight"
-        })
-        e.preventDefault()
-        return 
-    }
-
-    if(!nameRegex.test(state)){
-        iziToast.error({
-            title : "Error",
-            message : "Please enter a valid State",
-            position : "topRight"
-        })
-        e.preventDefault()
-        return 
-    }
-    if(country === ""){
-        iziToast.error({
-            title : "Error",
-            message : "Please select a Country",
-            position : "topRight"
-        })
-        e.preventDefault()
-        return 
-    }
-
-    if(!noPostalCodeCountries.includes(country)){
-        if(pincode === ""){
-            iziToast.error({
-            title : "Error",
-            message : "Please enter a valid Pincode",
-            position : "topRight"
-        })
-        e.preventDefault()
-        return 
-        }else if(!validator.isPostalCode(pincode,country)){
-            iziToast.error({
-            title : "Error",
-            message : "Invalid Pincode for the selected Country",
-            position : "topRight"
-        })
-        e.preventDefault()
-        return 
-        }
-    }
-
-    
-    if(!addressRegex.test(address)){
-        iziToast.error({
-            title : "Error",
-            message : "Please enter a valid Address",
-            position : "topRight"
-        })
-        e.preventDefault()
-        return 
-    }
-
-    if(defaultAddress.checked){
-        defaultAddress.value = true
-    }else{
-        defaultAddress.checked
-        defaultAddress.value = false
-    }
-
-    if(mobileNo.value === ""){
-        e.preventDefault()
-        iziToast.error({
-            title : "Error",
-            message : "Please enter a Mobile Number",
-            position : "topRight"
-        })
-        return
-    }
-    if(!iti.isValidNumber(mobileNo.value)){
-        e.preventDefault()
-        iziToast.error({
-            title : "Error",
-            message : "Please enter a Valid Mobile Number",
-            position : "topRight"
-        })
-        return
-    }
-    
-    mobileNo.value = iti.getNumber()
-    document.getElementById("pincode").disabled = false
-
-    const form = document.getElementById("addAddressForm")
-    const formData = new FormData(form)
-    const data = Object.fromEntries(formData.entries())
-    e.preventDefault()
-    fetch(`${form.action}`,{
-        method : (form.action === "http://localhost:1348/address") ? "POST" : "PUT",
-        headers : {'Content-Type' : "application/json"},
-        body : JSON.stringify(data)
-    })
-    .then(res => res.json())
-    .then(data => {
-        const addressesDiv = document.getElementById("addressessDiv")
-        let addressCard = null
-        if(form.action === "http://localhost:1348/address"){
-            if(data.address.isDefault){
-                document.getElementById(`firstName0`).innerText = ` ${data.address.firstName}`
-                document.getElementById(`lastName0`).innerText = ` ${data.address.lastName}`
-                document.getElementById(`country0`).innerText = ` ${data.address.country}`
-                document.getElementById(`state0`).innerText = ` ${data.address.state}`
-                document.getElementById(`address0`).innerText = ` ${data.address.address}`
-                document.getElementById(`pincode0`).innerText = ` ${data.address.pincode}`
-                document.getElementById(`mobileNo0`).innerText = ` ${data.address.mobileNo}`
-                document.getElementById(`city0`).innerText = ` ${data.address.city}`
+            fetch(`/address/reset-default-address?id=${addressId}`, {
+              method: "PATCH",
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                document.getElementById(
+                  `firstName0`
+                ).innerText = ` ${data.address.firstName}`;
+                document.getElementById(
+                  `lastName0`
+                ).innerText = ` ${data.address.lastName}`;
+                document.getElementById(
+                  `country0`
+                ).innerText = ` ${data.address.country}`;
+                document.getElementById(
+                  `state0`
+                ).innerText = ` ${data.address.state}`;
+                document.getElementById(
+                  `address0`
+                ).innerText = ` ${data.address.address}`;
+                document.getElementById(
+                  `pincode0`
+                ).innerText = ` ${data.address.pincode}`;
+                document.getElementById(
+                  `mobileNo0`
+                ).innerText = ` ${data.address.mobileNo}`;
+                document.getElementById(
+                  `city0`
+                ).innerText = ` ${data.address.city}`;
                 document.getElementById(`editBtn0`).onclick = function () {
-                    editAddress(0,`${data.address._id}`)
+                  editAddress(0, data.address._id);
+                };
+
+                document.getElementById(
+                  `firstName${index}`
+                ).innerText = ` ${data.oldDefaultAddress.firstName}`;
+                document.getElementById(
+                  `lastName${index}`
+                ).innerText = ` ${data.oldDefaultAddress.lastName}`;
+                document.getElementById(
+                  `country${index}`
+                ).innerText = ` ${data.oldDefaultAddress.country}`;
+                document.getElementById(
+                  `state${index}`
+                ).innerText = ` ${data.oldDefaultAddress.state}`;
+                document.getElementById(
+                  `address${index}`
+                ).innerText = ` ${data.oldDefaultAddress.address}`;
+                document.getElementById(
+                  `pincode${index}`
+                ).innerText = ` ${data.oldDefaultAddress.pincode}`;
+                document.getElementById(
+                  `mobileNo${index}`
+                ).innerText = ` ${data.oldDefaultAddress.mobileNo}`;
+                document.getElementById(
+                  `city${index}`
+                ).innerText = ` ${data.oldDefaultAddress.city}`;
+                document.getElementById(`editBtn${index}`).onclick =
+                  function () {
+                    editAddress(index, data.oldDefaultAddress._id);
+                  };
+                if (document.getElementById("reqFromCheckout")) {
+                  document.getElementById("addressId").value = data.address._id;
+                  document.getElementById(
+                    `shippingFirstName0`
+                  ).innerText = ` ${data.address.firstName}`;
+                  document.getElementById(
+                    `shippingLastName0`
+                  ).innerText = ` ${data.address.lastName}`;
+                  document.getElementById(
+                    `shippingCountry0`
+                  ).innerText = ` ${data.address.country}`;
+                  document.getElementById(
+                    `shippingState0`
+                  ).innerText = ` ${data.address.state}`;
+                  document.getElementById(
+                    `shippingAddress0`
+                  ).innerText = ` ${data.address.address}`;
+                  document.getElementById(
+                    `shippingPincode0`
+                  ).innerText = ` ${data.address.pincode}`;
+                  document.getElementById(
+                    `shippingMobileNo0`
+                  ).innerText = ` ${data.address.mobileNo}`;
+                  document.getElementById(
+                    `shippingCity0`
+                  ).innerText = ` ${data.address.city}`;
                 }
-                if(document.getElementById("reqFromCheckout")){
-                    document.getElementById("addressId").value = data.address._id
-                    document.getElementById(`shippingFirstName0`).innerText = ` ${data.address.firstName}`
-                    document.getElementById(`shippingLastName0`).innerText = ` ${data.address.lastName}`
-                    document.getElementById(`shippingCountry0`).innerText = ` ${data.address.country}`
-                    document.getElementById(`shippingState0`).innerText = ` ${data.address.state}`
-                    document.getElementById(`shippingAddress0`).innerText = ` ${data.address.address}`
-                    document.getElementById(`shippingPincode0`).innerText = ` ${data.address.pincode}`
-                    document.getElementById(`shippingMobileNo0`).innerText = ` ${data.address.mobileNo}`
-                    document.getElementById(`shippingCity0`).innerText = ` ${data.address.city}`
+                document.getElementById(
+                  `resetDefaultAddressBtn${index}`
+                ).onclick = function () {
+                  changeDefaultAddress(data.oldDefaultAddress._id, index);
+                };
+                if (!document.getElementById("reqFromCheckout")) {
+                  document.getElementById(`deleteBtn${index}`).onclick =
+                    function () {
+                      deleteAddress(data.address._id, data.address.userId);
+                    };
+                  document.getElementById(`deleteBtn0`).onclick = function () {
+                    deleteAddress(data.address._id, data.address.userId);
+                  };
                 }
-                if(!document.getElementById("reqFromCheckout")){
-                    document.getElementById(`deleteBtn0`).onclick = function () {
-                    deleteAddress(`${data.address._id}`,`${data.address.userId}`)
-                }
-                }
-               
-                 if(data.oldDefaultAddress !== null && !document.getElementById("reqFromCheckout")){
-                    addressCard = `<div class="address-card p-6">
-                            <h2 class="text-lg font-bold mb-4">Other Address ${addressesDiv.children.length - 1}</h2>
+
+                iziToast.success({
+                  title: "Address",
+                  message: data.message,
+                  position: "topRight",
+                });
+              })
+              .catch((error) => console.error(error.message));
+          },
+        ],
+        [
+          "<button>Cancel</button>",
+          function (instance, toast) {
+            instance.hide({ transitionOut: "fadeOut" }, toast, "button");
+            console.log("Deletion Cancelled");
+          },
+        ],
+      ],
+    });
+  }
+
+  document.getElementById("accountName").addEventListener("click", function () {
+    let useSameName = document.getElementById("accountName");
+    let firstName = "<%- user.firstName %>";
+    let lastName = "<%- user.lastName %>";
+    if (useSameName.checked === true) {
+      document.getElementById("firstName").value = firstName;
+      document.getElementById("lastName").value = lastName;
+    } else {
+      document.getElementById("firstName").value = "";
+      document.getElementById("lastName").value = "";
+    }
+  });
+
+  // Form submission would go here
+  document
+    .querySelector("#addAddressModal form")
+    .addEventListener("submit", function (e) {
+      const firstName = document.getElementById("firstName").value.trim();
+      const lastName = document.getElementById("lastName").value.trim();
+      const city = document.getElementById("city").value.trim();
+      const state = document.getElementById("state").value.trim();
+      const country = document.getElementById("countryList").value;
+      const pincode = document.getElementById("pincode").value.trim();
+      const mobileNo = document.getElementById("phoneNumber");
+      const address = document.getElementById("address").value.trim();
+      const defaultAddress = document.getElementById("defaultAddress");
+
+      const nameRegex = /^[A-Za-z]+(?:[ '-][A-Za-z]+)*(?:\d{0,5})?$/;
+      const addressRegex = /^[A-Za-z0-9 ,./-]{5,}$/;
+      const noPostalCodeCountries = ["AE", "HK", "MO", "QA", "OM", "SA"];
+
+      if (!nameRegex.test(firstName)) {
+        iziToast.error({
+          title: "Error",
+          message: "Please enter a valid First Name",
+          position: "topRight",
+        });
+        e.preventDefault();
+        return;
+      }
+
+      if (!nameRegex.test(lastName)) {
+        iziToast.error({
+          title: "Error",
+          message: "Please enter a valid Last Name",
+          position: "topRight",
+        });
+        e.preventDefault();
+        return;
+      }
+
+      if (!nameRegex.test(city)) {
+        iziToast.error({
+          title: "Error",
+          message: "Please enter a valid City Name",
+          position: "topRight",
+        });
+        e.preventDefault();
+        return;
+      }
+
+      if (!nameRegex.test(state)) {
+        iziToast.error({
+          title: "Error",
+          message: "Please enter a valid State",
+          position: "topRight",
+        });
+        e.preventDefault();
+        return;
+      }
+      if (country === "") {
+        iziToast.error({
+          title: "Error",
+          message: "Please select a Country",
+          position: "topRight",
+        });
+        e.preventDefault();
+        return;
+      }
+
+      if (!noPostalCodeCountries.includes(country)) {
+        if (pincode === "") {
+          iziToast.error({
+            title: "Error",
+            message: "Please enter a valid Pincode",
+            position: "topRight",
+          });
+          e.preventDefault();
+          return;
+        } else if (!validator.isPostalCode(pincode, country)) {
+          iziToast.error({
+            title: "Error",
+            message: "Invalid Pincode for the selected Country",
+            position: "topRight",
+          });
+          e.preventDefault();
+          return;
+        }
+      }
+
+      if (!addressRegex.test(address)) {
+        iziToast.error({
+          title: "Error",
+          message: "Please enter a valid Address",
+          position: "topRight",
+        });
+        e.preventDefault();
+        return;
+      }
+
+      if (defaultAddress.checked) {
+        defaultAddress.value = true;
+      } else {
+        defaultAddress.checked;
+        defaultAddress.value = false;
+      }
+
+      if (mobileNo.value === "") {
+        e.preventDefault();
+        iziToast.error({
+          title: "Error",
+          message: "Please enter a Mobile Number",
+          position: "topRight",
+        });
+        return;
+      }
+      if (!iti.isValidNumber(mobileNo.value)) {
+        e.preventDefault();
+        iziToast.error({
+          title: "Error",
+          message: "Please enter a Valid Mobile Number",
+          position: "topRight",
+        });
+        return;
+      }
+
+      mobileNo.value = iti.getNumber();
+      document.getElementById("pincode").disabled = false;
+
+      const form = document.getElementById("addAddressForm");
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      e.preventDefault();
+      fetch(`${form.action}`, {
+        method:
+          form.action === "http://localhost:1348/address" ? "POST" : "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const addressesDiv = document.getElementById("addressessDiv");
+          let addressCard = null;
+          if (form.action === "http://localhost:1348/address") {
+            if (data.address.isDefault) {
+              document.getElementById(
+                `firstName0`
+              ).innerText = ` ${data.address.firstName}`;
+              document.getElementById(
+                `lastName0`
+              ).innerText = ` ${data.address.lastName}`;
+              document.getElementById(
+                `country0`
+              ).innerText = ` ${data.address.country}`;
+              document.getElementById(
+                `state0`
+              ).innerText = ` ${data.address.state}`;
+              document.getElementById(
+                `address0`
+              ).innerText = ` ${data.address.address}`;
+              document.getElementById(
+                `pincode0`
+              ).innerText = ` ${data.address.pincode}`;
+              document.getElementById(
+                `mobileNo0`
+              ).innerText = ` ${data.address.mobileNo}`;
+              document.getElementById(
+                `city0`
+              ).innerText = ` ${data.address.city}`;
+              document.getElementById(`editBtn0`).onclick = function () {
+                editAddress(0, `${data.address._id}`);
+              };
+              if (document.getElementById("reqFromCheckout")) {
+                document.getElementById("addressId").value = data.address._id;
+                document.getElementById(
+                  `shippingFirstName0`
+                ).innerText = ` ${data.address.firstName}`;
+                document.getElementById(
+                  `shippingLastName0`
+                ).innerText = ` ${data.address.lastName}`;
+                document.getElementById(
+                  `shippingCountry0`
+                ).innerText = ` ${data.address.country}`;
+                document.getElementById(
+                  `shippingState0`
+                ).innerText = ` ${data.address.state}`;
+                document.getElementById(
+                  `shippingAddress0`
+                ).innerText = ` ${data.address.address}`;
+                document.getElementById(
+                  `shippingPincode0`
+                ).innerText = ` ${data.address.pincode}`;
+                document.getElementById(
+                  `shippingMobileNo0`
+                ).innerText = ` ${data.address.mobileNo}`;
+                document.getElementById(
+                  `shippingCity0`
+                ).innerText = ` ${data.address.city}`;
+              }
+              if (!document.getElementById("reqFromCheckout")) {
+                document.getElementById(`deleteBtn0`).onclick = function () {
+                  deleteAddress(
+                    `${data.address._id}`,
+                    `${data.address.userId}`
+                  );
+                };
+              }
+
+              if (
+                data.oldDefaultAddress !== null &&
+                !document.getElementById("reqFromCheckout")
+              ) {
+                addressCard = `<div class="address-card p-6">
+                            <h2 class="text-lg font-bold mb-4">Other Address ${
+                              addressesDiv.children.length - 1
+                            }</h2>
                             <div class="space-y-2 text-gray-700">
-                                <p><strong>Name:</strong><span id="firstName${addressesDiv.children.length - 1}"> ${data.oldDefaultAddress.firstName}</span> <span id="lastName${addressesDiv.children.length - 1}">${ data.oldDefaultAddress.lastName }</span></p>
-                                <p><strong>Country:</strong><span id="country${addressesDiv.children.length - 1}"> ${data.oldDefaultAddress.country}</span></p>
-                                <p><strong>State:</strong><span id="state${addressesDiv.children.length - 1}"> ${ data.oldDefaultAddress.state }</span></p>
-                                <p><strong>City:</strong><span id="city${addressesDiv.children.length - 1}"> ${ data.oldDefaultAddress.city }</span></p>
-                                <p><strong>Address:</strong><span id="address${addressesDiv.children.length - 1}"> ${ data.oldDefaultAddress.address }</span></p>
-                                <p><strong>Pincode:</strong><span id="pincode${addressesDiv.children.length - 1}"> ${ data.oldDefaultAddress.pincode }</span></p>
-                                <p class="mt-2"><strong>Phone:</strong><span id="mobileNo${addressesDiv.children.length - 1}"> ${ data.oldDefaultAddress.mobileNo  }</span></p>
+                                <p><strong>Name:</strong><span id="firstName${
+                                  addressesDiv.children.length - 1
+                                }"> ${
+                  data.oldDefaultAddress.firstName
+                }</span> <span id="lastName${
+                  addressesDiv.children.length - 1
+                }">${data.oldDefaultAddress.lastName}</span></p>
+                                <p><strong>Country:</strong><span id="country${
+                                  addressesDiv.children.length - 1
+                                }"> ${data.oldDefaultAddress.country}</span></p>
+                                <p><strong>State:</strong><span id="state${
+                                  addressesDiv.children.length - 1
+                                }"> ${data.oldDefaultAddress.state}</span></p>
+                                <p><strong>City:</strong><span id="city${
+                                  addressesDiv.children.length - 1
+                                }"> ${data.oldDefaultAddress.city}</span></p>
+                                <p><strong>Address:</strong><span id="address${
+                                  addressesDiv.children.length - 1
+                                }"> ${data.oldDefaultAddress.address}</span></p>
+                                <p><strong>Pincode:</strong><span id="pincode${
+                                  addressesDiv.children.length - 1
+                                }"> ${data.oldDefaultAddress.pincode}</span></p>
+                                <p class="mt-2"><strong>Phone:</strong><span id="mobileNo${
+                                  addressesDiv.children.length - 1
+                                }"> ${
+                  data.oldDefaultAddress.mobileNo
+                }</span></p>
                             </div>
                             <div class="flex justify-between mt-4">
-                                <button id="resetDefaultAddressBtn${addressesDiv.children.length - 1}" class="text-gray-700 bg-green-300 hover:bg-green-400 pl-2 pr-3 font-bold py-2 rounded-xl flex items-center text-sm" onclick="changeDefaultAddress('${data.oldDefaultAddress._id}',${addressesDiv.children.length - 1})">
+                                <button id="resetDefaultAddressBtn${
+                                  addressesDiv.children.length - 1
+                                }" class="text-gray-700 bg-green-300 hover:bg-green-400 pl-2 pr-3 font-bold py-2 rounded-xl flex items-center text-sm" onclick="changeDefaultAddress('${
+                  data.oldDefaultAddress._id
+                }',${addressesDiv.children.length - 1})">
                                     <i data-feather="check" class="w-4 h-4 mr-1"></i> Set as Default
                                 </button>
                                 <div class="flex space-x-3">
-                                    <button id="editBtn${addressesDiv.children.length - 1}" class="btn-primary px-4 py-2 rounded-xl font-bold" onclick="editAddress(${addressesDiv.children.length - 1},'${data.oldDefaultAddress._id}')">
+                                    <button id="editBtn${
+                                      addressesDiv.children.length - 1
+                                    }" class="btn-primary px-4 py-2 rounded-xl font-bold" onclick="editAddress(${
+                  addressesDiv.children.length - 1
+                },'${data.oldDefaultAddress._id}')">
                                         Edit
                                     </button>
-                                    <button id="deleteBtn${addressesDiv.children.length - 1}"  class="text-gray-700 font-bold hover:text-black flex rounded-xl  bg-red-400 hover:bg-red-500 px-4 py-2 items-center text-sm" onclick="deleteAddress('${data.oldDefaultAddress._id}','${data.oldDefaultAddress.userId}')">
+                                    <button id="deleteBtn${
+                                      addressesDiv.children.length - 1
+                                    }"  class="text-gray-700 font-bold hover:text-black flex rounded-xl  bg-red-400 hover:bg-red-500 px-4 py-2 items-center text-sm" onclick="deleteAddress('${
+                  data.oldDefaultAddress._id
+                }','${data.oldDefaultAddress.userId}')">
                                         <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete
                                     </button>
                                 </div>
                             </div>
-                        </div>`
-                 }  
-                 if(data.oldDefaultAddress !== null && document.getElementById("reqFromCheckout")){
-                    addressCard = `<div  class="address-card min-w-[320px] max-w-[320px] flex-shrink-0 border border-gray-300 p-4 relative rounded-lg bg-white shadow-sm">
+                        </div>`;
+              }
+              if (
+                data.oldDefaultAddress !== null &&
+                document.getElementById("reqFromCheckout")
+              ) {
+                addressCard = `<div  class="address-card min-w-[320px] max-w-[320px] flex-shrink-0 border border-gray-300 p-4 relative rounded-lg bg-white shadow-sm">
                                         <div class="flex justify-between items-start mb-2">
-                                            <h3 class="font-medium">Other Address ${ addressessDiv.children.length  }</h3>
+                                            <h3 class="font-medium">Other Address ${addressessDiv.children.length}</h3>
                                            
                                         </div>
                                         <div class="text-sm text-gray-600">
-                                           <p><strong>Name:</strong><span id="firstName${ addressessDiv.children.length }"> ${ data.oldDefaultAddress.firstName }</span> <span id="lastName${ addressessDiv.children.length  }">${ data.oldDefaultAddress.lastName }</span></p>
-                                            <p><strong>Country:</strong><span id="country${ addressessDiv.children.length }"> ${ data.oldDefaultAddress.country }</span></p>
-                                            <p><strong>State:</strong><span id="state${ addressessDiv.children.length  }"> ${ data.oldDefaultAddress.state }</span></p>
-                                            <p><strong>City:</strong><span id="city${ addressessDiv.children.length }"> ${ data.oldDefaultAddress.city }</span></p>
-                                            <p><strong>Address:</strong><span id="address${ addressessDiv.children.length }"> ${ data.oldDefaultAddress.address }</span></p>
-                                            <p><strong>Pincode:</strong><span  id="pincode${ addressessDiv.children.length  }" > ${ data.oldDefaultAddress.pincode }</span></p>
-                                            <p  class="mt-2"><strong>Phone:</strong><span id="mobileNo${ addressessDiv.children.length  }"> ${ data.oldDefaultAddress.mobileNo  }</span></p>
+                                           <p><strong>Name:</strong><span id="firstName${addressessDiv.children.length}"> ${data.oldDefaultAddress.firstName}</span> <span id="lastName${addressessDiv.children.length}">${data.oldDefaultAddress.lastName}</span></p>
+                                            <p><strong>Country:</strong><span id="country${addressessDiv.children.length}"> ${data.oldDefaultAddress.country}</span></p>
+                                            <p><strong>State:</strong><span id="state${addressessDiv.children.length}"> ${data.oldDefaultAddress.state}</span></p>
+                                            <p><strong>City:</strong><span id="city${addressessDiv.children.length}"> ${data.oldDefaultAddress.city}</span></p>
+                                            <p><strong>Address:</strong><span id="address${addressessDiv.children.length}"> ${data.oldDefaultAddress.address}</span></p>
+                                            <p><strong>Pincode:</strong><span  id="pincode${addressessDiv.children.length}" > ${data.oldDefaultAddress.pincode}</span></p>
+                                            <p  class="mt-2"><strong>Phone:</strong><span id="mobileNo${addressessDiv.children.length}"> ${data.oldDefaultAddress.mobileNo}</span></p>
                                         </div>
                                         <div class="flex justify-end space-x-2 mt-3">
-                                             <button type="button" id="resetDefaultAddressBtn${ addressessDiv.children.length }" onclick="changeDefaultAddress('${data.oldDefaultAddress._id }','${ addressessDiv.children.length  }')" class="bg-green-400 hover:bg-green-500 font-bold shadow-lg p-2 rounded-xl text-sm">
+                                             <button type="button" id="resetDefaultAddressBtn${addressessDiv.children.length}" onclick="changeDefaultAddress('${data.oldDefaultAddress._id}','${addressessDiv.children.length}')" class="bg-green-400 hover:bg-green-500 font-bold shadow-lg p-2 rounded-xl text-sm">
                                                 Set as Default
                                             </button>
-                                            <button type="button" id="editBtn${ addressessDiv.children.length }" onclick="editAddress('${ addressessDiv.children.length }','${data.oldDefaultAddress._id }')" class="crop-btn shadow-lg p-2 rounded-lg text-sm">
+                                            <button type="button" id="editBtn${addressessDiv.children.length}" onclick="editAddress('${addressessDiv.children.length}','${data.oldDefaultAddress._id}')" class="crop-btn shadow-lg p-2 rounded-lg text-sm">
                                                 Edit
                                             </button>
                                         </div>
-                                    </div>`
-                 }
-            }else{
-                
-                 addressCard = `<div class="address-card p-6">
-                            <h2 class="text-lg font-bold mb-4">Other Address ${addressesDiv.children.length - 1}</h2>
+                                    </div>`;
+              }
+            } else {
+              addressCard = `<div class="address-card p-6">
+                            <h2 class="text-lg font-bold mb-4">Other Address ${
+                              addressesDiv.children.length - 1
+                            }</h2>
                             <div class="space-y-2 text-gray-700">
-                                <p><strong>Name:</strong><span id="firstName${addressesDiv.children.length - 1}"> ${data.address.firstName}</span> <span id="lastName${addressesDiv.children.length - 1}">${ data.address.lastName }</span></p>
-                                <p><strong>Country:</strong><span id="country${addressesDiv.children.length - 1}"> ${data.address.country}</span></p>
-                                <p><strong>State:</strong><span id="state${addressesDiv.children.length - 1}"> ${ data.address.state }</span></p>
-                                <p><strong>City:</strong><span id="city${addressesDiv.children.length - 1}"> ${ data.address.city }</span></p>
-                                <p><strong>Address:</strong><span id="address${addressesDiv.children.length - 1}"> ${ data.address.address }</span></p>
-                                <p><strong>Pincode:</strong><span id="pincode${addressesDiv.children.length - 1}"> ${ data.address.pincode }</span></p>
-                                <p class="mt-2"><strong>Phone:</strong><span id="mobileNo${addressesDiv.children.length - 1}"> ${ data.address.mobileNo  }</span></p>
+                                <p><strong>Name:</strong><span id="firstName${
+                                  addressesDiv.children.length - 1
+                                }"> ${
+                data.address.firstName
+              }</span> <span id="lastName${addressesDiv.children.length - 1}">${
+                data.address.lastName
+              }</span></p>
+                                <p><strong>Country:</strong><span id="country${
+                                  addressesDiv.children.length - 1
+                                }"> ${data.address.country}</span></p>
+                                <p><strong>State:</strong><span id="state${
+                                  addressesDiv.children.length - 1
+                                }"> ${data.address.state}</span></p>
+                                <p><strong>City:</strong><span id="city${
+                                  addressesDiv.children.length - 1
+                                }"> ${data.address.city}</span></p>
+                                <p><strong>Address:</strong><span id="address${
+                                  addressesDiv.children.length - 1
+                                }"> ${data.address.address}</span></p>
+                                <p><strong>Pincode:</strong><span id="pincode${
+                                  addressesDiv.children.length - 1
+                                }"> ${data.address.pincode}</span></p>
+                                <p class="mt-2"><strong>Phone:</strong><span id="mobileNo${
+                                  addressesDiv.children.length - 1
+                                }"> ${data.address.mobileNo}</span></p>
                             </div>
                             <div class="flex justify-between mt-4">
-                                <button id="resetDefaultAddressBtn${addressesDiv.children.length - 1}" class="text-gray-700 bg-green-300 hover:bg-green-400 pl-2 pr-3 font-bold py-2 rounded-xl flex items-center text-sm" onclick="changeDefaultAddress('${data.address._id}',${addressesDiv.children.length - 1})">
+                                <button id="resetDefaultAddressBtn${
+                                  addressesDiv.children.length - 1
+                                }" class="text-gray-700 bg-green-300 hover:bg-green-400 pl-2 pr-3 font-bold py-2 rounded-xl flex items-center text-sm" onclick="changeDefaultAddress('${
+                data.address._id
+              }',${addressesDiv.children.length - 1})">
                                     <i data-feather="check" class="w-4 h-4 mr-1"></i> Set as Default
                                 </button>
                                 <div class="flex space-x-3">
-                                    <button id="editBtn${addressesDiv.children.length - 1}" class="btn-primary px-4 py-2 rounded-xl font-bold" onclick="editAddress(${addressesDiv.children.length - 1},'${data.address._id}')">
+                                    <button id="editBtn${
+                                      addressesDiv.children.length - 1
+                                    }" class="btn-primary px-4 py-2 rounded-xl font-bold" onclick="editAddress(${
+                addressesDiv.children.length - 1
+              },'${data.address._id}')">
                                         Edit
                                     </button>
-                                    <button id="deleteBtn${addressesDiv.children.length - 1}" class="text-gray-700 font-bold hover:text-black flex rounded-xl  bg-red-400 hover:bg-red-500 px-4 py-2 items-center text-sm" onclick="deleteAddress('${data.address._id}','${data.address.userId}')">
+                                    <button id="deleteBtn${
+                                      addressesDiv.children.length - 1
+                                    }" class="text-gray-700 font-bold hover:text-black flex rounded-xl  bg-red-400 hover:bg-red-500 px-4 py-2 items-center text-sm" onclick="deleteAddress('${
+                data.address._id
+              }','${data.address.userId}')">
                                         <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete
                                     </button>
                                 </div>
                             </div>
-                        </div>`
-                        
-                
+                        </div>`;
             }
-            if(addressCard !== null){
-                addressesDiv.insertAdjacentHTML('beforeend',addressCard)
+            if (addressCard !== null) {
+              addressesDiv.insertAdjacentHTML("beforeend", addressCard);
             }
-            
-        }else{
+          } else {
+            const editIndex = document.getElementById("editIndex").value;
+            document.getElementById(
+              `firstName${editIndex}`
+            ).innerText = ` ${data.address.firstName}`;
+            document.getElementById(
+              `lastName${editIndex}`
+            ).innerText = ` ${data.address.lastName}`;
+            document.getElementById(
+              `country${editIndex}`
+            ).innerText = ` ${data.address.country}`;
+            document.getElementById(
+              `state${editIndex}`
+            ).innerText = ` ${data.address.state}`;
+            document.getElementById(
+              `address${editIndex}`
+            ).innerText = ` ${data.address.address}`;
+            document.getElementById(
+              `pincode${editIndex}`
+            ).innerText = ` ${data.address.pincode}`;
+            document.getElementById(
+              `mobileNo${editIndex}`
+            ).innerText = ` ${data.address.mobileNo}`;
+            document.getElementById(
+              `city${editIndex}`
+            ).innerText = ` ${data.address.city}`;
+            document.getElementById(`editBtn${editIndex}`).onclick =
+              function () {
+                editAddress(editIndex, data.address._id);
+              };
 
-                const editIndex = document.getElementById("editIndex").value
-                document.getElementById(`firstName${editIndex}`).innerText = ` ${data.address.firstName}`
-                document.getElementById(`lastName${editIndex}`).innerText = ` ${data.address.lastName}`
-                document.getElementById(`country${editIndex}`).innerText = ` ${data.address.country}`
-                document.getElementById(`state${editIndex}`).innerText = ` ${data.address.state}`
-                document.getElementById(`address${editIndex}`).innerText = ` ${data.address.address}`
-                document.getElementById(`pincode${editIndex}`).innerText = ` ${data.address.pincode}`
-                document.getElementById(`mobileNo${editIndex}`).innerText = ` ${data.address.mobileNo}`
-                document.getElementById(`city${editIndex}`).innerText = ` ${data.address.city}`
-                document.getElementById(`editBtn${editIndex}`).onclick = function () {
-                    editAddress(editIndex,data.address._id)
-                }
-                
-               
+            if (!document.getElementById("reqFromCheckout")) {
+              if (!data.address.isDefault) {
+                document.getElementById(
+                  `resetDefaultAddressBtn${editIndex}`
+                ).onclick = function () {
+                  changeDefaultAddress(data.address._id, editIndex);
+                };
+              }
 
-                if(!document.getElementById("reqFromCheckout")){
-                    if(!data.address.isDefault){
-                    document.getElementById(`resetDefaultAddressBtn${editIndex}`).onclick = function () {
-                        changeDefaultAddress(data.address._id,editIndex)
-                        }
-                    }
-                    
-                    document.getElementById(`deleteBtn${editIndex}`).onclick = function () {
-                        deleteAddress(data.address._id,data.address.userId)
-                    }
-                }
-                
-        }
-       
-            feather.replace()
-            closeAddAddressModal()
-            iziToast.success({
-                title : "Address",
-                message : data.message,
-                position : "topRight"
-            })
-    })
-    .catch(error => console.error(error))
-});
+              document.getElementById(`deleteBtn${editIndex}`).onclick =
+                function () {
+                  deleteAddress(data.address._id, data.address.userId);
+                };
+            }
+          }
 
-const serverMessage = document.getElementById("serverMessage").value
-if(serverMessage === "Address added successfully!"){
+          feather.replace();
+          closeAddAddressModal();
+          iziToast.success({
+            title: "Address",
+            message: data.message,
+            position: "topRight",
+          });
+        })
+        .catch((error) => console.error(error));
+    });
+
+  const serverMessage = document.getElementById("serverMessage").value;
+  if (serverMessage === "Address added successfully!") {
     iziToast.success({
-        title : "Success",
-        message : "Address added successfully!",
-        position : "topRight"
-    })
-}
-if(serverMessage === "Oops! some error has occured"){
+      title: "Success",
+      message: "Address added successfully!",
+      position: "topRight",
+    });
+  }
+  if (serverMessage === "Oops! some error has occured") {
     iziToast.error({
-        title : "Error",
-        message :"Oops! some error has occured",
-        position : "topRight"
-    })
-}
-if(serverMessage === "Address updated Successfully"){
+      title: "Error",
+      message: "Oops! some error has occured",
+      position: "topRight",
+    });
+  }
+  if (serverMessage === "Address updated Successfully") {
     iziToast.success({
-        title : "Success",
-        message :"Address updated Successfully",
-        position : "topRight"
-    })
-}
-if(serverMessage === "Address deleted Successfully"){
+      title: "Success",
+      message: "Address updated Successfully",
+      position: "topRight",
+    });
+  }
+  if (serverMessage === "Address deleted Successfully") {
     iziToast.success({
-        title : "Success",
-        message :"Address deleted Successfully",
-        position : "topRight"
-    })
-}
+      title: "Success",
+      message: "Address deleted Successfully",
+      position: "topRight",
+    });
+  }
 
-if(serverMessage === "Your Default address has been Updated" ){
+  if (serverMessage === "Your Default address has been Updated") {
     iziToast.success({
-        title : "Success",
-        message :"Your Default address has been Updated",
-        position : "topRight"
-    })
-}
+      title: "Success",
+      message: "Your Default address has been Updated",
+      position: "topRight",
+    });
+  }
 </script>

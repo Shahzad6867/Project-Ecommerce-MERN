@@ -1,61 +1,60 @@
-const mongoose = require("mongoose")
-const {Schema} = mongoose
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
-const userSchema = new Schema({
-    firstName : {
-        type : String,
-        required : true,
-        unique : false
+const userSchema = new Schema(
+  {
+    firstName: {
+      type: String,
+      required: true,
+      unique: false,
     },
-    lastName : {
-        type : String,
-        required : true,
-        unique : false
+    lastName: {
+      type: String,
+      required: true,
+      unique: false,
     },
-    email : {
-        type : String,
-        required : true,
-        unique : true
+    email: {
+      type: String,
+      required: true,
+      unique: true,
     },
-    googleId : {
-        type : String,
-        default : null
+    googleId: {
+      type: String,
+      default: null,
     },
-    phone : {
-        type : String,
-        required : false,
-        default : null
-    }
-    ,
-    profileImage : {
-        type : String,
-        required : false,
-        default : null
-    }
-    ,
-    isBlocked : {
-        type : Boolean,
-        default : false
-    }
-    ,
-    isVerified : {
-        type : Boolean,
-        default : false
+    phone: {
+      type: String,
+      required: false,
+      default: null,
     },
-    password : {
-        type : String,
-        required : false,
-        unique : false
+    profileImage: {
+      type: String,
+      required: false,
+      default: null,
     },
-    referralCode : {
-        type : String,
-        default : null
+    isBlocked: {
+      type: Boolean,
+      default: false,
     },
-    terms : {
-        type : String,
-        required : false
-    }
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    password: {
+      type: String,
+      required: false,
+      unique: false,
+    },
+    referralCode: {
+      type: String,
+      default: null,
+    },
+    terms: {
+      type: String,
+      required: false,
+    },
+  },
+  { timestamps: true }
+);
 
-},{timestamps : true})
-
-module.exports = mongoose.model("User",userSchema)
+module.exports = mongoose.model("User", userSchema);

@@ -80,7 +80,7 @@ feather.replace();
         buttons : [
             ["<button>OK</button>",function(instance,toast){
                 instance.hide({transitionOut : "fadeOut"},toast,'button')
-                document.getElementById("processingRequestOverlay").classList.remove("hidden")
+                removeProcessingRequestOverlay()
                 fetch(`/orders/${orderId}/cancel-item?item=${itemId}`,{method : "PATCH"})
                 .then(res => window.location.href = `/orders/${orderId}` )
                 .catch(error => iziToast.error({
@@ -112,7 +112,7 @@ feather.replace();
         buttons : [
             ["<button>OK</button>",function(instance,toast){
                 instance.hide({transitionOut : "fadeOut"},toast,'button')
-                document.getElementById("processingRequestOverlay").classList.remove("hidden")
+                removeProcessingRequestOverlay()
                 fetch(`/orders/${orderId}/cancel-order`,{method : "PATCH"})
                 .then(res => window.location.href = `/orders/${orderId}` )
                 .catch(error => iziToast.error({
@@ -128,6 +128,10 @@ feather.replace();
             }]
         ]
     })
+        }
+
+        function removeProcessingRequestOverlay (){
+            document.getElementById("processingRequestOverlay").classList.remove("hidden")
         }
 
 

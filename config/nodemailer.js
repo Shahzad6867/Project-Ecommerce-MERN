@@ -1,23 +1,23 @@
 const nodemailer = require("nodemailer");
-const dotenv = require("dotenv").config()
+require("dotenv").config();
 async function sendVerificationEmail(email, otp) {
-    try {
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        port: 587,
-        secure: false,
-        auth: {
-          user: process.env.GOOGLE_ACCOUNT,
-          pass: process.env.GOOGLE_APP_PASSWORD,
-        },
-      });
-  
-      transporter.sendMail({
-        from: process.env.GOOGLE_ACCOUNT,
-        to: email,
-        subject: "Your OTP for Verification",
-        text: `Your OTP is ${otp}`,
-        html: ` <!DOCTYPE html>
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.GOOGLE_ACCOUNT,
+        pass: process.env.GOOGLE_APP_PASSWORD,
+      },
+    });
+
+    transporter.sendMail({
+      from: process.env.GOOGLE_ACCOUNT,
+      to: email,
+      subject: "Your OTP for Verification",
+      text: `Your OTP is ${otp}`,
+      html: ` <!DOCTYPE html>
                       <html lang="en">
                       <head>
                           <meta charset="UTF-8" />
@@ -49,12 +49,12 @@ async function sendVerificationEmail(email, otp) {
                       </body>
                       </html>
                       `,
-      });
-    } catch (error) {
-      console.error(error);
-    }
+    });
+  } catch (error) {
+    console.error(error);
   }
-
-  module.exports = {
-    sendVerificationEmail
 }
+
+module.exports = {
+  sendVerificationEmail,
+};

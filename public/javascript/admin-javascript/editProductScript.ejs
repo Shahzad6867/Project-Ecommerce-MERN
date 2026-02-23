@@ -113,37 +113,62 @@
 
             // Setting the Image for deletion
             function setToDeleteImage(event,variantIndex,imageIndex){
-                let wantsToDelete = confirm("Are you sure you want to delete this image?")
-                if(wantsToDelete){
-                    event.currentTarget.closest(`#imgCount${imageIndex}`).remove()
-                    let hrefLink = document.querySelector("form").action
-                    
-                    hrefLink = hrefLink.split("&")
-                    if(hrefLink.length > 1){
-                        document.getElementById(`imageInsertTypeDiv-${variantIndex}`).hidden = false
-                        let variant = hrefLink[1]
-                        hrefLink[1] = `&${variant},${variantIndex}`
-                        let image = hrefLink[2]
-                        hrefLink[2] = `&${image},${imageIndex}`
-                        document.querySelector("form").action = hrefLink.join("")
-                        
-                    }else{
-                        let selectOptionDiv = document.getElementById(`imageInsertTypeDiv-${variantIndex}`)
-                        selectOptionDiv.hidden = false
-                        selectOptionDiv.querySelector('option[value="Not Applicable"]').disabled = true
-                        selectOptionDiv.querySelector('option[value="Add Normally"]').selected = true
-                        hrefLink[0] = hrefLink[0] + `&variant=${variantIndex}&image=${imageIndex}`
-                        document.querySelector("form").action = hrefLink[0]
-                        iziToast.warning({
-                            title : "Warning",
-                            message : "Choose how new images should be placed before uploading.",
-                            position: "topRight",
-                            timeout : 10000
-                        })
-                    }
-                }
+                let wantsToDelete = null
+                iziToast.question({
+                    theme: "light",
+                    title: "Product",
+                    message:
+                      "Are you sure you want to delete this Image ?",
+                    position: "topCenter",
+                    overlay: true,
+                    close: false,
+                    id: "deleteImage",
+                    zindex: 9999,
+                    timeout: 30000,
+                    backgroundColor: "white",
+                    buttons: [
+                      [
+                        "<button>Confirm</button>",function (instance,toast) {
+                          instance.hide({ transitionOut: "fadeOut" }, toast, "button");
+                          event.target.closest(`#imgCount${imageIndex}`).remove()
+                          let hrefLink = document.querySelector("form").action
+                          
+                          hrefLink = hrefLink.split("&")
+                          if(hrefLink.length > 1){
+                              document.getElementById(`imageInsertTypeDiv-${variantIndex}`).hidden = false
+                              let variant = hrefLink[1]
+                              hrefLink[1] = `&${variant},${variantIndex}`
+                              let image = hrefLink[2]
+                              hrefLink[2] = `&${image},${imageIndex}`
+                              document.querySelector("form").action = hrefLink.join("")
+                              
+                          }else{
+                              let selectOptionDiv = document.getElementById(`imageInsertTypeDiv-${variantIndex}`)
+                              selectOptionDiv.hidden = false
+                              selectOptionDiv.querySelector('option[value="Not Applicable"]').disabled = true
+                              selectOptionDiv.querySelector('option[value="Add Normally"]').selected = true
+                              hrefLink[0] = hrefLink[0] + `&variant=${variantIndex}&image=${imageIndex}`
+                              document.querySelector("form").action = hrefLink[0]
+                              iziToast.warning({
+                                  title : "Warning",
+                                  message : "Choose how new images should be placed before uploading.",
+                                  position: "topRight",
+                                  timeout : 10000
+                              })
+                          }
+                        }
+                      ],
+                      [
+                        "<button>Cancel</button>",
+                        function (instance, toast) {
+                          instance.hide({ transitionOut: "fadeOut" }, toast, "button");
+                          console.log("Deletion Cancelled");
+                        },
+                      ],
+                    ],
+                  });
+                
 
-            console.log(document.querySelector("form").action)
             }
 
 
@@ -288,6 +313,7 @@
 
 
             // Form submission
+            const initialVariantsLength = document.querySelectorAll(".variant-item").length;
             const productArrayString = '<%- JSON.stringify(products.map((product) => product.productName.toUpperCase().trim(),[])) %>';
             let productNames =  JSON.parse(productArrayString)
             // Function to check if a form has been modified
@@ -427,7 +453,7 @@
             category.value === '<%= product.categoryId._id %>' &&
             brand.value === '<%= product.brandId._id %>' &&
             description.value.trim() === '<%= product.description.trim() %>' &&
-            ((isFeatured === "true" && isFeaturedYes.checked) || (isFeatured === "false" && isFeaturedNo.checked) )
+            ((isFeatured === "true" && isFeaturedYes.checked) || (isFeatured === "false" && isFeaturedNo.checked) ) && variantItems.length === initialVariantsLength
             ) {
             iziToast.error({
                 title: "Error",

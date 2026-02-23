@@ -1,96 +1,226 @@
-const express = require("express")
-const router = express.Router()
-const upload = require("../config/multerConfig.js")
-const passport = require("../config/passport.js")
-const userAuth = require("../middlewares/user.auth.js")
-const userLoginController = require("../controllers/user.controllers/userLogin.controller.js")
-const userRegisterController = require("../controllers/user.controllers/userRegister.controller.js")
-const otpManagementController = require("../controllers/user.controllers/otpManagement.controller.js")
-const emailAuthController = require("../controllers/user.controllers/emailAuthForNewPass.controller.js")
-const resetPassController = require("../controllers/user.controllers/resetPassword.controller.js")
-const homeController = require("../controllers/user.controllers/home.controller.js")
-const profileManagementController = require("../controllers/user.controllers/userProfileManagement.controller.js")
-const cartManagementController = require("../controllers/user.controllers/cartManagement.controller.js")
-const wishlistManagementController = require("../controllers/user.controllers/wishlistManagement.controller.js")
-const orderManagementController = require("../controllers/user.controllers/orderManagement.controller.js")
-const userWalletController = require("../controllers/user.controllers/userWallet.controller.js")
- 
+const express = require("express");
+const router = express.Router();
+const upload = require("../config/multerConfig.js");
+const passport = require("../config/passport.js");
+const userAuth = require("../middlewares/user.auth.js");
+const userLoginController = require("../controllers/user.controllers/userLogin.controller.js");
+const userRegisterController = require("../controllers/user.controllers/userRegister.controller.js");
+const otpManagementController = require("../controllers/user.controllers/otpManagement.controller.js");
+const emailAuthController = require("../controllers/user.controllers/emailAuthForNewPass.controller.js");
+const resetPassController = require("../controllers/user.controllers/resetPassword.controller.js");
+const homeController = require("../controllers/user.controllers/home.controller.js");
+const profileManagementController = require("../controllers/user.controllers/userProfileManagement.controller.js");
+const cartManagementController = require("../controllers/user.controllers/cartManagement.controller.js");
+const wishlistManagementController = require("../controllers/user.controllers/wishlistManagement.controller.js");
+const orderManagementController = require("../controllers/user.controllers/orderManagement.controller.js");
+const userWalletController = require("../controllers/user.controllers/userWallet.controller.js");
 
-
-router.get("/auth/google",userAuth.isLogged,passport.authenticate("google",{scope : ["profile","email"]}))
-router.get("/auth/google/callback",userAuth.isLogged,passport.authenticate("google",{failureRedirect : "/register"}),(req,res) => {
-    res.redirect("/")
-})
-router.get("/login",userAuth.isLogged,userLoginController.getUserLogin)
-router.post("/login",userLoginController.userLogin)
-router.get("/register",userAuth.isLogged,userRegisterController.getUserRegister)
-router.post("/register",userRegisterController.userRegister)
-router.get("/otp-verification",userAuth.otpSession,otpManagementController.getUserOtp)
-router.post("/otp-verification",otpManagementController.userOtp)
-router.get("/",homeController.getHomepage)
-router.get("/shop",homeController.getShop)
-router.get("/product",homeController.getProductDetail)
-router.post("/resend-otp",otpManagementController.resendOtp)
-router.post("/resend-otp-for-new-pass",otpManagementController.resendOtpForNewPass)
-router.post("/resend-otp-for-new-email",otpManagementController.resendOtpForNewEmail)
-router.get("/email-auth",emailAuthController.getEmailAuth)
-router.post("/email-auth",emailAuthController.emailAuth)
-router.get("/otp-verification-for-new-pass",userAuth.otpSession,otpManagementController.getUserOtpForNewPass)
-router.post("/otp-verification-for-new-pass",otpManagementController.userOtpForNewPass)
-router.get("/reset-password",userAuth.otpSession,resetPassController.getResetPassword)
-router.post("/reset-password",resetPassController.resetPassword)
-router.get("/logout",userAuth.checkSession,userLoginController.logoutUser)
+router.get(
+  "/auth/google",
+  userAuth.isLogged,
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+router.get(
+  "/auth/google/callback",
+  userAuth.isLogged,
+  passport.authenticate("google", { failureRedirect: "/register" }),
+  (req, res) => {
+    res.redirect("/");
+  }
+);
+router.get("/login", userAuth.isLogged, userLoginController.getUserLogin);
+router.post("/login", userLoginController.userLogin);
+router.get(
+  "/register",
+  userAuth.isLogged,
+  userRegisterController.getUserRegister
+);
+router.post("/register", userRegisterController.userRegister);
+router.get(
+  "/otp-verification",
+  userAuth.otpSession,
+  otpManagementController.getUserOtp
+);
+router.post("/otp-verification", otpManagementController.userOtp);
+router.get("/", homeController.getHomepage);
+router.get("/shop", homeController.getShop);
+router.get("/product", homeController.getProductDetail);
+router.post("/resend-otp", otpManagementController.resendOtp);
+router.post(
+  "/resend-otp-for-new-pass",
+  otpManagementController.resendOtpForNewPass
+);
+router.post(
+  "/resend-otp-for-new-email",
+  otpManagementController.resendOtpForNewEmail
+);
+router.get("/email-auth", emailAuthController.getEmailAuth);
+router.post("/email-auth", emailAuthController.emailAuth);
+router.get(
+  "/otp-verification-for-new-pass",
+  userAuth.otpSession,
+  otpManagementController.getUserOtpForNewPass
+);
+router.post(
+  "/otp-verification-for-new-pass",
+  otpManagementController.userOtpForNewPass
+);
+router.get(
+  "/reset-password",
+  userAuth.otpSession,
+  resetPassController.getResetPassword
+);
+router.post("/reset-password", resetPassController.resetPassword);
+router.get("/logout", userAuth.checkSession, userLoginController.logoutUser);
 
 // Profile Management
-router.get("/profile",userAuth.checkSession,profileManagementController.getProfile)
-router.get("/edit-profile",userAuth.checkSession,profileManagementController.getEditProfile)
-router.post("/edit-profile",upload.any(),profileManagementController.editProfile)
-router.get("/address",profileManagementController.getAddress)
-router.post("/address",profileManagementController.addAddress)
-router.put("/address/edit-address",profileManagementController.editAddress)
-router.delete("/address/delete-address",profileManagementController.deleteAddress)
-router.patch("/address/reset-default-address",profileManagementController.resetDefaultAddress)
-router.get("/email-auth-for-new-email",userAuth.checkSession,emailAuthController.getEmailAuthForNewEmail)
-router.post("/email-auth-for-new-email",emailAuthController.emailAuthForNewEmail)
-router.get("/otp-verification-for-new-email",userAuth.checkSession,otpManagementController.getUserOtpForNewEmail)
-router.post("/otp-verification-for-new-email",otpManagementController.userOtpForNewEmail)
+router.get(
+  "/profile",
+  userAuth.checkSession,
+  profileManagementController.getProfile
+);
+router.get(
+  "/edit-profile",
+  userAuth.checkSession,
+  profileManagementController.getEditProfile
+);
+router.post(
+  "/edit-profile",
+  upload.any(),
+  profileManagementController.editProfile
+);
+router.get("/address", profileManagementController.getAddress);
+router.post("/address", profileManagementController.addAddress);
+router.put("/address/edit-address", profileManagementController.editAddress);
+router.delete(
+  "/address/delete-address",
+  profileManagementController.deleteAddress
+);
+router.patch(
+  "/address/reset-default-address",
+  profileManagementController.resetDefaultAddress
+);
+router.get(
+  "/email-auth-for-new-email",
+  userAuth.checkSession,
+  emailAuthController.getEmailAuthForNewEmail
+);
+router.post(
+  "/email-auth-for-new-email",
+  emailAuthController.emailAuthForNewEmail
+);
+router.get(
+  "/otp-verification-for-new-email",
+  userAuth.checkSession,
+  otpManagementController.getUserOtpForNewEmail
+);
+router.post(
+  "/otp-verification-for-new-email",
+  otpManagementController.userOtpForNewEmail
+);
 
 // Cart Management
-router.get("/cart",userAuth.checkSession,cartManagementController.getCart)
-router.post("/cart",cartManagementController.addToCart)
-router.patch("/cart/update-cart-item",cartManagementController.updateCartItem)
-router.get("/home/delete-cart-item",cartManagementController.deleteCartItemFromHome)
-router.delete("/cart/delete-cart-item",cartManagementController.deleteCartItem)
-router.patch("/cart/apply-coupon/:id",cartManagementController.applyCoupon)
-router.patch("/cart/remove-coupon",cartManagementController.removeCoupon)
-router.post("/cart/buynow",cartManagementController.buyNow)
+router.get("/cart", userAuth.checkSession, cartManagementController.getCart);
+router.post("/cart", cartManagementController.addToCart);
+router.patch("/cart/update-cart-item", cartManagementController.updateCartItem);
+router.get(
+  "/home/delete-cart-item",
+  cartManagementController.deleteCartItemFromHome
+);
+router.delete(
+  "/cart/delete-cart-item",
+  cartManagementController.deleteCartItem
+);
+router.patch("/cart/apply-coupon/:id", cartManagementController.applyCoupon);
+router.patch("/cart/remove-coupon", cartManagementController.removeCoupon);
+router.post("/cart/buynow", cartManagementController.buyNow);
 
 //Wishlist
-router.get("/wishlist",userAuth.checkSession,wishlistManagementController.getWishlist)
-router.post("/wishlist",wishlistManagementController.addToWishlist)
-router.delete("/wishlist/remove-wishlist-item",wishlistManagementController.deleteWishlistItem)
+router.get(
+  "/wishlist",
+  userAuth.checkSession,
+  wishlistManagementController.getWishlist
+);
+router.post("/wishlist", wishlistManagementController.addToWishlist);
+router.delete(
+  "/wishlist/remove-wishlist-item",
+  wishlistManagementController.deleteWishlistItem
+);
 
 // Order Management
-router.get("/checkout",userAuth.checkSession,userAuth.isCartHavingItems,orderManagementController.getCheckout)
-router.post("/checkout",orderManagementController.placeOrder)
-router.get("/orders",userAuth.checkSession,orderManagementController.getOrders)
-router.get("/orders/:id",userAuth.checkSession,orderManagementController.getOrderDetailPage)
-router.patch("/orders/:id/cancel-item",orderManagementController.cancelItem)
-router.patch("/orders/:id/cancel-order",orderManagementController.cancelOrder)
-router.get("/orders/:id/invoice",orderManagementController.getInvoice)
-router.post("/cart/reorder",orderManagementController.reorder)
-router.post("/orders/:id/return-order",upload.single("returnOrderMedia"),orderManagementController.returnOrder)
-router.post("/orders/:id/return-item",upload.single("returnOrderMedia"),orderManagementController.returnItem)
-router.get("/checkout/payment-processing/:id",userAuth.checkSession,orderManagementController.getPaymentProcessingPage)
-router.get("/order-confirmation/:id",userAuth.checkSession,orderManagementController.getOrderConfirmationPage)
-router.get("/order-status/:id",userAuth.checkSession,orderManagementController.getPaymentStatus)
-router.get("/orders/:id/pending-payment",userAuth.checkSession,orderManagementController.retryPayment)
+router.get(
+  "/checkout",
+  userAuth.checkSession,
+  userAuth.isCartHavingItems,
+  orderManagementController.getCheckout
+);
+router.post("/checkout", orderManagementController.placeOrder);
+router.get(
+  "/orders",
+  userAuth.checkSession,
+  orderManagementController.getOrders
+);
+router.get(
+  "/orders/:id",
+  userAuth.checkSession,
+  orderManagementController.getOrderDetailPage
+);
+router.patch("/orders/:id/cancel-item", orderManagementController.cancelItem);
+router.patch("/orders/:id/cancel-order", orderManagementController.cancelOrder);
+router.get("/orders/:id/invoice", orderManagementController.getInvoice);
+router.post("/cart/reorder", orderManagementController.reorder);
+router.post(
+  "/orders/:id/return-order",
+  upload.single("returnOrderMedia"),
+  orderManagementController.returnOrder
+);
+router.post(
+  "/orders/:id/return-item",
+  upload.single("returnOrderMedia"),
+  orderManagementController.returnItem
+);
+router.get(
+  "/checkout/payment-processing/:id",
+  userAuth.checkSession,
+  orderManagementController.getPaymentProcessingPage
+);
+router.get(
+  "/order-confirmation/:id",
+  userAuth.checkSession,
+  orderManagementController.getOrderConfirmationPage
+);
+router.get(
+  "/order-status/:id",
+  userAuth.checkSession,
+  orderManagementController.getPaymentStatus
+);
+router.get(
+  "/orders/:id/pending-payment",
+  userAuth.checkSession,
+  orderManagementController.retryPayment
+);
 
 // User Wallet
-router.get("/wallet",userAuth.checkSession,userWalletController.getWallet)
-router.post("/wallet/top-up",userWalletController.walletTopUp)
-router.get("/payment-processing/:id",userAuth.checkSession,userWalletController.getPaymentProcessingPage)
-router.get("/payment-status/:id",userAuth.checkSession,userWalletController.getPaymentStatus)
-router.get("/payment-successful",userAuth.checkSession,userWalletController.getPaymentSuccesful)
-router.get("/payment-failed/:id",userAuth.checkSession,userWalletController.getPaymentFailed)
-module.exports = router
+router.get("/wallet", userAuth.checkSession, userWalletController.getWallet);
+router.post("/wallet/top-up", userWalletController.walletTopUp);
+router.get(
+  "/payment-processing/:id",
+  userAuth.checkSession,
+  userWalletController.getPaymentProcessingPage
+);
+router.get(
+  "/payment-status/:id",
+  userAuth.checkSession,
+  userWalletController.getPaymentStatus
+);
+router.get(
+  "/payment-successful",
+  userAuth.checkSession,
+  userWalletController.getPaymentSuccesful
+);
+router.get(
+  "/payment-failed/:id",
+  userAuth.checkSession,
+  userWalletController.getPaymentFailed
+);
+module.exports = router;

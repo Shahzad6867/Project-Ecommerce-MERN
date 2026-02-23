@@ -415,8 +415,7 @@ feather.replace();
                e.preventDefault();
                return;
            }
-          }
-          if(!minProductPrice){
+           if(!minProductPrice){
             iziToast.error({
                title: 'Error',
                message: 'Please enter a Minimum Price for Products that the offer can be applied on.',
@@ -425,10 +424,7 @@ feather.replace();
                e.preventDefault();
                return;
            }
-           
-          
-           
-           
+          }
            
            iziToast.success({
                title: 'Offer',

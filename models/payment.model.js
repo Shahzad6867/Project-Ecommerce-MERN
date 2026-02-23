@@ -1,57 +1,63 @@
-const mongoose = require("mongoose")
-const {Schema} = mongoose
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
 const paymentSchema = new Schema({
-    userId : {
-        type : mongoose.Schema.Types.ObjectId,
-        ref : "User",
-        required : true
-    },
-    orderId : {
-        type : mongoose.Schema.Types.ObjectId,
-        ref : "Order",
-        default : null
-    },
-    amountToBePaid : {
-        type : Number,
-        default : 0
-    },
-    amountPaid : {
-        type : Number,
-        default : 0
-    },
-    amountToBeRefunded : {
-        type : Number,
-        default : 0
-    },
-    amountRefunded : {
-        type : Number,
-        default : 0
-    },
-    paymentDate : {
-        type : Date,
-        default : null
-    },
-    paymentMethod : {
-        type : String,
-        enum : ["Cash on Delivery","Pay with Stripe","Pay with NovaWallet"]
-    },
-    paymentIntentId : {
-        type : String,
-        default : null
-    },
-    status : {
-        type : String,
-        enum : ["Pending","Paid Successfully","Paid Partially","Payment Failed","Order Cancelled"]
-    },
-    relatedTo : {
-        type : String,
-        enum : ["Order","Wallet"]
-    },
-    orderWillBeCancelledAt : {
-        type : Date,
-        default : null
-    }
-})
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  orderId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Order",
+    default: null,
+  },
+  amountToBePaid: {
+    type: Number,
+    default: 0,
+  },
+  amountPaid: {
+    type: Number,
+    default: 0,
+  },
+  amountToBeRefunded: {
+    type: Number,
+    default: 0,
+  },
+  amountRefunded: {
+    type: Number,
+    default: 0,
+  },
+  paymentDate: {
+    type: Date,
+    default: null,
+  },
+  paymentMethod: {
+    type: String,
+    enum: ["Cash on Delivery", "Pay with Stripe", "Pay with NovaWallet"],
+  },
+  paymentIntentId: {
+    type: String,
+    default: null,
+  },
+  status: {
+    type: String,
+    enum: [
+      "Pending",
+      "Paid Successfully",
+      "Paid Partially",
+      "Payment Failed",
+      "Order Cancelled",
+    ],
+  },
+  relatedTo: {
+    type: String,
+    enum: ["Order", "Wallet"],
+  },
+  orderWillBeCancelledAt: {
+    type: Date,
+    default: null,
+  },
+});
 
-module.exports = mongoose.model("Payment",paymentSchema)
+module.exports = mongoose.model("Payment", paymentSchema);

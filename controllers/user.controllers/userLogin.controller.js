@@ -2,7 +2,6 @@ const User = require("../../models/user.model.js");
 const bcryptjs = require("bcryptjs");
 require("dotenv").config();
 
-
 const getUserLogin = async (req, res) => {
   let message = req.session.message || null;
   delete req.session.message;
@@ -36,30 +35,27 @@ const userLogin = async (req, res) => {
     console.log(error);
   }
 };
-const logoutUser = async (req,res) => {
+const logoutUser = async (req, res) => {
   try {
-
-        if(req.user){
-          req.logout((err) => {
-            if(err){
-              return next(err)
-            }
-            return res.redirect("/login")
-          })
-        }else if(req.session.user){
-          req.session.user = null
-          return res.redirect("/login")
-      }
-      
-     
-    } catch (error) {
-      console.error(error);
-      req.session.message = "Something Went Wrong";
-      res.redirect("/admin/dashboard");
+    if (req.user) {
+      req.logout((err, next) => {
+        if (err) {
+          return next(err);
+        }
+        return res.redirect("/login");
+      });
+    } else if (req.session.user) {
+      req.session.user = null;
+      return res.redirect("/login");
     }
-}
+  } catch (error) {
+    console.error(error);
+    req.session.message = "Something Went Wrong";
+    res.redirect("/admin/dashboard");
+  }
+};
 module.exports = {
   getUserLogin,
   userLogin,
-  logoutUser
+  logoutUser,
 };

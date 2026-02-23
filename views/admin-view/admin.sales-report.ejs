@@ -157,7 +157,7 @@
   </div>
   <div class="flex items-center justify-between mb-4">
       <div class="text-sm text-gray-500">
-        Showing <span class="font-medium"><%= (salePerItemlength > 0) ? 1 : 0 %></span> to <span class="font-medium"><%= salePerItem.length %></span> of <span class="font-medium"><%= salePerItem.length %></span> results
+        Showing <span class="font-medium"><%= (salePerItem.length > 0) ? 1 : 0 %></span> to <span class="font-medium"><%= salePerItem.length %></span> of <span class="font-medium"><%= salePerItem.length %></span> results
       </div>
       <div class="flex space-x-2">
         
@@ -173,11 +173,11 @@
             <% } %>
         
        </a>
-       <% let lowerBound = (Math.floor(productWisePage / 5) * 5) + 1 %>
-       <% lowerBound = (lowerBound > pagesForProduct && pagesForProduct > 0) ? pagesForProduct - 4 : lowerBound %>
-       <% let upperBound = lowerBound + 4 %>
-       <% let displayedPages = (upperBound > pagesForProduct) ? pagesForProduct : upperBound %>
-        <% for(let j = lowerBound ; j <= displayedPages ; j++ ) { %>
+       <% let productWiseLowerBound = (Math.floor(productWisePage / 5) * 5) + 1 %>
+       <% productWiseLowerBound = (productWiseLowerBound > pagesForProduct && pagesForProduct > 0) ? pagesForProduct - 4 : productWiseLowerBound %>
+       <% let productWiseUpperBound = productWiseLowerBound + 4 %>
+       <% let productWiseDisplayedPages = (productWiseUpperBound > pagesForProduct) ? pagesForProduct : productWiseUpperBound %>
+        <% for(let j = productWiseLowerBound ; j <= productWiseDisplayedPages ; j++ ) { %>
         <a href="/admin/reports?reportBasedOn=<%= reportBasedOn %>&fromDate=<%= fromDate.toISOString().split("T")[0] %>&toDate=<%= toDate.toISOString().split("T")[0]  %>&productWisePage=<%= j %>">
           <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
             <%= j %>
@@ -269,11 +269,11 @@
       
      </a>
       
-     <% let lowerBound = (Math.floor(orderWisePage / 5) * 5) + 1 %>
-     <% lowerBound = (lowerBound > pagesForOrder && pagesForOrder > 0) ? pagesForOrder - 4 : lowerBound %>
-     <% let upperBound = lowerBound + 4 %>
-     <% let displayedPages = (upperBound > pagesForOrder) ? pagesForOrder : upperBound %>
-      <% for(let i = lowerBound ; i <= displayedPages ; i++ ) { %>
+     <% let orderWiseLowerBound = (Math.floor(orderWisePage / 5) * 5) + 1 %>
+     <% orderWiseLowerBound = (orderWiseLowerBound > pagesForOrder && pagesForOrder > 0) ? pagesForOrder - 4 : orderWiseLowerBound %>
+     <% let orderWiseUpperBound = orderWiseLowerBound + 4 %>
+     <% let orderWiseDisplayedPages = (orderWiseUpperBound > pagesForOrder) ? pagesForOrder : orderWiseUpperBound %>
+      <% for(let i = orderWiseLowerBound ; i <= orderWiseDisplayedPages ; i++ ) { %>
       <a href="/admin/reports?reportBasedOn=<%= reportBasedOn %>&fromDate=<%= fromDate.toISOString().split("T")[0] %>&toDate=<%= toDate.toISOString().split("T")[0]  %>&orderWisePage=<%= i %>">
         <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
           <%= i %>

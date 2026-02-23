@@ -5,64 +5,76 @@
         <div class="max-w-7xl mx-auto flex justify-center overflow-x-auto space-x-6 py-2 hide-scrollbar">
             <% for( let i = 0; i < categories.length; i++ ) { %>
                 <% if (!categories[i].isDeleted) { %>
-                    <form action="/shop/filter" method="post">
+                    <a href="/shop?category=<%= categories[i]._id %>" >
                         <input type="text" name="category" value="<%= categories[i]._id %>" hidden>
                         <button type="submit" class="category whitespace-nowrap hover:text-blue-600 "><%= categories[i].categoryName %></button>
-                    </form>
+                    </a>
               <% } %>
             <% } %>
         </div>
     </div>
 
-    <div class="w-full overflow-hidden relative mb-8">
-        <div class="flex transition-transform duration-300 ease-in-out">
-            <!-- Slide 1 -->
-            <div class="min-w-full h-96 flex items-center justify-center relative">
-                <img src="http://static.photos/shopping/1200x630/1" alt="Summer Sale" class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                    <div class="text-center p-6 max-w-2xl mx-auto text-white">
-                        <h1 class="text-4xl md:text-5xl font-bold mb-4">Summer Sale Up To 50% Off</h1>
-                        <p class="text-xl mb-6">Shop the hottest deals of the season</p>
-                        <button class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-3 px-8 rounded-full">
-                            Shop Now
-                        </button>
+      <div class="px-[5rem] py-4">
+        <div class="w-full rounded-3xl overflow-hidden shadow-xl relative">
+
+
+            <!-- FULL BANNER BACKGROUND -->
+            <div class="bg-[#2ce16b] min-h-[280px] flex items-center">
+               <!-- TOP LEFT -->
+                <div class="absolute -top-40 -left-0 w-56 h-56 bg-white/30 rounded-full"></div>
+                <!-- BOTTOM LEFT -->
+                <div class="absolute -bottom-20 -left-16 w-56 h-56 bg-white/30 rounded-full"></div>
+                <!-- BOTTOM RIGHT -->
+                <div class="absolute -bottom-16 -right-16 w-56 h-56 bg-white/30 rounded-full"></div>
+                                <!-- RIGHT SIDE DECOR / PRODUCTS -->
+                <div class="absolute right-10 flex gap-6">
+
+                    <div class="bg-gray-900 w-24 h-24 rounded-full flex items-center justify-center shadow-xl">
+                        <i data-feather="smartphone" class="text-[#2eec71] w-10 h-10"></i>
                     </div>
+
+                    <div class="bg-gray-900 w-32 h-32 rounded-full flex items-center justify-center shadow-2xl">
+                        <i data-feather="headphones" class="text-[#2eec71] w-12 h-12"></i>
+                    </div>
+        
+        
+                    <div class="bg-gray-900 w-20 h-20 rounded-full flex items-center justify-center shadow-lg">
+                        <i data-feather="monitor" class="text-[#2eec71] w-8 h-8"></i>
+                    </div>
+        
+                </div>
+        
+        
+        
+                <!-- TEXT CONTENT -->
+                <div class="relative z-10 max-w-xl px-12 text-left">
+                    <!-- LOGO -->
+                    <div class="flex items-center gap-3 mb-6">
+                    </div>
+        
+                    <!-- HEADLINE -->
+                    <h2 class="text-4xl font-bold text-slate-900 mb-4">
+                        Discover your next favorite product
+                    </h2>
+        
+                    <!-- DESCRIPTION -->
+                    <p class="text-slate-800 mb-6">
+                        Shop latest products with best prices and fast shipping.
+                    </p>
+        
+                    <!-- BUTTON -->
+                    <a href="/shop"
+                    class="inline-flex items-center gap-3 bg-slate-900 text-white px-6 py-3 rounded-full font-semibold hover:bg-slate-800 transition">
+                        Shop now
+                        <i data-feather="arrow-right"></i>
+                    </a>
+        
                 </div>
             </div>
-            <!-- Slide 2 -->
-            <div class="min-w-full h-96 flex items-center justify-center relative">
-                <img src="http://static.photos/fashion/1200x630/2" alt="New Arrivals" class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                    <div class="text-center p-6 max-w-2xl mx-auto text-white">
-                        <h1 class="text-4xl md:text-5xl font-bold mb-4">New Arrivals</h1>
-                        <p class="text-xl mb-6">Discover our latest collection</p>
-                        <button class="bg-white hover:bg-gray-100 text-red-500 font-bold py-3 px-8 rounded-full">
-                            Explore
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <!-- Slide 3 -->
-            <div class="min-w-full h-96 flex items-center justify-center relative">
-                <img src="http://static.photos/electronics/1200x630/3" alt="Limited Time Offer" class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                    <div class="text-center p-6 max-w-2xl mx-auto text-white">
-                        <h1 class="text-4xl md:text-5xl font-bold mb-4">Limited Time Offer</h1>
-                        <p class="text-xl mb-6">Don't miss out on these exclusive deals</p>
-                        <button class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-3 px-8 rounded-full">
-                            Grab Deals
-                        </button>
-                    </div>
-                </div>
-            </div>
-</div>
-        <!-- Navigation Dots -->
-        <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-            <button class="w-3 h-3 rounded-full bg-white/50 hover:bg-white transition"></button>
-            <button class="w-3 h-3 rounded-full bg-white/50 hover:bg-white transition"></button>
-            <button class="w-3 h-3 rounded-full bg-white/50 hover:bg-white transition"></button>
+        
+        
         </div>
-    </div>
+      </div>
 
 
     
@@ -75,10 +87,10 @@
         <!-- Categories Grid -->
         <section class="mb-12">
             <h2 class="text-2xl font-bold mb-6">Shop By Category</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div class="scroll-x-div gap-4 p-2">
                 <% for( let i = 0; i < categories.length; i++ ) { %>
                     <% if (!categories[i].isDeleted) { %>
-                        <form action="/shop/filter" method="post">
+                        <a href="/shop?category=<%= categories[i]._id %>">
                             <input type="hidden" name="category" value="<%= categories[i]._id %>">
                           
                             <button
@@ -87,8 +99,8 @@
                                      bg-white rounded-lg shadow-sm
                                      p-4 text-center
                                      hover:shadow-md transition-all
-                                     w-44 h-56
-                                     flex flex-col items-center justify-between"
+                                     min-w-[12rem] max-w-[12rem] h-56
+                                     flex flex-col flex-shrink-0 items-center justify-between"
                             >
                               <!-- Image wrapper (fixed size) -->
                               <div class="h-32 w-full flex items-center justify-center overflow-hidden">
@@ -104,7 +116,7 @@
                                 <%= categories[i].categoryName %>
                               </h3>
                             </button>
-                          </form>
+                        </a>
                           
                   <% } %>
                 <% } %>
@@ -321,7 +333,7 @@
 
         <!-- Hero Banner -->
         <div class="mb-8">
-            <div class=" rounded-lg overflow-hidden h-64 flex items-center justify-center text-white">
+            <div class=" rounded-3xl overflow-hidden h-64 flex items-center justify-center text-white">
                 <img src="/images/iphone17pro.jpg"  alt="" class="w-full h-full object-cover">
                 <div class="text-center p-6 absolute">
                     <h1 class="text-4xl font-bold mb-4">iPhone 17 Pro</h1>

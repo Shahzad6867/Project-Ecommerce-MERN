@@ -33,10 +33,11 @@
                         </a>
                 <% } %>
                 <% if ((order.paymentId.status === "Pending" || order.paymentId.status === "Payment Failed") && order.paymentId.paymentMethod === "Pay with Stripe" && !order.isCancelled) { %>
-                    <a href="/orders/<%= order._id %>/pending-payment"
-                      class="px-4 py-2 bg-yellow-400 text-gray-700 hover:bg-yellow-300 mr-2 rounded-md font-bold flex items-center">
-                      <i data-feather="credit-card" class="w-4 h-4 mr-2"></i>
-                      Complete Payment
+                    <a href="/orders/<%= order._id %>/pending-payment">
+                        <button type="button" class="px-4 py-2 bg-yellow-400 text-gray-700 hover:bg-yellow-300 mr-2 rounded-md font-bold flex items-center" onclick="removeProcessingRequestOverlay()">
+                            <i data-feather="credit-card" class="w-4 h-4 mr-2"></i>
+                            Complete Payment
+                        </button>
                     </a>
                   <% } %>
                 <% if (!order.isCancelled && order.items.every(item => item.status === "Placed" || item.status === "Cancelled" ) && !( order.paymentId.paymentMethod === "Pay with Stripe" && ( order.paymentId.status === "Pending" || order.paymentId.status === "Payment Failed"))) { %>
@@ -123,7 +124,7 @@
                                         <% if (order.items[i].status === "Placed" && !order.items[i].isCancelled && nonCancelledItemsLen > 1 && !( order.paymentId.paymentMethod === "Pay with Stripe" && ( order.paymentId.status === "Pending" || order.paymentId.status === "Payment Failed"))) { %>
                                            <button type="button" class="bg-red-400 hover:bg-red-500 p-2 my-auto font-bold rounded-xl" onclick="cancelItem('<%= order._id %>','<%= order.items[i]._id %>')" >Cancel Item</button>
                                         <% }%>
-                                        <% if (order.items[i].status === "Delivered" && !order.items[i].return.isRequested && order.items.length > 1) { %>
+                                        <% if (order.items[i].status === "Delivered" && !order.items[i].return.isRequested && nonCancelledItemsLen > 1) { %>
                                             <button type="button" class="px-4 py-2 btn-primary font-bold my-auto text-black rounded-xl" onclick="openReturnModalForItem('<%- order._id %>','<%- i %>')">
                                                 Return Item
                                             </button>
@@ -177,14 +178,13 @@
                                     </div>
                                 <% } %>
                                 <div class="flex justify-between py-2">
-                                    <span class="text-gray-600">Shipping</span>
-                                    <span class="font-medium">$<%= (order.shipping).toFixed(2) %></span>
-                                </div>
-                                <div class="flex justify-between py-2">
                                     <span class="text-gray-600">Tax</span>
                                     <span class="font-medium">$<%= (order.tax).toFixed(2) %></span>
                                 </div>
-                                
+                                <div class="flex justify-between py-2">
+                                    <span class="text-gray-600">Shipping</span>
+                                    <span class="font-medium">$<%= (order.shipping).toFixed(2) %></span>
+                                </div>
                                 <div class="flex justify-between py-2 font-bold text-lg border-t border-gray-200 mt-2">
                                     <span>Total</span>
                                     <span>$<%= (order.grandTotal).toFixed(2) %></span>
@@ -210,7 +210,7 @@
                         <p><%= order.address.state %>, <%= order.address.city %> <%= (order.address.pincode !== "Not Applicable") ? order.address.pincode : ""%></p>
                         <p><%= order.address.country %></p>
                         <p ><strong>Phone:</strong> <%= order.address.mobileNo %></p>
-                        <p><strong>Shipping Method:</strong> Standard Shipping (Free)</p>
+                        <p><strong>Shipping Method:</strong> Standard Shipping</p>
                     </div>
                 </div>
                 <div class="order-card p-6 border">
