@@ -55,7 +55,7 @@ app.use((req, res, next) => {
 
 connectDatabase();
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, (error) => {
+app.listen(PORT,'0.0.0.0',(error) => {
   try {
     console.log(`Server connected @ ${PORT}`);
   } catch {
