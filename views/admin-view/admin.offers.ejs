@@ -70,6 +70,13 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
+          <% if (offers.length === 0) { %>
+            <tr>
+              <td colspan="8" class="px-6 py-4 whitespace-nowrap text-sm text-center italic text-gray-500">
+                No offers added yet !
+              </td>
+            </tr>
+          <% } %>
             <% for(let i = 0; i < offers.length; i++ ) { %>
               
               

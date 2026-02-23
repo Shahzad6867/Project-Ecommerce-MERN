@@ -104,7 +104,13 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-            
+          <% if (brands.length === 0) { %>
+            <tr>
+              <td colspan="6" class="px-6 py-4 whitespace-nowrap text-sm text-center italic text-gray-500">
+                No brands added yet !
+              </td>
+            </tr>
+          <% } %>
           <% for(let i = 0; i < brands.length; i++ ) { %>
           <tr>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500"><%= i+1 %></td>
