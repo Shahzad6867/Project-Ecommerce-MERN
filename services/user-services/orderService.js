@@ -318,8 +318,8 @@ const placeOrder = async (
             },
           },
         ],
-        success_url: `http://localhost:1348/checkout/payment-processing/${confirmedOrder._id}`,
-        cancel_url: `http://localhost:1348/order-confirmation/${confirmedOrder._id}?paymentId=${savedPayment._id}&status=Cancelled`,
+        success_url: `https://novamart.click/checkout/payment-processing/${confirmedOrder._id}`,
+        cancel_url: `https://novamart.click/order-confirmation/${confirmedOrder._id}?paymentId=${savedPayment._id}&status=Cancelled`,
         customer_email: user.email,
         metadata: {
           user: user._id.toString(),
@@ -429,8 +429,8 @@ const retryPayment = async (user, id) => {
         },
       },
     ],
-    success_url: `http://localhost:1348/checkout/payment-processing/${order._id}`,
-    cancel_url: `http://localhost:1348/order-confirmation/${order._id}?paymentId=${order.paymentId}&status=Cancelled`,
+    success_url: `https://novamart.click/checkout/payment-processing/${order._id}`,
+    cancel_url: `https://novamart.click/order-confirmation/${order._id}?paymentId=${order.paymentId}&status=Cancelled`,
     customer_email: user.email,
     metadata: {
       payment: order.paymentId.toString(),
