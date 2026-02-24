@@ -358,7 +358,7 @@ const defaultAddress = document.getElementById("defaultAddress")
     const data = Object.fromEntries(formData.entries())
     e.preventDefault()
     fetch(`${form.action}`,{
-        method : (form.action === "http://localhost:1348/address") ? "POST" : "PUT",
+        method : (form.action === "https://novamart.click/address") ? "POST" : "PUT",
         headers : {'Content-Type' : "application/json"},
         body : JSON.stringify(data)
     })
@@ -366,7 +366,7 @@ const defaultAddress = document.getElementById("defaultAddress")
     .then(data => {
         const addressesDiv = document.getElementById("addressessDiv")
         let addressCard = null
-        if(form.action === "http://localhost:1348/address"){
+        if(form.action === "https://novamart.click/address"){
             if(data.address.isDefault){
                 document.getElementById(`firstName0`).innerText = ` ${data.address.firstName}`
                 document.getElementById(`lastName0`).innerText = ` ${data.address.lastName}`
