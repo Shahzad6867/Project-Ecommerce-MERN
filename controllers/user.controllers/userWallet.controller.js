@@ -106,8 +106,8 @@ const walletTopUp = async (req, res) => {
         quantity: 1,
       },
     ],
-    success_url: `http://localhost:1348/payment-processing/${payment._id}`,
-    cancel_url: `http://localhost:1348/payment-failed/${payment._id}`,
+    success_url: `https://novamart.click/payment-processing/${payment._id}`,
+    cancel_url: `https://novamart.click/payment-failed/${payment._id}`,
     customer_email: user.email,
     metadata: {
       payment: payment._id.toString(),
