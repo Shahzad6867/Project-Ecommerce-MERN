@@ -196,7 +196,7 @@ const placeOrder = async (
         } else {
           discountAmount = cartItems[0]?.couponApplied.discountValue;
         }
-        if (cartItems[0].couponApplied.name === "REFERRALCOUPON") {
+        if (cartItems[0].couponApplied.name === "WELCOME10") {
           await Coupon.deleteOne({ _id: cartItems[0].couponApplied._id });
         } else {
           userUsedCoupon = new usedCoupon({
@@ -205,7 +205,7 @@ const placeOrder = async (
           });
         }
       } else {
-        if (cartItems[0].couponApplied.name === "REFERRALCOUPON") {
+        if (cartItems[0].couponApplied.name === "WELCOME10") {
           await Coupon.deleteOne({ _id: cartItems[0].couponApplied._id });
           await Cart.updateMany({ userId: user._id }, { couponApplied: null });
         } else {
@@ -318,8 +318,8 @@ const placeOrder = async (
             },
           },
         ],
-        success_url: `https://novamart.click/checkout/payment-processing/${confirmedOrder._id}`,
-        cancel_url: `https://novamart.click/order-confirmation/${confirmedOrder._id}?paymentId=${savedPayment._id}&status=Cancelled`,
+        success_url: process.env.APP_BASE_URL+`/checkout/payment-processing/${confirmedOrder._id}`,
+        cancel_url: process.env.APP_BASE_URL+`/order-confirmation/${confirmedOrder._id}?paymentId=${savedPayment._id}&status=Cancelled`,
         customer_email: user.email,
         metadata: {
           user: user._id.toString(),
@@ -429,8 +429,8 @@ const retryPayment = async (user, id) => {
         },
       },
     ],
-    success_url: `https://novamart.click/checkout/payment-processing/${order._id}`,
-    cancel_url: `https://novamart.click/order-confirmation/${order._id}?paymentId=${order.paymentId}&status=Cancelled`,
+    success_url: process.env.APP_BASE_URL+`/checkout/payment-processing/${order._id}`,
+    cancel_url: process.env.APP_BASE_URL+`/order-confirmation/${order._id}?paymentId=${order.paymentId}&status=Cancelled`,
     customer_email: user.email,
     metadata: {
       payment: order.paymentId.toString(),

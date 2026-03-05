@@ -147,6 +147,7 @@
                             <p class="text-3xl font-bold text-black" >$ <span id="price<%= cartItems[i]._id %><%= cartItems[i].variant %>" ><%= cartItems[i].productId.variants[cartItems[i].variant].price %></span></p>
                         <% } %>
                      </div>
+                     <input type="text" id="quantity<%= cartItems[i]._id %>" value="<%= cartItems[i].quantity %>" class="border border-black bg-white w-[3rem] px-2 text-xl rounded-full py-2 text-center" hidden disabled>
                      <div class="w-full mt-1 flex justify-between items-center">
                          <div id="incDecQtyDiv<%= cartItems[i]._id %>" class="flex items-center mt-2">
                              <button  type="button" class="text-center w-full rounded-lg px-2 py-2 bg-red-400 font-bold text-black mr-1 " >
@@ -181,6 +182,7 @@
                             <p class="text-3xl font-bold text-black" >$ <span id="price<%= cartItems[i]._id %><%= cartItems[i].variant %>" ><%= cartItems[i].productId.variants[cartItems[i].variant].price %></span></p>
                         <% } %>
                      </div>
+                     <input type="text" id="quantity<%= cartItems[i]._id %>" value="<%= cartItems[i].quantity %>" class="border border-black bg-white w-[3rem] px-2 text-xl rounded-full py-2 text-center" hidden disabled>
                      <div class="w-full mt-1 flex justify-between items-center">
                          <div id="incDecQtyDiv<%= cartItems[i]._id %>" class="flex items-center mt-2">
                              <button  type="button" class="text-center w-full rounded-lg px-2 py-2 bg-red-400 font-bold text-black mr-1 " >

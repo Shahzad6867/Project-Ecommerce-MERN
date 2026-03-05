@@ -179,7 +179,7 @@ function incrementQuantity(productIndex, variantIndex, productId) {
         } else {
           iziToast.info({
             title: "Cart",
-            message: data.message,
+            message: data.specMessage,
             position: "topRight",
           });
         }

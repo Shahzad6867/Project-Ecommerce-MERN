@@ -1,6 +1,7 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const User = require("../models/user.model");
+const Coupon = require("../models/coupon.model");
 const Wallet = require("../models/wallet.model");
 const cloudinary = require("./cloudinaryConfig.js");
 const generateReferralCode = require("../utils/referralCodeGenerator.js");
@@ -33,6 +34,8 @@ passport.use(
             isVerified: true,
             googleId: profile.id,
           });
+
+          
 
           let savedUser = await user.save();
           savedUser.referralCode = generateReferralCode(savedUser._id);

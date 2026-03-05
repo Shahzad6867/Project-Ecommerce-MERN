@@ -15,7 +15,7 @@ const getProfile = async (req, res) => {
     defaultAddress,
     user,
   } = await profileService.getUserDetails(theUser._id);
-  const referralUrl = process.env.APP_BASE_URL + `?ref=${user.referralCode}`;
+  const referralUrl = process.env.APP_BASE_URL + `/register?ref=${user.referralCode}`;
   const search = req.query?.search || null;
   let message = req.session.message || null;
   delete req.session.message;
@@ -111,15 +111,20 @@ const editProfile = async (req, res) => {
 
 const getAddress = async (req, res) => {
   const theUser = req.session.user || req.user;
+  const page = req.query.page || 1
+  const perPage = 1
+  const skip = perPage * page - perPage
   const {
     productsFullList,
     cartItems,
     cartItemsCount,
     wishlistItemsCount,
     address,
+    addressessCount,
     defaultAddress,
     user,
-  } = await profileService.getUserDetails(theUser._id);
+  } = await profileService.getUserDetails(theUser._id,skip,perPage);
+  const pages = Math.ceil(addressessCount/perPage)
   const message = req.session.message || null;
   delete req.session.message;
   const search = req.query?.search || null;
@@ -132,6 +137,9 @@ const getAddress = async (req, res) => {
     cartItems,
     cartItemsCount,
     wishlistItemsCount,
+    page,
+    pages,
+    addressessCount,
     search,
   });
 };

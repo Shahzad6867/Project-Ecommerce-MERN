@@ -145,7 +145,7 @@ const deleteOffer = async (req, res) => {
   }
 };
 const searchProducts = async (req, res) => {
-  const result = await offerService.getProducts(req.body.searchTerm);
+  const result = await offerService.getProducts(req.query.searchTerm);
   return res.status(HTTP_STATUS.OK).json({
     products: result,
   });

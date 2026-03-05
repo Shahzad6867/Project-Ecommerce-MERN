@@ -181,10 +181,13 @@
                   100
               ) / 100;
             feather.replace();
-            applyCoupon(
-              data.cart.couponApplied._id,
-              data.cart.couponApplied.minAmount
-            );
+            if(data.cart.couponApplied !== null){
+                applyCoupon(
+                  data.cart.couponApplied._id,
+                  data.cart.couponApplied.minAmount
+                );
+            }
+            
           } else if (
             data.message === "Out of Stock" ||
             data.message === "Product Unavailable"
@@ -232,7 +235,7 @@
           } else {
             iziToast.info({
               title: "Cart",
-              message: data.message,
+              message: data.specMessage,
               position: "topRight",
             });
           }
@@ -273,7 +276,7 @@
       )
         .then((res) => res.json())
         .then((data) => {
-          if (data.message === "Quantity has been updated in Cart") {
+          if (data.message === "Quantity has been updated in Cart" || data.message === "Limited Stock") {
             subTotal.innerText =
               Math.round(
                 (Number(subTotal.innerText) -
@@ -305,10 +308,19 @@
                   100
               ) / 100;
             feather.replace();
-            applyCoupon(
-              data.cart.couponApplied._id,
-              data.cart.couponApplied.minAmount
-            );
+            if(data.cart.couponApplied !== null){
+                applyCoupon(
+                data.cart.couponApplied._id,
+                data.cart.couponApplied.minAmount
+              );
+            }
+            if(data.message === "Limited Stock"){
+              iziToast.info({
+                title: "Cart",
+                message: data.specMessage,
+                position: "topRight",
+              });
+            }
           } else if (
             data.message === "Out of Stock" ||
             data.message === "Product Unavailable"
@@ -348,15 +360,9 @@
                   shipping) *
                   100
               ) / 100;
-            iziToast.error({
-              title: "Cart",
-              message: data.specMessage,
-              position: "topRight",
-            });
-          } else {
             iziToast.info({
               title: "Cart",
-              message: data.message,
+              message: data.specMessage,
               position: "topRight",
             });
           }
@@ -387,29 +393,31 @@
     )
       .then((res) => res.json())
       .then((data) => {
-        myCartHead.innerText =
-          Number(myCartHead.innerText) - Number(quantity.value);
-        cartItemQtyNotifier.innerText =
-          Number(cartItemQtyNotifier.innerText) - Number(quantity.value);
-        myCartHeadInCart.innerText =
-          Number(myCartHeadInCart.innerText) - Number(quantity.value);
-        subTotalItemInCart.innerText =
-          Number(subTotalItemInCart.innerText) - Number(quantity.value);
-        subTotal.innerText = (
-          Math.round(
-            (Number(subTotal.innerText) - Number(quantity.value) * price) * 100
-          ) / 100
-        ).toFixed(2);
-        subTotalInCart.innerText = (
-          Math.round(
-            (Number(subTotalInCart.innerText) -
-              Number(quantity.value) * price) *
-              100
-          ) / 100
-        ).toFixed(2);
-        tax.innerText = (
-          Math.round(Number(subTotalInCart.innerText) * 0.05 * 100) / 100
-        ).toFixed(2);
+        if(Number(subTotalInCart.innerText) > 0){
+              myCartHead.innerText =
+              Number(myCartHead.innerText) - Number(quantity.value);
+            cartItemQtyNotifier.innerText =
+              Number(cartItemQtyNotifier.innerText) - Number(quantity.value);
+            myCartHeadInCart.innerText =
+              Number(myCartHeadInCart.innerText) - Number(quantity.value);
+            subTotalItemInCart.innerText =
+              Number(subTotalItemInCart.innerText) - Number(quantity.value);
+            subTotal.innerText = (
+              Math.round(
+                (Number(subTotal.innerText) - Number(quantity.value) * price) * 100
+              ) / 100
+            ).toFixed(2);
+            subTotalInCart.innerText = (
+              Math.round(
+                (Number(subTotalInCart.innerText) -
+                  Number(quantity.value) * price) *
+                  100
+              ) / 100
+            ).toFixed(2);
+            tax.innerText = (
+              Math.round(Number(subTotalInCart.innerText) * 0.05 * 100) / 100
+            ).toFixed(2);
+        }
         cartItem.remove();
 
         if (document.getElementById("cartItemsDiv").children.length === 0) {
@@ -492,13 +500,13 @@
       for (let i = 0; i < serverMessage.length; i++) {
         if (i === serverMessage.length - 1) {
           let stringLen = serverMessage[i].length - 1;
-          iziToast.error({
+          iziToast.info({
             title: "Cart",
             message: serverMessage[i].slice(0, stringLen),
             position: "topRight",
           });
         } else {
-          iziToast.error({
+          iziToast.info({
             title: "Cart",
             message: serverMessage[i],
             position: "topRight",

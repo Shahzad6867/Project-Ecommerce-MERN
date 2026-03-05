@@ -28,8 +28,6 @@ const getCart = async (req, res) => {
       ? await Coupon.find({ _id: { $nin: usedCoupons[0].coupons},userId : null, endDate : {$gt : new Date()}  })
       : await Coupon.find({ userId: null , endDate : {$gt : new Date()}});
   const userCoupons = await Coupon.find({ userId: user._id, endDate : {$gt : new Date()}});
-  console.log(coupons)
-  console.log(userCoupons)
   res.render("user-view/user.cart-management.ejs", {
     message,
     user,
@@ -146,9 +144,14 @@ const updateCartItem = async (req, res) => {
           cart: cartItem,
         });
       } else if (quantity > availableStock) {
+          if(quantity < cartItem.quantity){
+            cartItem.quantity = quantity;
+            await cartItem.save();
+          }
         return res.status(409).json({
           success: false,
-          message: `${product.productName} has only Limited Stock, The maximum quantity you can order is ${availableStock}`,
+          message : "Limited Stock",
+          specMessage: `${product.productName} has only Limited Stock, The maximum quantity you can order is ${availableStock}`,
           product,
           cart: cartItem,
         });

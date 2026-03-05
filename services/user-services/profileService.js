@@ -9,7 +9,7 @@ const path = require("path");
 const User = require("../../models/user.model");
 require("dotenv").config();
 
-const getUserDetails = async (userId) => {
+const getUserDetails = async (userId,skip,limit) => {
   const productsFullList = await Product.find(
     {},
     { productName: 1, variants: 1, categoryId: 1 }
@@ -25,7 +25,9 @@ const getUserDetails = async (userId) => {
   const address = await Address.find({
     userId: userId,
     isDefault: false,
-  });
+  }).skip(skip).limit(limit);
+
+  const addressessCount = await Address.find({userId : userId}).countDocuments()
   const defaultAddress = await Address.findOne({
     userId: userId,
     isDefault: true,
@@ -37,6 +39,7 @@ const getUserDetails = async (userId) => {
     cartItemsCount,
     wishlistItemsCount,
     address,
+    addressessCount,
     defaultAddress,
     user,
   };

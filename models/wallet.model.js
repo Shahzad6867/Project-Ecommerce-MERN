@@ -6,7 +6,7 @@ const transactionSchema = Schema(
     paymentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Payment",
-      required: true,
+      default : null
     },
     transactionType: {
       type: String,
@@ -14,7 +14,7 @@ const transactionSchema = Schema(
     },
     transactionReason: {
       type: String,
-      enum: ["Wallet Top-up", "Novamart Purchase", "Order Refund"],
+      enum: ["Wallet Top-up", "Novamart Purchase", "Order Refund","Referral Reward"],
     },
     transactionAmount: {
       type: Number,

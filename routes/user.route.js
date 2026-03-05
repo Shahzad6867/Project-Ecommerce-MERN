@@ -15,16 +15,53 @@ const wishlistManagementController = require("../controllers/user.controllers/wi
 const orderManagementController = require("../controllers/user.controllers/orderManagement.controller.js");
 const userWalletController = require("../controllers/user.controllers/userWallet.controller.js");
 
+const User = require("../models/user.model.js")
+const Wallet = require("../models/wallet.model.js")
+const Coupon = require("../models/coupon.model.js")
+
 router.get(
   "/auth/google",
-  userAuth.isLogged,
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
+  userAuth.isLogged,(req, res, next) => {
+    passport.authenticate("google", {
+      scope: ["profile", "email"],
+      state: req.session.referral || null
+    })(req, res, next);
+  });
 router.get(
   "/auth/google/callback",
   userAuth.isLogged,
   passport.authenticate("google", { failureRedirect: "/register" }),
-  (req, res) => {
+  async (req, res) => {
+    if (req?.query?.state) {
+      let user = await User.findOne({ referralCode: req.query.state });
+        let referralUserWallet = await Wallet.findOne({ userId : user._id})
+        referralUserWallet.walletBalance += 10
+        let transaction = {
+         paymentId : null,
+         transactionType : "Credit",
+         transactionReason : "Referral Reward",
+         transactionAmount : 10,
+         createdAt : new Date(),
+         updatedAt : new Date()
+        }
+        referralUserWallet.transactions.push(transaction)
+
+        let coupon = new Coupon({
+          name: "WELCOME10",
+          description: "Upto 10% off on next Order",
+          endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          discountValue: 10,
+          discountType: "percentage",
+          minAmount: 500,
+          maxDiscountAmount: 60,
+          bannerImage: null,
+          userId: req.user._id,
+          maxUsage: 1,
+        });
+        await coupon.save();
+        await referralUserWallet.save()
+      delete req.query.state
+    }
     res.redirect("/");
   }
 );

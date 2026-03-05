@@ -122,7 +122,34 @@
                                     </div>
                                 </div>
                             </div>
-                            <% } %>
+                            
+                        <% } else if (wallet.transactions[i].transactionReason === "Referral Reward") { %>
+                            <div class="transaction-item py-4">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center px-2">
+                                        <div class="p-3 rounded-full bg-blue-600 text-white mr-4">
+                                            <i data-feather="gift" class="w-5 h-5"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-medium">Referral Reward</h3>
+                                            <p class="text-sm text-gray-500"><%= new Date(wallet.transactions[i].createdAt).toLocaleDateString("en-IN", {
+                                                day: "numeric",
+                                                month: "short",
+                                                year: "numeric"
+                                            }) %> • <%= new Date(wallet.transactions[i].createdAt).toLocaleTimeString('en-US', { 
+                                                    hour: '2-digit', 
+                                                    minute: '2-digit', 
+                                                    hour12: true 
+                                                }) %></p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold px-4 flex justify-center items-center rounded-full bg-green-400">$<%= Number(wallet.transactions[i].transactionAmount).toFixed(2) %></p>
+                                        <p class="text-sm text-gray-500 text-center">Reward</p>
+                                    </div>
+                                </div>
+                            </div>
+                         <% } %>
                     <% } %>
                         
 

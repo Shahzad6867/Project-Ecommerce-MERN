@@ -18,10 +18,13 @@ const searchUser = async (req, res) => {
       return res.redirect("/admin/users");
     }
     const usersFullList = await User.find({});
+    const message = req.session.message || null
+    delete req.session.message
     res.render("admin-view/admin.searched-user-managment.ejs", {
       users,
       search,
       usersFullList,
+      message
     });
   } catch (error) {
     console.error(error);

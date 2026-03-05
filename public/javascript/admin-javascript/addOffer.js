@@ -97,12 +97,8 @@ feather.replace();
             
             let items = [];
             if (offerType === 'product') {
-                fetch("/admin/search-products",{
-                    method : "POST",
-                    headers : {
-                        "Content-Type" : "application/json"
-                    },
-                    body : JSON.stringify({searchTerm : searchTerm})
+                fetch(`/admin/search-products?searchTerm=${searchTerm}`,{
+                    method : "GET"
                 })
                 .then(res => res.json())
                 .then(data => {

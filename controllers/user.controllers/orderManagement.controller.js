@@ -30,6 +30,7 @@ const getCheckout = async (req, res) => {
     .populate("productOfferId")
     .populate("categoryOfferId")
     .populate("couponApplied");
+  const stockUnavailable = []
   for (let i = 0; i < cartItems.length; i++) {
     if (
       cartItems[i].productId.variants[cartItems[i].variant].isBlocked ||
@@ -48,6 +49,17 @@ const getCheckout = async (req, res) => {
       req.session.message =
         "Some items in your cart are Out of Stock. Please remove them to continue";
       return res.redirect("/cart");
+    } else if (
+      cartItems[i].productId.variants[cartItems[i].variant].stockQuantity > 0 &&
+      cartItems[i].productId.variants[cartItems[i].variant].stockQuantity < cartItems[i].quantity
+    ) {
+      stockUnavailable.push(
+        `${cartItems[i].productId.productName}-${cartItems[i].productId.variants[cartItems[i].variant].size} has only Limited Stock, The maximum quantity you can order is ${cartItems[i].productId.variants[cartItems[i].variant].stockQuantity}, Please update the quantity in cart and proceed to Checkout_`
+      );
+    }
+    if(stockUnavailable.length > 0){
+      req.session.message = stockUnavailable
+      return res.redirect("/cart")
     }
   }
   const wishlistItemsCount = await Wishlist.find({
@@ -59,6 +71,7 @@ const getCheckout = async (req, res) => {
     isDefault: true,
   });
   const search = req.query.search || null;
+  const wallet = await Wallet.findOne({userId : user._id})
   res.render("user-view/user.checkout-page.ejs", {
     user,
     productsFullList,
@@ -68,6 +81,7 @@ const getCheckout = async (req, res) => {
     message,
     wishlistItemsCount,
     search,
+    wallet
   });
 };
 

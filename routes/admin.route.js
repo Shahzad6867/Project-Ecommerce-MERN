@@ -179,7 +179,7 @@ router.post(
   offerManagementController.editOffer
 );
 router.delete("/offers/delete-offer", offerManagementController.deleteOffer);
-router.post("/search-products", offerManagementController.searchProducts);
+router.get("/search-products", offerManagementController.searchProducts);
 router.get("/search-categories", offerManagementController.searchCategories);
 
 //Coupon Management

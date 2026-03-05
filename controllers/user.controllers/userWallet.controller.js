@@ -46,7 +46,10 @@ const getWallet = async (req, res) => {
         },
       },
       {
-        $unwind: "$transactions.paymentId",
+        $unwind:  {
+          path: "$transactions.paymentId",
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $lookup: {
@@ -71,6 +74,7 @@ const getWallet = async (req, res) => {
       },
     ]);
   }
+  console.log(wallet)
   const search = req.query.search || null;
   res.render("user-view/user.wallet.ejs", {
     message,
@@ -106,8 +110,8 @@ const walletTopUp = async (req, res) => {
         quantity: 1,
       },
     ],
-    success_url: `https://novamart.click/payment-processing/${payment._id}`,
-    cancel_url: `https://novamart.click/payment-failed/${payment._id}`,
+    success_url: process.env.APP_BASE_URL+`/payment-processing/${payment._id}`,
+    cancel_url: process.env.APP_BASE_URL+`/payment-failed/${payment._id}`,
     customer_email: user.email,
     metadata: {
       payment: payment._id.toString(),

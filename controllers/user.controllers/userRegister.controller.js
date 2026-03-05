@@ -7,10 +7,11 @@ require("dotenv").config();
 const getUserRegister = async (req, res) => {
   let message = req.session.message || null;
   delete req.session.message;
-
+      if(req.query.ref){
+        req.session.referral = req.query.ref
+      }
   res.render("user-view/user.register.ejs", {
-    message,
-    ref: req.query.ref || null,
+    message
   });
 };
 
@@ -31,9 +32,7 @@ const userRegister = async (req, res) => {
       otpCode: generatedOtp,
       createdAt: new Date(now.getTime() + 3 * 60 * 1000),
     });
-    if (req.body.ref !== "" || req.body.ref !== undefined) {
-      req.session.referral = req.body.ref;
-    }
+    
     let savedOtp = await newOtp.save();
     console.log(savedOtp);
     console.log(generatedOtp);

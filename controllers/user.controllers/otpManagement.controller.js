@@ -39,24 +39,7 @@ const userOtp = async (req, res) => {
       await Otp.deleteOne({ _id: userOtp._id });
       const { firstName, lastName, email, phone, password, terms } =
         req.session.otpUser;
-      if (req.session.referral) {
-        let user = await User.findOne({ referralCode: req.session.referral });
-        let coupon = new Coupon({
-          name: "REFERRALCOUPON",
-          description: "Upto 10% off on next Order",
-          endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          discountValue: 10,
-          discountType: "percentage",
-          minAmount: 500,
-          maxDiscountAmount: 60,
-          bannerImage: null,
-          userId: user._id,
-          maxUsage: 1,
-        });
-        await coupon.save();
-      }
       const passwordHashed = await bcryptjs.hash(password, 12);
-      console.log(passwordHashed);
       const newUser = new User({
         firstName,
         lastName,
@@ -67,12 +50,41 @@ const userOtp = async (req, res) => {
         isVerified: true,
       });
       let savedUser = await newUser.save();
+      
       savedUser.referralCode = generateReferralCode(savedUser._id);
       let wallet = new Wallet({
         userId: savedUser._id,
         balanceAmount: 0,
         transactions: [],
       });
+      if (req.session.referral) {
+        let user = await User.findOne({ referralCode: req.session.referral });
+        let referralUserWallet = await Wallet.findOne({ userId : user._id})
+        referralUserWallet.walletBalance += 10
+        let transaction = {
+         paymentId : null,
+         transactionType : "Credit",
+         transactionReason : "Referral Reward",
+         transactionAmount : 10,
+         createdAt : new Date(),
+         updatedAt : new Date()
+        }
+        referralUserWallet.transactions.push(transaction)
+        let coupon = new Coupon({
+          name: "WELCOME10",
+          description: "Upto 10% off on next Order",
+          endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          discountValue: 10,
+          discountType: "percentage",
+          minAmount: 500,
+          maxDiscountAmount: 60,
+          bannerImage: null,
+          userId: savedUser._id,
+          maxUsage: 1,
+        });
+        await coupon.save();
+        await referralUserWallet.save()
+      }
       await wallet.save();
       await savedUser.save();
       req.session.message = "User Created Successfully, Please Log In";
