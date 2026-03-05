@@ -231,7 +231,7 @@ const deleteOffer = async (offer) => {
 };
 
 const getProducts = async (search) => {
-  let result = await Product.find({ $text: { $search: search } });
+  let result = await Product.find( { productName : { $regex: search, $options: "i" } });
   return result;
 };
 const getCategories = async () => {
