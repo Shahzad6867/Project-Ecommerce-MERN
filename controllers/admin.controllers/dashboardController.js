@@ -1,8 +1,7 @@
 const dashboardService = require("../../services/admin-services/dashboardService.js");
-const ERROR_MESSAGES = require("../../constants/errorMessages.js");
 const HTTP_STATUS = require("../../constants/httpStatus.js");
 
-const getAdminDashboard = async (req, res) => {
+const getAdminDashboard = async (req, res, next) => {
   try {
     let totalOrdersCount = await dashboardService.computeTotalOrdersCount();
     let totalCustomersCount =
@@ -19,7 +18,7 @@ const getAdminDashboard = async (req, res) => {
     let top10Brands = await dashboardService.computeTop10Brands();
     const message = req.session.message || null;
     delete req.session.message;
-    res.render("admin-view/admin.dashboard.ejs", {
+    res.status(HTTP_STATUS.OK).render("admin-view/admin.dashboard.ejs", {
       totalCustomersCount,
       totalOrdersCount,
       grossSales,
@@ -33,14 +32,11 @@ const getAdminDashboard = async (req, res) => {
       message,
     });
   } catch (err) {
-    console.error(err);
-    res.render("admin-view/admin.dashboard.ejs", {
-      message: ERROR_MESSAGES.SERVER_ERROR,
-    });
+   next(error)
   }
 };
 
-const getRevenueChartDetails = async (req, res) => {
+const getRevenueChartDetails = async (req, res, next) => {
   let generateFor = req.query.basedOn;
   let revenueChart = null;
   if (generateFor === "last24Hours") {

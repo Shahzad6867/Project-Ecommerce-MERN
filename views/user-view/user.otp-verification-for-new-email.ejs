@@ -7,7 +7,7 @@
             <p class="text-black text-opacity-80">We've sent a verification code to your email</p>
         </div>
 
-        <form method="post" action="/otp-verification-for-new-email"  class="space-y-6">
+        <form id="otpForm"  class="space-y-6">
             <input type="hidden" id="serverMessage"  value="<%= typeof message !== 'undefined' ? message : '' %>">
             <input type="hidden" id="otpTimer"  value="<%= typeof allocatedTime !== 'undefined' ? allocatedTime : '' %>">
             <div class="flex justify-center">
@@ -19,7 +19,7 @@
                 <input type="text" name="otp" maxlength="1" class="otp-input" pattern="\d*" inputmode="numeric" >
             </div>
 
-            <button type="submit" id="verifyOtpButton" class="w-full py-3 px-4 bg-yellow-400  hover:bg-yellow-300 text-black font-semibold rounded-lg transition duration-300 flex items-center justify-center space-x-2">
+            <button type="button" id="verifyOtpButton" class="w-full py-3 px-4 bg-yellow-400  hover:bg-yellow-300 text-black font-semibold rounded-lg transition duration-300 flex items-center justify-center space-x-2" onclick="verifyOtp()">
                 <span>Verify OTP</span>
                 <i data-feather="arrow-right" class="w-5 h-5"></i>
             </button>

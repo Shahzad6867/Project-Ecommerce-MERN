@@ -71,15 +71,31 @@
 
   
     <div class="flex justify-end mb-4">
+      <div class="flex items-center gap-2 mr-4">
+        <form autocomplete="off" action="/admin/brands" method="get">
+        <span class="text-md text-gray-600">Sort By :</span>
+        <select name="sortBy" class="border border-gray-300 rounded-md px-3 py-1 w-[18rem] focus:outline-none focus:ring-2 focus:ring-green-500">
+          <option value="recently-created" <%= (sortBy === "recently-created") ? "selected" : "" %>>Brand Recently Created</option>
+          <option value="created-long-ago" <%= (sortBy === "created-long-ago") ? "selected" : "" %>>Brand Created Long ago</option>
+          <option value="name-a-z" <%= (sortBy === "name-a-z") ? "selected" : "" %>>Brand Name A-Z</option>
+          <option value="name-z-a" <%= (sortBy === "name-z-a") ? "selected" : "" %>>Brand Name Z-A</option>
+        </select>
+        <button type="submit" class="btn-primary font-medium text-gray-700   rounded-md transition duration-300 ">
+          <div class="flex justify-center">
+           <h1 class="font-bold p-2">Apply</h1>
+          </div>
+        </button>
+       </form>
+      </div>
       <div class="flex items-center gap-2">
-        <form action="/admin/items-per-page" method="post">
+        <form action="/admin/items-per-page" method="get">
         <span class="text-md text-gray-600">Items per page:</span>
         <select name="itemsPerPage" class="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-green-500">
-          <option value="5">5</option>
-          <option value="10">10</option>
-          <option value="25">25</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
+          <option value="5" <%= (perPage === 5) ? "selected" : "" %>>5</option>
+          <option value="10" <%= (perPage === 10) ? "selected" : "" %>>10</option>
+          <option value="25" <%= (perPage === 25) ? "selected" : "" %>>25</option>
+          <option value="50" <%= (perPage === 50) ? "selected" : "" %>>50</option>
+          <option value="100" <%= (perPage === 100) ? "selected" : "" %>>100</option>
         </select>
         <button type="submit" class="tick-primary font-medium text-gray-700   rounded-md transition duration-300 ">
           <div class="flex justify-center">
@@ -160,7 +176,7 @@
                             </button>
                         </div>
                         
-                        <form id="editBrandForm<%= i %>" class="space-y-4" action="/admin/edit-brand?id=<%= brands[i]._id %>" method="post" enctype="multipart/form-data" onsubmit="return validateEditForm('<%= i %>','<%= brands[i].brandName.trim() %>','<%= brands[i].description.trim() %>')">
+                        <form id="editBrandForm<%= i %>" class="space-y-4" >
                             <div>
                                 <label for="editBrandImage" class="block text-sm font-medium text-gray-700 mb-1">Brand Image</label>
                                 <div class="mt-1 flex items-center">
@@ -184,7 +200,7 @@
                                 <button type="button" onclick="document.getElementById('editBrandModal<%= i %>').classList.add('hidden')" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                                     Cancel
                                 </button>
-                                <button type="submit" class="px-4 py-2  rounded-md  text-sm font-semibold text-gray-700 btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                <button type="button" class="px-4 py-2  rounded-md  text-sm font-semibold text-gray-700 btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" onclick="updateBrand('<%= i %>','<%= brands[i]._id %>','<%= brands[i].brandName.trim() %>','<%= brands[i].description.trim() %>')">
                                     Update Brand
                                 </button>
                             </div>
@@ -217,7 +233,7 @@
       </div>
       <div class="flex space-x-2">
         
-        <a href="/admin/brands?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %>">
+        <a href="/admin/brands?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %><%= (sortBy) ? "&sortBy="+sortBy :  "" %>">
           <% if (Number(page) === 1) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Previous
@@ -234,13 +250,13 @@
        <% lowerBound = (lowerBound > pages && pages > 0) ? pages - 9 : lowerBound %>
        <% let displayedPages = (upperBound > pages) ? pages : upperBound %>
        <% for(let i = lowerBound ; i <= displayedPages; i++ ) { %>
-        <a href="/admin/brands?page=<%= i %>">
+        <a href="/admin/brands?page=<%= i %><%= (sortBy) ? "&sortBy="+sortBy :  "" %>">
           <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
             <%= i %>
           </button>
         </a>
         <% } %>
-        <a href="/admin/brands?page=<%= Number(page) < pages ? Number(page) + 1 : pages %>">
+        <a href="/admin/brands?page=<%= Number(page) < pages ? Number(page) + 1 : pages %><%= (sortBy) ? "&sortBy="+sortBy :  "" %>">
           <% if (Number(page) === pages) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Next

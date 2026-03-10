@@ -83,7 +83,7 @@ function previewImage(input) {
   reader.readAsDataURL(file);
 }
 
-document.getElementById("couponForm").addEventListener("submit", function (e) {
+ function validateCouponForm() {
   // Validate form
 
   const couponName = document.getElementById("couponName").value;
@@ -103,8 +103,8 @@ document.getElementById("couponForm").addEventListener("submit", function (e) {
       message: "Please enter a Coupon Name",
       position: "topCenter",
     });
-    e.preventDefault();
-    return;
+    event.preventDefault();
+    return false;
   }
 
   if (description === "") {
@@ -113,8 +113,8 @@ document.getElementById("couponForm").addEventListener("submit", function (e) {
       message: "Please enter a Description",
       position: "topCenter",
     });
-    e.preventDefault();
-    return;
+    event.preventDefault();
+    return false;
   }
 
   if (endDate === "") {
@@ -123,8 +123,8 @@ document.getElementById("couponForm").addEventListener("submit", function (e) {
       message: "Please select a Valid End Date and Time",
       position: "topCenter",
     });
-    e.preventDefault();
-    return;
+    event.preventDefault();
+    return false;
   }
   if (end <= now) {
     iziToast.error({
@@ -132,8 +132,8 @@ document.getElementById("couponForm").addEventListener("submit", function (e) {
       message: "Please select a Future End Date and Time ",
       position: "topCenter",
     });
-    e.preventDefault();
-    return;
+    event.preventDefault();
+    return false;
   }
   if (discountValue === "") {
     iziToast.error({
@@ -141,8 +141,8 @@ document.getElementById("couponForm").addEventListener("submit", function (e) {
       message: "Please enter a Discount Value",
       position: "topCenter",
     });
-    e.preventDefault();
-    return;
+    event.preventDefault();
+    return false;
   }
 
   if (discountType === "") {
@@ -151,8 +151,8 @@ document.getElementById("couponForm").addEventListener("submit", function (e) {
       message: "Please select a Discount Type",
       position: "topCenter",
     });
-    e.preventDefault();
-    return;
+    event.preventDefault();
+    return false;
   }
 
   if (discountType === "percentage" && discountValue > 70) {
@@ -161,8 +161,8 @@ document.getElementById("couponForm").addEventListener("submit", function (e) {
       message: "Please enter a Discount Percentage that is less than 70",
       position: "topCenter",
     });
-    e.preventDefault();
-    return;
+    event.preventDefault();
+    return false;
   }
 
   if (discountType === "flat" && discountValue > 120) {
@@ -171,8 +171,8 @@ document.getElementById("couponForm").addEventListener("submit", function (e) {
       message: "Please enter a Flat Discount that is less than 120",
       position: "topCenter",
     });
-    e.preventDefault();
-    return;
+    event.preventDefault();
+    return false;
   }
   if (minAmount === "") {
     iziToast.error({
@@ -181,8 +181,8 @@ document.getElementById("couponForm").addEventListener("submit", function (e) {
         "Please enter a Minimum Order Amount that the coupon can be Applied",
       position: "topCenter",
     });
-    e.preventDefault();
-    return;
+    event.preventDefault();
+    return false;
   }
   if (maxDiscountAmount === "") {
     iziToast.error({
@@ -191,9 +191,18 @@ document.getElementById("couponForm").addEventListener("submit", function (e) {
         "Please enter a Maximum Discount that the coupon can apply on Order amount.",
       position: "topCenter",
     });
-    e.preventDefault();
-    return;
+    event.preventDefault();
+    return false;
   }
 
   document.getElementById("maxDiscountAmount").disabled = false;
-});
+  return true;
+}
+function updateCoupon(){
+  if(validateCouponForm()){
+      fetch(document.getElementById("couponForm").action , {
+          method : "PUT",
+          body : new FormData(document.getElementById("couponForm"))
+      }).then(res => window.location.href = "/admin/coupons")
+  }
+ }

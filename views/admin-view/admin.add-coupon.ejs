@@ -13,9 +13,9 @@
             </div>
         </div>
         <% if (coupon !== null) { %>
-            <form  id="couponForm" action="/admin/coupons/edit-coupon?id=<%= coupon._id %>" method="post" enctype="multipart/form-data" class="bg-white rounded-lg shadow p-6" novalidate>
+            <form  id="couponForm" action="/admin/coupons/edit-coupon?id=<%= coupon._id %>" class="bg-white rounded-lg shadow p-6" novalidate>
         <% } else {%>
-        <form  id="couponForm" action="/admin/coupons/add-coupon" method="post" enctype="multipart/form-data" class="bg-white rounded-lg shadow p-6" novalidate>
+        <form  id="couponForm" action="/admin/coupons/add-coupon" method="post" enctype="multipart/form-data" class="bg-white rounded-lg shadow p-6" onsubmit="return validateCouponForm()" novalidate>
         <% } %>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -90,7 +90,7 @@
 
             <div class="mt-8 flex justify-end space-x-3">
                 
-                <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <button type="<%= (coupon !== null) ? "button" : "submit" %>" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" <%= (coupon !== null) ? "onclick=updateCoupon()" : "" %>>
                     Save Coupon
                 </button>
             </div>

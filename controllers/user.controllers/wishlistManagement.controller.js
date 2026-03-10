@@ -2,8 +2,10 @@ const Product = require("../../models/product.model");
 const Cart = require("../../models/cart.model");
 const Wishlist = require("../../models/wishlist.model");
 const Offer = require("../../models/offer.model");
+const HTTP_STATUS = require("../../constants/httpStatus.js");
 
-const getWishlist = async (req, res) => {
+
+const getWishlist = async (req, res, next) => {
   let user = req.session.user || req.user;
   let message = req.session.message || null;
   delete req.session.message;
@@ -26,7 +28,7 @@ const getWishlist = async (req, res) => {
     .populate("categoryOfferId");
   const offers = await Offer.find({});
   const search = req.query.search || null;
-  res.render("user-view/user.wishlist.ejs", {
+  res.status(HTTP_STATUS.OK).render("user-view/user.wishlist.ejs", {
     message,
     user,
     productsFullList,
@@ -38,7 +40,7 @@ const getWishlist = async (req, res) => {
   });
 };
 
-const addToWishlist = async (req, res) => {
+const addToWishlist = async (req, res, next) => {
   try {
     const { productId, variant } = req.query;
     let user = req.session.user || req.user;
@@ -53,20 +55,16 @@ const addToWishlist = async (req, res) => {
       productOfferId: product.variants[variant].productOfferId,
     });
     await wishlistItem.save();
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
       message: "Product has been added to Wishlist",
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      success: false,
-      message: "Oops! something went wrong from our side",
-    });
+    next(error)
   }
 };
 
-const deleteWishlistItem = async (req, res) => {
+const deleteWishlistItem = async (req, res, next) => {
   try {
     const { productId, variant } = req.query;
     let user = req.session.user || req.user;
@@ -76,16 +74,12 @@ const deleteWishlistItem = async (req, res) => {
       productId: productId,
       variant: variant,
     });
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
       message: "Item have been removed from your Cart",
     });
   } catch (error) {
-    console.log(error);
-    return res.status(200).json({
-      success: false,
-      message: error.message,
-    });
+    next(error)
   }
 };
 

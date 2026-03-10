@@ -46,6 +46,10 @@ const itemSchema = Schema({
     type: Boolean,
     default: false,
   },
+  cancelReason : {
+    type : String,
+    default : null
+  },
   refundOnCancelled: {
     refundId: { type: String, default: null },
     status: { type: String, enum: ["Initiated", "Refunded"], default: null },

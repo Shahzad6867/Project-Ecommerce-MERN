@@ -1,7 +1,7 @@
-const selectedOptionToViewTheList = async (req, res) => {
+const selectedOptionToViewTheList = async (req, res, next) => {
   try {
     const redirectTo = req.headers.referer.slice(21);
-    const { itemsPerPage } = req.body;
+    const { itemsPerPage } = req.query;
     req.session.itemsPerPage = itemsPerPage;
     if (redirectTo) {
       res.redirect(redirectTo);
@@ -9,7 +9,7 @@ const selectedOptionToViewTheList = async (req, res) => {
       res.redirect("/admin/users");
     }
   } catch (error) {
-    console.log(error);
+   next(error)
   }
 };
 

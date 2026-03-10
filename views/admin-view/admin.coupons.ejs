@@ -21,15 +21,57 @@
     
   
     <div class="flex justify-end mb-4">
+
+      <div class="flex items-center gap-2 mr-4">
+        <button onclick="toggleFilters()" class="addBtn-primary z-0 px-4 py-1 bg-green-600 text-black  rounded-md ">
+          Filters
+        </button>
+        <% if(discountType || discountValue || expiryDate){ %>
+          <a href="/admin/coupons" class="btn-primary flex py-1 px-2 rounded-md">
+            <i data-feather="x" ></i>
+            Clear
+          </a>
+        <% } %>
+      </div>
+      
+      
+      <div class="flex items-center gap-2 mr-4">
+        <form autocomplete="off" action="/admin/coupons" method="get">
+          <% if (discountType) { %>
+            <input type="hidden" name="discountType" value="<%= discountType %>">
+           <% } %>
+           <% if (discountValue) { %>
+             <input type="hidden" name="discountValue" value="<%= discountValue %>">
+            <% } %>
+            <% if (expiryDate) { %>
+             <input type="hidden" name="expiryDate" value="<%= expiryDate %>">
+            <% } %>
+          
+        <select name="sortBy" class="border border-gray-300 rounded-md px-3 py-1 w-[16rem] focus:outline-none focus:ring-2 focus:ring-green-500">
+          <option value="">Sort By</option>
+          <option value="recently-created" <%= (sortBy === "recently-created") ? "selected" : "" %>>Coupon Recently Created</option>
+          <option value="created-long-ago" <%= (sortBy === "created-long-ago") ? "selected" : "" %>>Coupon Created Long ago</option>
+          <option value="name-a-z" <%= (sortBy === "name-a-z") ? "selected" : "" %>>Coupon Name A-Z</option>
+          <option value="name-z-a" <%= (sortBy === "name-z-a") ? "selected" : "" %>>Coupon Name Z-A</option>
+          <option value="expiry-nearest" <%= (sortBy === "expiry-nearest") ? "selected" : "" %>>Expiry Date (Nearest)</option>
+          <option value="expiry-farthest" <%= (sortBy === "expiry-farthest") ? "selected" : "" %>>Expiry Date (Farthest)</option>
+        </select>
+        <button type="submit" class="btn-primary font-medium text-gray-700   rounded-md transition duration-300 ">
+          <div class="flex justify-center">
+           <h1 class="font-bold p-2">Apply</h1>
+          </div>
+        </button>
+       </form>
+      </div>
       <div class="flex items-center gap-2">
-        <form autocomplete="off" action="/admin/items-per-page" method="post">
+        <form autocomplete="off" action="/admin/items-per-page" method="get">
         <span class="text-md text-gray-600">Items per page:</span>
         <select name="itemsPerPage" class="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-green-500">
-          <option value="5">5</option>
-          <option value="10">10</option>
-          <option value="25">25</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
+          <option value="5" <%= (perPage === 5) ? "selected" : "" %>>5</option>
+          <option value="10" <%= (perPage === 10) ? "selected" : "" %>>10</option>
+          <option value="25" <%= (perPage === 25) ? "selected" : "" %>>25</option>
+          <option value="50" <%= (perPage === 50) ? "selected" : "" %>>50</option>
+          <option value="100" <%= (perPage === 100) ? "selected" : "" %>>100</option>
         </select>
         <button type="submit" class="tick-primary font-medium text-gray-700   rounded-md transition duration-300 ">
           <div class="flex justify-center">
@@ -41,13 +83,52 @@
        </form>
       </div>
     </div>
+    <div id="filterPanel" class="<%= (discountType || discountValue || expiryDate) ? "" : 'hidden' %> bg-white border rounded-lg p-4 mb-6 shadow-sm">
+    
+      <form autocomplete="off" action="/admin/coupons" method="get" class="flex items-end gap-2">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        <!-- Discount Type -->
+        <div class="flex flex-col">
+          <label for="discountType" class="text-sm text-gray-600 mb-1">Discount Type</label>
+          <select name="discountType"
+            class="border border-gray-300 rounded-md px-3 py-1 w-[16rem] focus:outline-none focus:ring-2 focus:ring-green-500">
+            <option value="">All</option>
+            <option value="percentage" <%= (discountType === "percentage") ? "selected" : "" %>>Percentage</option>
+            <option value="flat" <%= (discountType === "flat") ? "selected" : "" %>>Flat</option>
+          </select>
+        </div>
+         <!-- Discount Value -->
+         <div class="flex flex-col">
+          <label for="discountType" class="text-sm text-gray-600 mb-1">Discount Value</label>
+          <input type="number" min="0" value="<%= discountValue || '' %>" name="discountValue" class="border border-gray-300 rounded-md px-3 py-[0.29rem] focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="0">
+        </div>
+    
+        <!-- Expiry Date -->
+        <div class="flex flex-col">
+          <label for="expiryDate" class="text-sm text-gray-600 mb-1">Expiry Date</label>
+          <input id="expiryDate" type="date" name="expiryDate" value="<%= expiryDate || '' %>"
+            class="border border-gray-300 rounded-md px-3 py-[0.29rem] focus:outline-none focus:ring-2 focus:ring-green-500">
+        </div>
+    
+        <!-- Apply Button -->
+        <button type="submit"
+          class="btn-primary font-medium text-gray-700 rounded-md transition duration-300">
+          <div class="flex justify-center">
+            <h1 class="font-bold p-2">Apply Filters</h1>
+          </div>
+        </button>
+       </div>
+      </form>
+    
+    </div>
     <div class="bg-white rounded-lg shadow overflow-hidden">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-green-50">
           <tr>
             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">No</th>
             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">Coupon Name</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Discount Value (%)</th>
+            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Discount Type</th>
+            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Discount Value</th>
             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Expires On</th>
             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Status</th>
             <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Actions</th>
@@ -58,7 +139,7 @@
             <tr>
               <td></td>
               <td colspan="6" class="px-6 py-4 whitespace-nowrap text-sm text-center italic text-gray-500">
-               No coupons have been added yet !
+               No coupons found !
               </td>
             </tr>
           <% } %>
@@ -101,7 +182,9 @@
                   </td>
                   
           
-                
+                  <td class="px-6 py-4 whitespace-nowrap uppercase text-sm text-center text-gray-500">
+                    <%= coupons[i].discountType %>
+                  </td>
                   <td class="px-6 py-4 whitespace-nowrap uppercase text-sm text-center text-gray-500">
                     <%= coupons[i].discountValue %>
                   </td>
@@ -152,7 +235,7 @@
       </div>
       <div class="flex space-x-2">
         
-        <a href="/admin/coupons?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %>">
+        <a href="/admin/coupons?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %><%= (discountType) ? "&discountType="+discountType : '' %><%= (discountValue) ? "&discountValue="+discountValue : '' %><%= (expiryDate) ? "&expiryDate="+expiryDate : '' %><%= (sortBy) ? "&sortBy="+sortBy : '' %>">
           <% if (Number(page) === 1) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Previous
@@ -169,13 +252,13 @@
        <% lowerBound = (lowerBound > pages && pages > 0) ? pages - 9 : lowerBound %>
        <% let displayedPages = (upperBound > pages) ? pages : upperBound %>
        <% for(let i = lowerBound ; i <= displayedPages; i++ ) { %>
-        <a href="/admin/coupons?page=<%= i %>">
+        <a href="/admin/coupons?page=<%= i %><%= (discountType) ? "&discountType="+discountType : '' %><%= (discountValue) ? "&discountValue="+discountValue : '' %><%= (expiryDate) ? "&expiryDate="+expiryDate : '' %><%= (sortBy) ? "&sortBy="+sortBy : '' %>">
           <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
             <%= i %>
           </button>
         </a>
         <% } %>
-        <a href="/admin/coupons?page=<%= Number(page) < pages ? Number(page) + 1 : pages %>">
+        <a href="/admin/coupons?page=<%= Number(page) < pages ? Number(page) + 1 : pages %><%= (discountType) ? "&discountType="+discountType : '' %><%= (discountValue) ? "&discountValue="+discountValue : '' %><%= (expiryDate) ? "&expiryDate="+expiryDate : '' %><%= (sortBy) ? "&sortBy="+sortBy : '' %>">
           <% if (Number(page) === pages) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Next
@@ -195,7 +278,12 @@
   <!-- Script.js -->
 <script>
   feather.replace()
-
+  const expiryDate = document.getElementById("expiryDate")
+  const now = new Date()
+  const year = now.getFullYear();
+  const month = (now.getMonth() + 1).toString().padStart(2, "0");
+  const day = now.getDate().toString().padStart(2, "0");
+  expiryDate.setAttribute("max", `${year}-${month}-${day}`);
   const serverMessage = document.getElementById("serverMessage").value
   if(serverMessage === "Coupon Updated Successfully"){
     iziToast.success({

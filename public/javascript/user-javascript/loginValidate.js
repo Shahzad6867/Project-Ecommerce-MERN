@@ -99,6 +99,7 @@ function validate() {
     });
     return false;
   }
+  toggleVisibility()
   return true;
 }
 

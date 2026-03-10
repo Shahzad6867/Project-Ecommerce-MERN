@@ -134,9 +134,17 @@
                                                 <p class="text-sm">
                                                     <strong> Reason : </strong><%= order.items[i].return.reason %>
                                                  </p>
-                                               </div>
+                                            </div>
                                         
                                     
+                                <% } %>
+                                <% if (order.items[i].isCancelled && order.items[i].cancelReason !== null) { %>
+                                    <div class="flex items-center rounded-xl px-2 py-[0.2rem] mt-2 bg-red-300 w-full mb-3">
+                                        <i data-feather="info" class="w-5 h-5 mr-1"></i>
+                                        <p class="text-sm">
+                                            <strong> Reason : </strong><%= order.items[i].cancelReason %>
+                                         </p>
+                                    </div>
                                 <% } %>
                                     <% if (order.items[i].return.isRequested && order.items[i].return.approvedAt !== null && order.items[i].return.productStockUpdated === false) { %>
                                         <button type="button" class="flex items-center px-3 py-2 btn-primary mt-2 font-medium text-black rounded-lg " onclick="updateProductStock('<%= order._id %>','<%= i %>','<%= order.items[i].variant %>','<%= order.items[i].quantity %>')">

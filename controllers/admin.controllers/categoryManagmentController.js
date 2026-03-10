@@ -1,27 +1,29 @@
 const categoryService = require("../../services/admin-services/categoryService.js");
 const fs = require("fs");
 const path = require("path");
-const ERROR_MESSAGES = require("../../constants/errorMessages.js");
 const HTTP_STATUS = require("../../constants/httpStatus.js");
 
-const getCategories = async (req, res) => {
-  const perPage = req.session.itemsPerPage || 5;
+const getCategories = async (req, res, next) => {
+  const perPage = Number(req.session.itemsPerPage) || 5;
   const page = req.query.page || 1;
-  const categories = await categoryService.getCategories(perPage, page);
+  const sortBy = req.query.sortBy || "recently-created"
+  const categories = await categoryService.getCategories(perPage, page,sortBy);
   const count = await categoryService.countCategories();
   const pages = Math.ceil(count / perPage);
   const message = req.session.message || null;
   delete req.session.message;
-  res.render("admin-view/admin.categories.ejs", {
+  res.status(HTTP_STATUS.OK).render("admin-view/admin.categories.ejs", {
     message,
     categories,
     page,
     pages,
+    perPage,
+    sortBy : req.query.sortBy || "recently-created",
     count,
   });
 };
 
-const addCategory = async (req, res) => {
+const addCategory = async (req, res, next) => {
   try {
     const { categoryName, description } = req.body;
     const categoryExist = await categoryService.doesCategoryExist(categoryName);
@@ -39,12 +41,10 @@ const addCategory = async (req, res) => {
     req.session.message = "Category Created Successfully";
     return res.redirect("/admin/categories");
   } catch (error) {
-    console.error(error);
-    req.session.message = ERROR_MESSAGES.SERVER_ERROR;
-    return res.redirect("/admin/categories");
+    next(error)
   }
 };
-const restoreCategory = async (req, res) => {
+const restoreCategory = async (req, res, next) => {
   try {
     const { id } = req.query;
     await categoryService.restoreCategory(id);
@@ -53,12 +53,10 @@ const restoreCategory = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.log(error);
-    req.session.message = ERROR_MESSAGES.SERVER_ERROR;
-    res.redirect("/admin/categories");
+    next(error)
   }
 };
-const deleteCategory = async (req, res) => {
+const deleteCategory = async (req, res, next) => {
   try {
     const { id } = req.query;
     await categoryService.deleteCategory(id);
@@ -67,12 +65,10 @@ const deleteCategory = async (req, res) => {
       success: false,
     });
   } catch (error) {
-    console.log(error);
-    req.session.message = ERROR_MESSAGES.SERVER_ERROR;
-    return res.redirect("/admin/categories");
+   next(error)
   }
 };
-const editCategory = async (req, res) => {
+const editCategory = async (req, res, next) => {
   try {
     const { id } = req.query;
     const { categoryName, description } = req.body;
@@ -93,9 +89,7 @@ const editCategory = async (req, res) => {
     req.session.message = "Category Updated Successfully";
     return res.redirect("/admin/categories");
   } catch (error) {
-    console.error(error);
-    req.session.message = ERROR_MESSAGES.SERVER_ERROR;
-    return res.redirect("/admin/categories");
+    next(error)
   }
 };
 

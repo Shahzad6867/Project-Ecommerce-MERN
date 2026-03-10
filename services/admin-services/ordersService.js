@@ -10,12 +10,26 @@ const getOrdersForSearch = async () => {
   return result;
 };
 
-const getOrders = async (perPage, page, status) => {
+const getOrders = async (perPage, page, status,search,dateQuery,sortBy) => {
+
+  if(sortBy === "date-low-high"){
+    sortBy = {createdAt : 1}
+  }else{
+    sortBy = {createdAt : -1}
+  }
   let skip = perPage * page - perPage;
   let pipeline = [];
+  if(search){
+    pipeline.push({
+      $match: { orderId: { $regex: search, $options: "i" } },
+    });
+  }
   pipeline.push({
     $unwind: "$items",
   });
+  if(dateQuery){
+    pipeline.push(dateQuery)
+  }
   if (status !== "All") {
     pipeline.push({
       $match: {
@@ -47,7 +61,7 @@ const getOrders = async (perPage, page, status) => {
       $unwind: "$paymentId",
     },
     {
-      $sort: { createdAt: -1 },
+      $sort: sortBy,
     },
     {
       $skip: skip,
@@ -60,9 +74,17 @@ const getOrders = async (perPage, page, status) => {
   return orders;
 };
 
-const getOrdersCount = async (status) => {
+const getOrdersCount = async (status,search,dateQuery) => {
   let pipeline = [];
+  if(search){
+    pipeline.push({
+      $match: { orderId: { $regex: search, $options: "i" } },
+    });
+  }
   pipeline.push({ $unwind: "$items" });
+  if(dateQuery){
+    pipeline.push(dateQuery)
+  }
   if (status !== "All") {
     pipeline.push({
       $match: {

@@ -107,7 +107,7 @@ router.get(
   userAuth.otpSession,
   resetPassController.getResetPassword
 );
-router.post("/reset-password", resetPassController.resetPassword);
+router.patch("/reset-password", resetPassController.resetPassword);
 router.get("/logout", userAuth.checkSession, userLoginController.logoutUser);
 
 // Profile Management
@@ -121,7 +121,8 @@ router.get(
   userAuth.checkSession,
   profileManagementController.getEditProfile
 );
-router.post(
+
+router.put(
   "/edit-profile",
   upload.any(),
   profileManagementController.editProfile
@@ -151,7 +152,7 @@ router.get(
   userAuth.checkSession,
   otpManagementController.getUserOtpForNewEmail
 );
-router.post(
+router.patch(
   "/otp-verification-for-new-email",
   otpManagementController.userOtpForNewEmail
 );
@@ -160,10 +161,7 @@ router.post(
 router.get("/cart", userAuth.checkSession, cartManagementController.getCart);
 router.post("/cart", cartManagementController.addToCart);
 router.patch("/cart/update-cart-item", cartManagementController.updateCartItem);
-router.get(
-  "/home/delete-cart-item",
-  cartManagementController.deleteCartItemFromHome
-);
+
 router.delete(
   "/cart/delete-cart-item",
   cartManagementController.deleteCartItem

@@ -1,18 +1,18 @@
 const adminService = require("../../services/admin-services/adminLoginService");
-const ERROR_MESSAGES = require("../../constants/errorMessages.js");
+const HTTP_STATUS = require("../../constants/httpStatus.js");
 
-const getAdminLogin = async (req, res) => {
+const getAdminLogin = async (req, res, next) => {
   const message = req.session.message || null;
   delete req.session.message;
-  res.render("admin-view/admin.login.ejs", { message });
+  res.status(HTTP_STATUS.OK).render("admin-view/admin.login.ejs", { message });
 };
 
-const adminLogin = async (req, res) => {
+const adminLogin = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const isAdmin = await adminService.validateAdminEmail(email);
     if (!isAdmin) {
-      return res.render("admin-view/admin.login.ejs", {
+      return res.status(HTTP_STATUS.UNAUTHORIZED).render("admin-view/admin.login.ejs", {
         message: "401 Unauthorized User, Access Denied! ",
       });
     }
@@ -21,7 +21,7 @@ const adminLogin = async (req, res) => {
       isAdmin.password
     );
     if (isAdmin && !isPassMatch) {
-      return res.render("admin-view/admin.login.ejs", {
+      return res.status(HTTP_STATUS.UNAUTHORIZED).render("admin-view/admin.login.ejs", {
         message: "Incorrect Password",
       });
     }
@@ -29,21 +29,16 @@ const adminLogin = async (req, res) => {
     req.session.message = `Welcome ${isAdmin.firstName}`;
     return res.redirect("/admin/dashboard");
   } catch (error) {
-    console.error(error);
-    return res.render("admin-view/admin.login.ejs", {
-      message: ERROR_MESSAGES.SERVER_ERROR,
-    });
+    next(error)
   }
 };
 
-const logoutAdmin = async (req, res) => {
+const logoutAdmin = async (req, res, next) => {
   try {
     req.session.admin = null;
     res.redirect("/admin/login");
   } catch (error) {
-    console.error(error);
-    req.session.message = ERROR_MESSAGES.SERVER_ERROR;
-    res.redirect("/admin/dashboard");
+   next(error)
   }
 };
 

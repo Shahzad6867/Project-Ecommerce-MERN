@@ -76,7 +76,7 @@
         buttons : [
             ["<button>OK</button>",function(instance,toast){
                 instance.hide({transitionOut : "fadeOut"},toast,'button')
-
+                console.log(variant)
                 fetch(`/admin/delete-product?id=${id}&variant=${variant}`,{method : "PATCH"})
                 .then(res => res.json() )
                 .then(data => {

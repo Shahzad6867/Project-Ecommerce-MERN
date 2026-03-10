@@ -10,7 +10,7 @@
     
            <div class="flex justify-center w-full">
                 <div class="profile-card p-6 max-w-md ">
-                    <form id="edit-profile-form" action="/edit-profile" method="post" class="space-y-6"  enctype="multipart/form-data">
+                    <form id="edit-profile-form" action="/edit-profile" class="space-y-6"  enctype="multipart/form-data">
                         <div class="flex flex-col items-center border border-gray-300 rounded-xl p-2">
                             <div class="avatar-upload mb-4">
                                 <div class="avatar-preview flex justify-center ">
@@ -116,7 +116,7 @@
                     
         
                         <div class="pt-4">
-                            <button type="submit" class="px-4 py-2 btn-primary font-bold text-gray-700 rounded-xl ">
+                            <button type="button" class="px-4 py-2 btn-primary font-bold text-gray-700 rounded-xl " onclick="updateProfile()">
                                 Save Changes
                             </button>
                             <a href="/profile">

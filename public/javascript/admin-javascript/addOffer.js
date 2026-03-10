@@ -235,7 +235,7 @@ feather.replace();
 
 
 
-        document.getElementById('offerForm').addEventListener('submit', function(e) {
+        function validateOfferForm () {
            // Validate form
            const offerType = document.getElementById('offerType').value;
            const offerName = document.getElementById('offerName').value;
@@ -254,8 +254,8 @@ feather.replace();
                    message: 'Please enter a Offer Name',
                    position: 'topCenter'
                });
-               e.preventDefault();
-               return;
+               event.preventDefault();
+               return false;
            }
            if(offerType === ""){
                iziToast.error({
@@ -263,8 +263,8 @@ feather.replace();
                    message: 'Please select a Offer Type',
                    position: 'topCenter'
                });
-               e.preventDefault();
-               return;
+               event.preventDefault();
+               return false
            }
            if ((offerType === 'product' || offerType === 'category') && !selectedTarget) {
                iziToast.error({
@@ -272,8 +272,8 @@ feather.replace();
                    message: 'Please select a target for the offer',
                    position: 'topCenter'
                });
-               e.preventDefault();
-               return;
+               event.preventDefault();
+               return false
            }
            if(description === ""){
                iziToast.error({
@@ -281,8 +281,8 @@ feather.replace();
                    message: 'Please enter a Description',
                    position: 'topCenter'
                });
-               e.preventDefault();
-               return;
+               event.preventDefault();
+               return false
            }
            if(startDate === ""){
                iziToast.error({
@@ -290,8 +290,8 @@ feather.replace();
                    message: 'Please select a Valid Start Date and Time',
                    position: 'topCenter'
                });
-               e.preventDefault();
-               return;
+               event.preventDefault();
+               return false
            }
            if(endDate === ""){
                iziToast.error({
@@ -299,8 +299,8 @@ feather.replace();
                    message: 'Please select a Valid End Date and Time',
                    position: 'topCenter'
                });
-               e.preventDefault();
-               return;
+               event.preventDefault();
+               return false
            }
            const now = new Date();
            const start = new Date(startDate);
@@ -316,8 +316,8 @@ feather.replace();
                 message: 'Start date must be in the future',
                 position: 'topCenter'
             });
-            e.preventDefault();
-            return;
+            event.preventDefault();
+            return false
         }
 
         if (end <= start) {
@@ -326,8 +326,8 @@ feather.replace();
                 message: 'End date must be greater than start date',
                 position: 'topCenter'
             });
-            e.preventDefault();
-            return;
+            event.preventDefault();
+            return false
         }
            if(discountType === ""){
                iziToast.error({
@@ -335,8 +335,8 @@ feather.replace();
                    message: 'Please select a Discount Type',
                    position: 'topCenter'
                });
-               e.preventDefault();
-               return;
+               event.preventDefault();
+               return false
            }
            if(discountValue === ""){
             iziToast.error({
@@ -344,8 +344,8 @@ feather.replace();
                    message: 'Please select a Discount Value',
                    position: 'topCenter'
                });
-               e.preventDefault();
-               return;
+               event.preventDefault();
+               return false
            }
            let price = document.getElementById("productPrice").value
            if(offerType === "product" && discountType === "flat"){
@@ -358,8 +358,8 @@ feather.replace();
                             message: 'Please enter a Flat Discount Amount that is less than 70% of the Product Price',
                             position: 'topCenter'
                         });
-                        e.preventDefault();
-                    return;
+                        event.preventDefault();
+                    return false
                 }
                
            }else if(offerType === "product" && discountType === "percentage"){
@@ -371,8 +371,8 @@ feather.replace();
                 message: 'Please enter a Discount Percentage that is less than 70',
                 position: 'topCenter'
                 });
-                e.preventDefault();
-                return;
+                event.preventDefault();
+                return false
             }
 
            }else if(offerType === "category" && discountType === "percentage"){
@@ -384,8 +384,8 @@ feather.replace();
                message: 'Please enter a Discount Percentage that is less than 70',
                position: 'topCenter'
                });
-               e.preventDefault();
-               return;
+               event.preventDefault();
+               return false
            }
            if(!maxDiscountAmount){
             iziToast.error({
@@ -393,12 +393,12 @@ feather.replace();
                message: 'Please enter a Maximum discount Amount',
                position: 'topCenter'
                });
-               e.preventDefault();
-               return;
+               event.preventDefault();
+               return false
            }
 
           }else if(offerType === "category" && discountType === "flat"){
-           const minProductPrice = document.getElementById("minProductPrice").value
+           const minProductPrice = document.getElementById("productMinPrice").value
            const maxDiscount = (minProductPrice * 70) / 100
            
            if(discountValue > maxDiscount){
@@ -408,8 +408,8 @@ feather.replace();
                message: 'Please enter a Flat Discount Amount that is less than 70% of the Product Price',
                position: 'topCenter'
                });
-               e.preventDefault();
-               return;
+               event.preventDefault();
+               return false
            }
            if(!minProductPrice){
             iziToast.error({
@@ -417,20 +417,20 @@ feather.replace();
                message: 'Please enter a Minimum Price for Products that the offer can be applied on.',
                position: 'topCenter'
                });
-               e.preventDefault();
-               return;
+               event.preventDefault();
+               return false
            }
           }
            
-           iziToast.success({
-               title: 'Offer',
-               message: 'Offer Created Successfully',
-               position: 'topCenter'
-           });
-           
-           // Redirect to offers list after 2 seconds
-           setTimeout(() => {
-               window.location.href = '/admin/offers';
-           }, 2000);
-       });
+           return true
+       }
+
+       function updateOffer(){
+        if(validateOfferForm()){
+            fetch(document.getElementById("offerForm").action , {
+                method : "PUT",
+                body : new FormData(document.getElementById("offerForm"))
+            }).then(res => window.location.href = "/admin/offers")
+        }
+       }
         

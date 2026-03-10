@@ -105,9 +105,7 @@ function cropAndSaveImage() {
 const firstName = document.getElementById("firstName").value.trim();
 const lastName = document.getElementById("lastName").value.trim();
 
-document
-  .getElementById("edit-profile-form")
-  .addEventListener("submit", function (e) {
+ function validateEditProfile () {
     const newFirstName = document.getElementById("firstName").value.trim();
     const newLastName = document.getElementById("lastName").value.trim();
     const imageUpload = document.getElementById("imageUpload");
@@ -123,45 +121,54 @@ document
       newLastName === lastName &&
       (newIntlNumber === "" || newIntlNumber === oldMobileNo)
     ) {
-      e.preventDefault();
+      event.preventDefault();
       iziToast.error({
         title: "Error",
         message: "No changes detected!",
         position: "topRight",
       });
-      return;
+      return false;
     }
 
     // ❗ validation check
     if (newFirstName === "" || !nameRegex.test(newFirstName)) {
-      e.preventDefault();
+      event.preventDefault();
       iziToast.error({
         title: "Error",
         message: "Invalid values entered!",
         position: "topRight",
       });
-      return;
+      return false;
     }
 
     if (newLastName === "" || !nameRegex.test(newLastName)) {
-      e.preventDefault();
+      event.preventDefault();
       iziToast.error({
         title: "Error",
         message: "Invalid values entered!",
         position: "topRight",
       });
-      return;
+      return false;
     }
 
     if (newIntlNumber !== "" && !iti.isValidNumber(newIntlNumber)) {
-      e.preventDefault();
+      event.preventDefault();
       iziToast.error({
         title: "Error",
         message: "Enter a Valid Mobile Number",
         position: "topRight",
       });
-      return;
+      return false;
     }
     document.getElementById("processingRequestOverlay").classList.remove("hidden")
     input.value = newIntlNumber;
-  });
+    return true
+  }
+  function updateProfile(){
+    if(validateEditProfile()){
+      fetch(document.getElementById("edit-profile-form").action,{
+        method : "PUT" , body : new FormData(document.getElementById("edit-profile-form"))
+      })
+      .then(res => window.location.href = "/profile" )
+    }
+  }

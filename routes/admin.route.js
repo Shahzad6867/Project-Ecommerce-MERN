@@ -6,7 +6,6 @@ const itemsPerPageController = require("../controllers/admin.controllers/itemsPe
 const categoryManagmentController = require("../controllers/admin.controllers/categoryManagmentController.js");
 const brandManagmentController = require("../controllers/admin.controllers/brandManagmentController.js");
 const productManagmentController = require("../controllers/admin.controllers/productManagmentController.js");
-const searchController = require("../controllers/admin.controllers/searchController.js");
 const orderManagementController = require("../controllers/admin.controllers/ordersManagementController.js");
 const offerManagementController = require("../controllers/admin.controllers/offerManagementController.js");
 const couponManagementController = require("../controllers/admin.controllers/couponManagementController.js");
@@ -21,7 +20,7 @@ router.post("/login", adminLoginController.adminLogin);
 router.get("/logout", adminLoginController.logoutAdmin);
 
 // Users Management
-router.get("/users", adminAuth.checkSession, userManagmentController.getUsers);
+router.get("/users",adminAuth.checkSession, userManagmentController.getUsers);
 router.patch(
   "/block-user",
   adminAuth.checkSession,
@@ -33,9 +32,7 @@ router.patch(
   userManagmentController.unblockUser
 );
 
-router.post("/users", searchController.searchUser);
-router.post("/products", searchController.searchProducts);
-router.post(
+router.get(
   "/items-per-page",
   itemsPerPageController.selectedOptionToViewTheList
 );
@@ -51,7 +48,7 @@ router.post(
   upload.single("categoryImage"),
   categoryManagmentController.addCategory
 );
-router.post(
+router.put(
   "/edit-category",
   upload.single("categoryImage"),
   categoryManagmentController.editCategory
@@ -88,7 +85,7 @@ router.get(
   adminAuth.checkSession,
   productManagmentController.getEditProduct
 );
-router.post(
+router.put(
   "/edit-product",
   upload.any(),
   productManagmentController.editProduct
@@ -115,7 +112,7 @@ router.post(
   upload.single("brandImage"),
   brandManagmentController.addBrand
 );
-router.post(
+router.put(
   "/edit-brand",
   upload.single("brandImage"),
   brandManagmentController.editBrand
@@ -137,7 +134,6 @@ router.get(
   adminAuth.checkSession,
   orderManagementController.getOrders
 );
-router.post("/orders", searchController.searchOrders);
 router.get(
   "/orders/:id",
   adminAuth.checkSession,
@@ -173,7 +169,7 @@ router.post(
   upload.single("bannerImage"),
   offerManagementController.addOffer
 );
-router.post(
+router.put(
   "/offers/edit-offer",
   upload.single("bannerImage"),
   offerManagementController.editOffer
@@ -203,7 +199,7 @@ router.post(
   upload.single("bannerImage"),
   couponManagementController.addCoupon
 );
-router.post(
+router.put(
   "/coupons/edit-coupon",
   upload.single("bannerImage"),
   couponManagementController.editCoupon

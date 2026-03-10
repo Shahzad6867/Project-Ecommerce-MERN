@@ -56,6 +56,11 @@ document.addEventListener("DOMContentLoaded", function () {
     resendOtpBtn.classList.add("hover:bg-yellow-300");
   }, setTimeoutCount);
 
+
+  
+
+
+
   var serverMessage = document.getElementById("serverMessage")?.value;
 
   if (serverMessage === "OTP has been sent to your mail! Check your email") {
@@ -81,3 +86,27 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
+
+function verifyOtp(){
+  const otpInputs = document.querySelectorAll('input[name="otp"]');
+  const fullOtp = Array.from(otpInputs).map(input => input.value).join("");
+  fetch("/otp-verification-for-new-email",{
+    method : "PATCH",
+    headers: {
+      "Content-Type": "application/json" // Tell server to expect JSON
+     },
+  body: JSON.stringify({otp : fullOtp})
+  })
+  .then(res => res.json())
+  .then(data => {
+    if(!data.success){
+      iziToast.error({
+        title: "Error",
+        message: data.message,
+        position: "topRight",
+      });
+    }else{
+      window.location.href = "/profile"
+    }
+  })
+}

@@ -13,8 +13,9 @@ const fs = require("fs");
 const path = require("path");
 const orderService = require("../../services/user-services/orderService.js");
 const adminOrderService = require("../../services/admin-services/ordersService.js");
+const HTTP_STATUS = require("../../constants/httpStatus.js");
 
-const getCheckout = async (req, res) => {
+const getCheckout = async (req, res, next) => {
   let user = req.session.user || req.user;
   let message = req.session.message || null;
   delete req.session.message;
@@ -72,7 +73,7 @@ const getCheckout = async (req, res) => {
   });
   const search = req.query.search || null;
   const wallet = await Wallet.findOne({userId : user._id})
-  res.render("user-view/user.checkout-page.ejs", {
+  res.status(HTTP_STATUS.OK).render("user-view/user.checkout-page.ejs", {
     user,
     productsFullList,
     cartItems,
@@ -85,7 +86,7 @@ const getCheckout = async (req, res) => {
   });
 };
 
-const placeOrder = async (req, res) => {
+const placeOrder = async (req, res, next) => {
   let user = req.session.user || req.user;
   const response = await orderService.placeOrder(
     user,
@@ -102,7 +103,7 @@ const placeOrder = async (req, res) => {
 
   return res.redirect(response.redirect);
 };
-const retryPayment = async (req, res) => {
+const retryPayment = async (req, res, next) => {
   try {
     const user = req.session.user || req.user;
 
@@ -110,28 +111,28 @@ const retryPayment = async (req, res) => {
     const session = await orderService.retryPayment(user, id);
     return res.redirect(session.url);
   } catch (error) {
-    console.log(error);
+   next(error)
   }
 };
-const getPaymentProcessingPage = async (req, res) => {
+const getPaymentProcessingPage = async (req, res, next) => {
   const { id } = req.params;
-  res.render("user-view/payment-processing.ejs", {
+  res.status(HTTP_STATUS.OK).render("user-view/payment-processing.ejs", {
     orderId: id,
     paymentId: null,
   });
 };
-const getPaymentStatus = async (req, res) => {
+const getPaymentStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
     const order = await Order.findById(id);
     const payment = await Payment.findById(order.paymentId);
     if (payment.status === "Payment Failed") {
-      return res.status(402).json({
+      return res.status(HTTP_STATUS.PAYMENT_REQUIRED).json({
         success: false,
         messsage: payment.status,
       });
     } else if (payment.status === "Paid Successfully") {
-      return res.status(200).json({
+      return res.status(HTTP_STATUS.OK).json({
         success: true,
         messsage: payment.status,
       });
@@ -141,10 +142,10 @@ const getPaymentStatus = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
+   next(error)
   }
 };
-const getOrderConfirmationPage = async (req, res) => {
+const getOrderConfirmationPage = async (req, res, next) => {
   const { id } = req.params;
   if (req.query?.paymentId && req.query?.status === "Cancelled") {
     await Payment.findOneAndUpdate(
@@ -168,7 +169,7 @@ const getOrderConfirmationPage = async (req, res) => {
     userId: user._id,
   }).countDocuments();
   const search = req.query.search || null;
-  return res.render("user-view/order-confirmation-page.ejs", {
+  return res.status(HTTP_STATUS.OK).render("user-view/order-confirmation-page.ejs", {
     user,
     confirmedOrder,
     productsFullList,
@@ -178,7 +179,7 @@ const getOrderConfirmationPage = async (req, res) => {
   });
 };
 
-const getOrders = async (req, res) => {
+const getOrders = async (req, res, next) => {
   try {
     let user = req.session.user || req.user;
     const productsFullList = await Product.find(
@@ -200,7 +201,7 @@ const getOrders = async (req, res) => {
       userId: user._id,
     }).countDocuments();
     const search = req.query.search || null;
-    res.render("user-view/user.orders-listing.ejs", {
+    res.status(HTTP_STATUS.OK).render("user-view/user.orders-listing.ejs", {
       user,
       productsFullList,
       cartItems,
@@ -214,7 +215,7 @@ const getOrders = async (req, res) => {
   }
 };
 
-const getOrderDetailPage = async (req, res) => {
+const getOrderDetailPage = async (req, res, next) => {
   let user = req.session.user || req.user;
   const productsFullList = await Product.find(
     {},
@@ -233,7 +234,7 @@ const getOrderDetailPage = async (req, res) => {
   const search = req.query.search || null;
   let message = req.session.message || null;
   delete req.session.message;
-  res.render("user-view/user.order-details-page.ejs", {
+  res.status(HTTP_STATUS.OK).render("user-view/user.order-details-page.ejs", {
     user,
     productsFullList,
     cartItems,
@@ -244,7 +245,7 @@ const getOrderDetailPage = async (req, res) => {
   });
 };
 
-const cancelItem = async (req, res) => {
+const cancelItem = async (req, res, next) => {
   try {
     let orderId = req.params.id;
     let itemId = req.query.item;
@@ -256,7 +257,7 @@ const cancelItem = async (req, res) => {
     for (let i = 0; i < order.items.length; i++) {
       if (String(order.items[i]._id) === String(itemId)) {
         if (order.items[i].status !== "Placed") {
-          return res.status(409).json({
+          return res.status(HTTP_STATUS.CONFLICT).json({
             success: false,
             message: `Cannot cancel the Order, Current Status : ${order.items[i].status}`,
           });
@@ -318,6 +319,7 @@ const cancelItem = async (req, res) => {
         }
 
         order.items[i].isCancelled = true;
+        order.items[i].cancelReason = req.body.reason;
         order.items[i].status = "Cancelled";
         order.items[i].statusTimeline.cancelledAt = new Date();
 
@@ -385,15 +387,15 @@ const cancelItem = async (req, res) => {
     }
     req.session.message =
       "Item has been successfully cancelled.<br>Any applicable refund will be processed according to our refund policy.";
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
     });
   } catch (error) {
-    console.log(error);
+    next(error)
   }
 };
 
-const cancelOrder = async (req, res) => {
+const cancelOrder = async (req, res, next) => {
   let orderId = req.params.id;
   let order = await Order.findOne({ _id: orderId });
   let payment = await Payment.findOne({ _id: order.paymentId });
@@ -440,6 +442,7 @@ const cancelOrder = async (req, res) => {
       ) {
         order.items[i].isCancelled = true;
         order.items[i].status = "Cancelled";
+        order.items[i].cancelReason = req.body.reason
         order.items[i].statusTimeline.cancelledAt = new Date();
 
         let product = await Product.findOne({ _id: order.items[i].productId });
@@ -463,6 +466,7 @@ const cancelOrder = async (req, res) => {
         if (item.isCancelled === false) {
           item.refundOnCancelled.refundId = refund.id;
           item.isCancelled = true;
+          item.cancelReason = req.body.reason
           item.status = "Cancelled";
           item.statusTimeline.cancelledAt = new Date();
         }
@@ -488,6 +492,7 @@ const cancelOrder = async (req, res) => {
           order.items[i].refundOnCancelled.status = "Refunded";
           order.items[i].refundOnCancelled.refundedAt = new Date();
           order.items[i].isCancelled = true;
+          order.items[i].cancelReason = req.body.reason
           order.items[i].status = "Cancelled";
           order.items[i].statusTimeline.cancelledAt = new Date();
         }
@@ -504,11 +509,11 @@ const cancelOrder = async (req, res) => {
 
     req.session.message =
       "Order has been successfully cancelled.<br>Any applicable refund will be processed according to our refund policy.";
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
     });
   } else {
-    return res.status(409).json({
+    return res.status(HTTP_STATUS.CONFLICT).json({
       success: false,
       message:
         "Order cannot be cancelled as some items are already being processed.",
@@ -516,7 +521,7 @@ const cancelOrder = async (req, res) => {
   }
 };
 
-const reorder = async (req, res) => {
+const reorder = async (req, res, next) => {
   try {
     let availablity = [];
     const { orderId } = req.query;
@@ -568,19 +573,15 @@ const reorder = async (req, res) => {
       req.session.message = availablity;
     }
 
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      success: false,
-      message: "Oops! something went wrong from our side",
-    });
+    next(error)
   }
 };
 
-const getInvoice = async (req, res) => {
+const getInvoice = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id);
     const downloadUrl = cloudinary.utils.private_download_url(
@@ -591,16 +592,15 @@ const getInvoice = async (req, res) => {
         expires_at: Math.floor(Date.now() / 1000) + 300,
       }
     );
-    res.status(200).json({
+    res.status(HTTP_STATUS.OK).json({
       downloadUrl,
     });
   } catch (error) {
-    console.log(error);
-    res.redirect("/orders");
+   next(error)
   }
 };
 
-const returnOrder = async (req, res) => {
+const returnOrder = async (req, res, next) => {
   try {
     const { id } = req.params;
     let order = await Order.findById(id);
@@ -629,11 +629,11 @@ const returnOrder = async (req, res) => {
     await order.save();
     return res.redirect(`/orders/${id}`);
   } catch (error) {
-    console.log(error);
+    next(error)
   }
 };
 
-const returnItem = async (req, res) => {
+const returnItem = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { itemIndex } = req.query;
@@ -656,7 +656,7 @@ const returnItem = async (req, res) => {
     await order.save();
     res.redirect(`/orders/${id}`);
   } catch (error) {
-    console.log(error);
+    next(error)
   }
 };
 

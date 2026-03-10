@@ -4,16 +4,72 @@ const Category = require("../../models/category.model.js");
 const Cart = require("../../models/cart.model.js");
 const Offer = require("../../models/offer.model.js");
 
-const getOffers = async (perPage, page) => {
-  let offers = await Offer.find({ userId: null })
-    .sort({ startDate: -1 })
+const getOffers = async (perPage, page,sortBy,discountType,applicableOn,startDate,expiryDate) => {
+  if(sortBy === "recently-created"){
+    sortBy = {startDate : -1}
+  }else if(sortBy === "created-long-ago"){
+    sortBy = {startDate : 1}
+  }else if(sortBy === "name-a-z"){
+    sortBy = {offerName : 1}
+  }else if(sortBy === "name-z-a"){
+    sortBy = {offerName : -1}
+  }else if(sortBy === "discount-high-low"){
+    sortBy = { discountValue : -1}
+  }else if(sortBy === "discount-low-high"){
+    sortBy = { discountValue : 1}
+  }else if(sortBy === "expiry-nearest"){
+    sortBy = { endDate : 1}
+  }else if(sortBy === "expiry-farthest"){
+    sortBy = { endDate : -1}
+  }else{
+    sortBy = {startDate : -1}
+  }
+
+  let query = {}
+  if(discountType){
+    query.discountType = discountType
+  }
+  
+  if(applicableOn){
+    query.applicableOn = applicableOn
+  }
+   if(startDate){
+    startDate = new Date(startDate)
+    query.startDate = {$gte : startDate}
+  }
+  if(expiryDate){
+    expiryDate = new Date(expiryDate)
+    expiryDate.setUTCHours(23,59,59,999)
+    query.endDate = {$lte : expiryDate}
+  }
+
+  let offers = await Offer.find(query)
+    .sort(sortBy)
     .skip(perPage * page - perPage)
     .limit(perPage);
   return offers;
 };
 
-const countOffers = async () => {
-  let count = await Offer.countDocuments({});
+const countOffers = async (discountType,applicableOn,startDate,expiryDate) => {
+  let query = {}
+  if(discountType){
+    query.discountType = discountType
+  }
+ 
+  if(applicableOn){
+    query.applicableOn = applicableOn
+  }
+   if(startDate){
+    startDate = new Date(startDate)
+    query.startDate = {$gte : startDate}
+  }
+  if(expiryDate){
+    expiryDate = new Date(expiryDate)
+    expiryDate.setUTCHours(23,59,59,999)
+    query.endDate = {$lte : expiryDate}
+  }
+
+  let count = await Offer.countDocuments(query);
   return count;
 };
 
@@ -98,7 +154,8 @@ const updateAccordingToApplicableOnCreatingNewOffer = async (newOffer) => {
     }
   } else {
     let product = await Product.findOne({ categoryId: newOffer.categoryId });
-    if (product?.categoryOfferId !== null) {
+    console.log(product)
+    if (product && product?.categoryOfferId !== null) {
       await Offer.findOneAndDelete({ _id: product.categoryOfferId });
       await Product.updateMany(
         { categoryOfferId: product.categoryOfferId },

@@ -1,6 +1,17 @@
 <script>
     feather.replace();
+    const startDate = document.getElementById("startDate")
+    const endDate = document.getElementById("endDate")
+    const now = new Date()
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, "0");
+    const day = now.getDate().toString().padStart(2, "0");
+    startDate.setAttribute("max", `${year}-${month}-${day}`);
+    endDate.setAttribute("max", `${year}-${month}-${day}`);
 
+    function changeDate(){
+      endDate.setAttribute("min", startDate.value);
+    }
 
     const orderCardTemplate = document.querySelector("[data-order-template]")
     const orderCardContainer = document.querySelector("[data-order-container]")
@@ -40,6 +51,8 @@
      
     });
     })
+
+    
 
  
 </script>

@@ -487,4 +487,14 @@
             for(let j = 0 ; j < variantLen ; j++){
             document.getElementById("addVariantBtn").click()
             }
+
+            function updateProduct(initialProductName){
+                if(validateForm(initialProductName)){
+                    fetch(document.getElementById("editProductForm").action,{
+                        method : "PUT",
+                        body : new FormData(document.getElementById("editProductForm"))
+                    })
+                    .then(res => window.location.href = "/admin/products")
+                }
+            }
 </script>

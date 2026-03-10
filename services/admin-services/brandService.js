@@ -5,9 +5,18 @@ const countBrands = async () => {
   let count = await Brand.countDocuments();
   return count;
 };
-const getBrands = async (perPage, page) => {
+const getBrands = async (perPage, page,sortBy) => {
+  if(sortBy === "recently-created"){
+    sortBy = {createdAt : -1}
+  }else if(sortBy === "created-long-ago"){
+    sortBy = {createdAt : 1}
+  }else if(sortBy === "name-a-z"){
+    sortBy = {brandName : 1}
+  }else if(sortBy === "name-z-a"){
+    sortBy = {brandName : -1}
+  }
   let brands = await Brand.find({})
-    .sort({ createdAt: -1 })
+    .sort(sortBy)
     .skip(perPage * page - perPage)
     .limit(perPage);
   return brands;

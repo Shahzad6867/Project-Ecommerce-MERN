@@ -1,10 +1,9 @@
 const ExcelJs = new require("exceljs");
 const PDFDocument = require("pdfkit-table");
 const reportsService = require("../../services/admin-services/reportsService.js");
-const ERROR_MESSAGES = require("../../constants/errorMessages.js");
 const HTTP_STATUS = require("../../constants/httpStatus.js");
 
-const getSalesReport = async (req, res) => {
+const getSalesReport = async (req, res,next) => {
   try {
     const { fromDate, toDate } = reportsService.computeFromAndToDate(
       req.query.fromDate,
@@ -61,7 +60,7 @@ const getSalesReport = async (req, res) => {
     const orderCount = totalOrdersCount || 1;
     const pagesForOrder = Math.ceil(orderCount / perPage);
     salePerItem = salePerItem[0].data;
-    res.render("admin-view/admin.sales-report.ejs", {
+    res.status(HTTP_STATUS.OK).render("admin-view/admin.sales-report.ejs", {
       totalOrdersCount,
       itemsSoldCount,
       grossSales,
@@ -83,13 +82,10 @@ const getSalesReport = async (req, res) => {
       reportBasedOn,
     });
   } catch (err) {
-    console.error(err);
-    return res
-      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-      .send(ERROR_MESSAGES.SERVER_ERROR);
+    next(err)
   }
 };
-const getSalesReportIntoExcel = async (req, res) => {
+const getSalesReportIntoExcel = async (req, res,next) => {
   try {
     const { today, fromDate, toDate } = reportsService.computeFromAndToDate(
       req.query.fromDate,
@@ -295,14 +291,13 @@ const getSalesReportIntoExcel = async (req, res) => {
       "attachment; filename=sales-report.xlsx"
     );
 
-    await workbook.xlsx.write(res);
+    await workbook.xlsx.write(res, next);
     res.end();
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Server Error");
+    next(error)
   }
 };
-const getSalesReportIntoPdf = async (req, res) => {
+const getSalesReportIntoPdf = async (req, res, next) => {
   try {
     const { today, fromDate, toDate } = reportsService.computeFromAndToDate(
       req.query.fromDate,
@@ -382,7 +377,7 @@ const getSalesReportIntoPdf = async (req, res) => {
       "/Users/muhammedshahzad/Project Ecommerce/public/fonts/Batangas Bold 700.otf"
     );
 
-    doc.pipe(res);
+    doc.pipe(res, next);
 
     // Title
     doc.fontSize(20).font("Batangas").text("NovaMart", { align: "left" });
@@ -650,8 +645,7 @@ const getSalesReportIntoPdf = async (req, res) => {
 
     doc.end();
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Server Error");
+    next(err)
   }
 };
 

@@ -3,16 +3,59 @@ const Cart = require("../../models/cart.model.js");
 const usedCoupon = require("../../models/usedCoupon.model.js");
 const cloudinary = require("../../config/cloudinaryConfig.js");
 
-const getCoupons = async (perPage, page) => {
-  let coupons = await Coupon.find({ userId: null })
-    .sort({ createdAt: -1 })
+const getCoupons = async (perPage, page, sortBy,discountType,discountValue,expiryDate) => {
+  if(sortBy === "recently-created"){
+    sortBy = {createdAt : -1}
+  }else if(sortBy === "created-long-ago"){
+    sortBy = {createdAt : 1}
+  }else if(sortBy === "name-a-z"){
+    sortBy = {name : 1}
+  }else if(sortBy === "name-z-a"){
+    sortBy = {name : -1}
+  }else if(sortBy === "discount-high-low"){
+    sortBy = { discountValue : -1}
+  }else if(sortBy === "discount-low-high"){
+    sortBy = { discountValue : 1}
+  }else if(sortBy === "expiry-nearest"){
+    sortBy = { endDate : 1}
+  }else if(sortBy === "expiry-farthest"){
+    sortBy = { endDate : -1}
+  }else{
+    sortBy = {createdAt : -1}
+  }
+  let query = {userId : null}
+  if(discountType){
+    query.discountType = discountType
+  }
+  if(discountValue){
+    query.discountValue = {$gte : discountValue}
+  }
+  if(expiryDate){
+    expiryDate = new Date(expiryDate)
+    expiryDate.setUTCHours(23,59,59,999)
+    query.endDate = {$lt : expiryDate}
+  }
+  let coupons = await Coupon.find(query)
+    .sort(sortBy)
     .skip(perPage * page - perPage)
     .limit(perPage);
   return coupons;
 };
 
-const countCoupons = async () => {
-  let count = await Coupon.countDocuments({});
+const countCoupons = async (discountType,discountValue,expiryDate) => {
+  let query = {userId : null}
+  if(discountType){
+    query.discountType = discountType
+  }
+  if(discountValue){
+    query.discountValue = {$gte : discountValue}
+  }
+  if(expiryDate){
+    expiryDate = new Date(expiryDate)
+    expiryDate.setUTCHours(23,59,59,999)
+    query.endDate = {$lt : expiryDate}
+  }
+  let count = await Coupon.countDocuments(query);
   return count;
 };
 

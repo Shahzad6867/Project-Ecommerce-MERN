@@ -77,6 +77,7 @@ function updateOrderItemStatus(btn, orderId, itemIndex) {
       { method: "PATCH" }
     ).then((res) => (window.location.href = `/admin/orders/${orderId}`));
   } else {
+    if(statusToBe === "Return Request Declined"){
     let declineReason = document.getElementById(
       `declineItemReason${itemIndex}`
     ).value;
@@ -89,6 +90,7 @@ function updateOrderItemStatus(btn, orderId, itemIndex) {
       event.preventDefault();
       return;
     }
+ 
     btn.disabled = true;
     document.getElementById("updationOverlay").classList.remove("hidden");
     fetch(
@@ -103,5 +105,6 @@ function updateOrderItemStatus(btn, orderId, itemIndex) {
         }),
       }
     ).then((res) => (window.location.href = `/admin/orders/${orderId}`));
+    }
   }
 }

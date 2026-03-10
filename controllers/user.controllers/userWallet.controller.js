@@ -5,9 +5,10 @@ const Product = require("../../models/product.model");
 const stripe = require("../../config/stripeConfig.js");
 const Wallet = require("../../models/wallet.model.js");
 const Payment = require("../../models/payment.model.js");
+const HTTP_STATUS = require("../../constants/httpStatus.js");
 require("dotenv").config();
 
-const getWallet = async (req, res) => {
+const getWallet = async (req, res, next) => {
   let message = req.session.message || null;
   delete req.session.message;
   const productsFullList = await Product.find(
@@ -74,9 +75,8 @@ const getWallet = async (req, res) => {
       },
     ]);
   }
-  console.log(wallet)
   const search = req.query.search || null;
-  res.render("user-view/user.wallet.ejs", {
+  res.status(HTTP_STATUS.OK).render("user-view/user.wallet.ejs", {
     message,
     user,
     cartItems,
@@ -88,7 +88,7 @@ const getWallet = async (req, res) => {
   });
 };
 
-const walletTopUp = async (req, res) => {
+const walletTopUp = async (req, res, next) => {
   let user = req.session.user || req.user;
   let payment = new Payment({
     userId: user._id,
@@ -126,31 +126,31 @@ const walletTopUp = async (req, res) => {
   });
   return res.redirect(session.url);
 };
-const getPaymentStatus = async (req, res) => {
+const getPaymentStatus = async (req, res, next) => {
   const { id } = req.params;
   const payment = await Payment.findById(id);
 
-  return res.json({
+  return res.status(HTTP_STATUS.OK).json({
     message: payment.status,
   });
 };
-const getPaymentProcessingPage = async (req, res) => {
+const getPaymentProcessingPage = async (req, res, next) => {
   const { id } = req.params;
   const orderId = null;
-  res.render("user-view/payment-processing.ejs", { paymentId: id, orderId });
+  res.status(HTTP_STATUS.OK).render("user-view/payment-processing.ejs", { paymentId: id, orderId });
 };
-const getPaymentSuccesful = async (req, res) => {
-  res.render("user-view/payment-successful.ejs");
+const getPaymentSuccesful = async (req, res, next) => {
+  res.status(HTTP_STATUS.OK).render("user-view/payment-successful.ejs");
 };
 
-const getPaymentFailed = async (req, res) => {
+const getPaymentFailed = async (req, res, next) => {
   const { id } = req.params;
   const payment = await Payment.findById(id);
   if (payment.status !== "Payment Failed") {
     payment.status = "Payment Failed";
     await payment.save();
   }
-  res.render("user-view/payment-failed.ejs");
+  res.status(HTTP_STATUS.PAYMENT_REQUIRED).render("user-view/payment-failed.ejs");
 };
 module.exports = {
   getWallet,

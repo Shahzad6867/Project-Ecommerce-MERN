@@ -1,9 +1,18 @@
 const Category = require("../../models/category.model.js");
 const cloudinary = require("../../config/cloudinaryConfig.js");
 
-const getCategories = async (perPage, page) => {
+const getCategories = async (perPage, page,sortBy) => {
+  if(sortBy === "recently-created"){
+    sortBy = {createdAt : -1}
+  }else if(sortBy === "created-long-ago"){
+    sortBy = {createdAt : 1}
+  }else if(sortBy === "name-a-z"){
+    sortBy = {categoryName : 1}
+  }else if(sortBy === "name-z-a"){
+    sortBy = {categoryName : -1}
+  }
   let categories = await Category.find({})
-    .sort({ createdAt: -1 })
+    .sort(sortBy)
     .skip(perPage * page - perPage)
     .limit(perPage);
   return categories;

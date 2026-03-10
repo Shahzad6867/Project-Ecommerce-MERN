@@ -2,26 +2,27 @@ const User = require("../../models/user.model.js");
 const Otp = require("../../models/user-otp.model.js");
 const mailer = require("../../config/nodemailer.js");
 const { otpGenerator } = require("../../utils/otpGenerator.js");
+const HTTP_STATUS = require("../../constants/httpStatus.js");
 require("dotenv").config();
 
-const getEmailAuth = async (req, res) => {
+const getEmailAuth = async (req, res, next) => {
   let message = req.session.message || null;
   delete req.session.message;
   let userEmail = req.session.user?.email;
   let backTo = req.query?.location === "Profile" ? "Profile" : "Login";
-  res.render("user-view/user.email-auth.ejs", {
+  res.status(HTTP_STATUS.OK).render("user-view/user.email-auth.ejs", {
     message: message,
     userEmail,
     backTo,
   });
 };
 
-const emailAuth = async (req, res) => {
+const emailAuth = async (req, res, next) => {
   try {
     let { email } = req.body;
     const userData = await User.findOne({ email: email });
     if (!userData) {
-      return res.render("user-view/user.email-auth.ejs", {
+      return res.status(HTTP_STATUS.NOT_FOUND).render("user-view/user.email-auth.ejs", {
         message: "User does not Exist - Will be redirected to Signup",
       });
     } else {
@@ -41,22 +42,22 @@ const emailAuth = async (req, res) => {
       return res.redirect("/otp-verification-for-new-pass");
     }
   } catch (error) {
-    console.log(error);
+   next(error)
   }
 };
 
-const getEmailAuthForNewEmail = async (req, res) => {
+const getEmailAuthForNewEmail = async (req, res, next) => {
   let message = req.session.message || null;
   delete req.session.message;
   let userEmail = req.session.user;
   userEmail = userEmail.email;
-  res.render("user-view/user.email-auth-for-new-email.ejs", {
+  res.status(HTTP_STATUS.OK).render("user-view/user.email-auth-for-new-email.ejs", {
     message: message,
     userEmail,
   });
 };
 
-const emailAuthForNewEmail = async (req, res) => {
+const emailAuthForNewEmail = async (req, res, next) => {
   try {
     const { email } = req.body;
     if (email === req.session.user.email) {
@@ -79,7 +80,7 @@ const emailAuthForNewEmail = async (req, res) => {
       "OTP has been sent to your New Mail Id! Check your email";
     return res.redirect("/otp-verification-for-new-email");
   } catch (error) {
-    console.log(error);
+    next(error)
   }
 };
 

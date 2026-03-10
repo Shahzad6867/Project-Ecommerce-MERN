@@ -1,15 +1,16 @@
 const User = require("../../models/user.model.js");
 const bcryptjs = require("bcryptjs");
+const HTTP_STATUS = require("../../constants/httpStatus.js");
 require("dotenv").config();
 
-const getResetPassword = async (req, res) => {
+const getResetPassword = async (req, res, next) => {
   let message = req.session.message || null;
   delete req.session.message;
 
-  res.render("user-view/user.reset-password.ejs", { message: message });
+  res.status(HTTP_STATUS.OK).render("user-view/user.reset-password.ejs", { message: message });
 };
 
-const resetPassword = async (req, res) => {
+const resetPassword = async (req, res, next) => {
   try {
     const userId = req.session.otpUser._id;
     const { newPassword } = req.body;
@@ -21,7 +22,7 @@ const resetPassword = async (req, res) => {
     delete req.session.otpUser;
     res.redirect("/profile");
   } catch (error) {
-    console.log(error);
+    next(error)
   }
 };
 

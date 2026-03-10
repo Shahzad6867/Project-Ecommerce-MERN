@@ -9,8 +9,15 @@
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold text-gray-800">Orders</h1>
       <div class="relative">
-        <form autocomplete="off" action="/admin/orders" method="post">
-            <input type="search" placeholder="Which order are you looking for ?" name="search" 
+        <form autocomplete="off" action="/admin/orders" method="get">
+          <input type="hidden" name="status" value="<%= status %>">
+          <% if (startDate) { %>
+            <input type="hidden" name="startDate" value="<%= startDate %>">
+           <% } %>
+           <% if (endDate) { %>
+            <input type="hidden" name="endDate" value="<%= endDate %>">
+           <% } %>
+            <input type="search" placeholder="Which order are you looking for ?" name="search"  value="<%= search || '' %>"
                class="productSearchBar border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" data-search>
              <div id="productSearchResultBox" data-order-container>  
              </div>
@@ -29,24 +36,41 @@
     
   
     <div class="flex justify-end mb-4">
-      <div class="flex items-center gap-2">
-        <span class="text-md text-gray-600">Order Status :</span>
-        <select id="orderStatus" class="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-green-500">
-          <option value="All" <%= (status === "All") ? "selected" : "" %>>All</option>
-          <option value="Placed" <%= (status === "Placed") ? "selected" : "" %>>Pending</option>
-          <option value="Processed" <%= (status === "Processed") ? "selected" : "" %>>Processed</option>
-          <option value="Shipped" <%= (status === "Shipped") ? "selected" : "" %>>Shipped</option>
-          <option value="Out for Delivery" <%= (status === "Out for Delivery") ? "selected" : "" %>>Out for Delivery</option>
-          <option value="Delivered" <%= (status === "Delivered") ? "selected" : "" %>>Delivered</option>
-          <option value="Cancelled" <%= (status === "Cancelled") ? "selected" : "" %>>Cancelled</option>
-          <option value="Return Requested" <%= (status === "Return Requested") ? "selected" : "" %>>Return Requested</option>
-          <option value="Return Request Approved" <%= (status === "Return Request Approved") ? "selected" : "" %>>Return Request Approved</option>
-          <option value="Return Request Declined" <%= (status === "Return Request Declined") ? "selected" : "" %>>Return Request Declined</option>
-        </select>
-        <button type="button" class="btn-primary p-2 font-bold text-gray-700   rounded-md transition duration-300 " onclick="getOrdersBasedOnStatus()">
-          Apply
-        </button>
-        <form autocomplete="off" action="/admin/items-per-page" method="post">
+      <div class="flex items-center gap-2 mr-4">
+       
+        
+
+        <div>
+          <form action="/admin/orders" method="get">
+            <% if (startDate) { %>
+              <input type="hidden" name="startDate" value="<%= startDate %>">
+             <% } %>
+             <% if (endDate) { %>
+              <input type="hidden" name="endDate" value="<%= endDate %>">
+             <% } %>
+            <% if (status) { %>
+             <input type="hidden" name="status" value="<%= status %>">
+            <% } %>
+            <% if (search) { %>
+              <input type="hidden" name="status" value="<%= search %>">
+             <% } %>
+            <select name="sortBy"
+            class="border border-gray-300 rounded-md px-3 py-1 w-[15rem] focus:outline-none focus:ring-2 focus:ring-green-500">
+            <option value="">Sort By</option>
+            <option value="date-high-low" <%=(sortBy==="date-high-low" ) ? "selected" : "" %>>Date High-Low</option>
+            <option value="date-low-high" <%=(sortBy==="date-low-high" ) ? "selected" : "" %>>Date Low-High</option>
+          </select>
+          <button type="submit"
+            class="btn-primary font-bold text-black px-2 py-1 rounded-md transition duration-300 ">
+            <div class="flex justify-center">
+              Apply
+            </div>
+          </button>
+          </form>
+
+        </div>
+           
+        <form autocomplete="off" action="/admin/items-per-page" method="get">
         <span class="text-md text-gray-600">Items per page:</span>
         <select name="itemsPerPage" class="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-green-500">
           <option value="5" <%= (perPage === 5) ? "selected" : "" %>>5</option>
@@ -64,6 +88,60 @@
         </button>
        </form>
       </div>
+    </div>
+    <div id="filterPanel" class="bg-white border rounded-lg p-4 mb-6 shadow-sm">
+      <form action="/admin/orders" method="get">
+
+        <% if (search) { %>
+          <input name="search" type="hidden" value="<%= search %>">
+        <% } %>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+
+          
+
+          <!-- Brand -->
+          <div>
+            <label class="text-sm text-gray-600">Date Between</label>
+            <input id="startDate" value="<%= startDate || '' %>" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500" type="date" name="startDate" onchange="changeDate()">
+          </div>
+
+          <div>
+            <input id="endDate" value="<%= endDate || '' %>" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500" type="date" name="endDate" >
+          </div>
+
+        
+          <!-- Order Status -->
+          <div>
+            <label class="text-sm text-gray-600">Order Status</label>
+            <select name="status"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500">
+              <option value="All" <%= (status === "All") ? "selected" : "" %>>All</option>
+              <option value="Placed" <%= (status === "Placed") ? "selected" : "" %>>Pending</option>
+              <option value="Processed" <%= (status === "Processed") ? "selected" : "" %>>Processed</option>
+              <option value="Shipped" <%= (status === "Shipped") ? "selected" : "" %>>Shipped</option>
+              <option value="Out for Delivery" <%= (status === "Out for Delivery") ? "selected" : "" %>>Out for Delivery</option>
+              <option value="Delivered" <%= (status === "Delivered") ? "selected" : "" %>>Delivered</option>
+              <option value="Cancelled" <%= (status === "Cancelled") ? "selected" : "" %>>Cancelled</option>
+              <option value="Return Requested" <%= (status === "Return Requested") ? "selected" : "" %>>Return Requested</option>
+              <option value="Return Request Approved" <%= (status === "Return Request Approved") ? "selected" : "" %>>Return Request Approved</option>
+              <option value="Return Request Declined" <%= (status === "Return Request Declined") ? "selected" : "" %>>Return Request Declined</option>
+            
+            </select>
+          </div>
+
+          <div class="flex justify-end gap-3 mt-4">
+            <button type="submit" class="px-4 py-2 w-full text-black font-bold rounded-md btn-primary">
+              Apply Filters
+            </button>
+          </div>
+
+        </div>
+
+       
+
+      </form>
+
     </div>
     <div class="bg-white rounded-lg shadow overflow-x-auto">
       <table class="min-w-full table-fixed divide-y divide-gray-200">
@@ -193,7 +271,7 @@
       </div>
       <div class="flex space-x-2">
         
-        <a href="/admin/orders?status=<%= status %>&page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %>">
+        <a href="/admin/orders?status=<%= status %>&page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %><%= (startDate) ? "&startDate="+startDate : ''%><%= (endDate) ? "&endDate="+endDate : ''%><%= (search) ? "&search="+search : '' %><%= (sortBy) ? "&sortBy="+sortBy : '' %>">
           <% if (Number(page) === 1) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Previous
@@ -214,14 +292,14 @@
        <% lowerBound = (lowerBound > pages && pages > 0) ? pages - 9 : lowerBound %>
        <% displayedPages = (upperBound > pages) ? pages : upperBound %>
         <% for(let i = lowerBound ; i <= displayedPages; i++ ) { %>
-        <a href="/admin/orders?status=<%= status %>&page=<%= i %>">
+        <a href="/admin/orders?status=<%= status %>&page=<%= i %><%= (startDate) ? "&startDate="+startDate : ''%><%= (endDate) ? "&endDate="+endDate : ''%><%= (search) ? "&search="+search : '' %><%= (sortBy) ? "&sortBy="+sortBy : '' %>">
           <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
             <%= i %>
           </button>
         </a>
         <% } %>
       <% } %>
-        <a href="/admin/orders?status=<%= status %>&page=<%= Number(page) < pages ? Number(page) + 1 : pages %>">
+        <a href="/admin/orders?status=<%= status %>&page=<%= Number(page) < pages ? Number(page) + 1 : pages %><%= (startDate) ? "&startDate="+startDate : '' %><%= (endDate) ? "&endDate="+endDate : '' %><%= (search) ? "&search="+search : '' %><%= (sortBy) ? "&sortBy="+sortBy  : ''%>">
           <% if (Number(page) === pages) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Next
@@ -237,11 +315,6 @@
     </div>
   </div>
 
- <script>
-  function getOrdersBasedOnStatus(){
-    let orderStatus = document.getElementById("orderStatus").value
-    window.location.href = `/admin/orders?status=${orderStatus}`
-  }
- </script>
+ 
   <!-- Script.js -->
 <%- include("../../public/javascript/admin-javascript/ordersPageScript.ejs")%>

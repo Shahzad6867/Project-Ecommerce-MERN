@@ -1,217 +1,365 @@
 <!-- Header -->
-<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - Product Management"}) %>
-<!-- Navbar -->
-<%- include("../partials/admin-side/navbar.ejs") %>
-<!-- Sidebar -->
-<%- include("../partials/admin-side/sidebar.ejs",{dashboardBtn : "",customerBtn : "",categoriesBtn : "",brandsBtn : "",productsBtn : "active disabled",ordersBtn : "",offersBtn : "",couponsBtn : "",reportsBtn : ""}) %>
-  <!-- Main Content -->
-  <div class="main-content">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold text-gray-800">Products</h1>
-      <div class="relative">
-        <form autocomplete="off" action="/admin/products" method="post">
-            <input type="search" placeholder="Which product are you looking for ?" name="search" 
-               class="productSearchBar border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" data-search>
-             <div id="productSearchResultBox" data-product-container>  
-             </div>
-        <i id="search-icon" class="fas fa-search absolute right-3 top-3 text-gray-500"></i>
-        </form>
-      </div>
-      <template data-product-template>
-        <div id="product-list-item"  >
-         <span class="ml-2 " data-header ></span>
-        </div>
-      </template>  
-
-
-         <a href="/admin/add-product">
-            <button class="addBtn-primary  font-medium text-gray-700 py-2 px-3  rounded-md transition duration-300 ">
-                <i class="fa fa-plus text-gray-700"></i>
-                Add Product
-              </button>
-         </a>
-    </div>
-    
-  
-    <div class="flex justify-end mb-4">
-      <div class="flex items-center gap-2">
-        <form autocomplete="off" action="/admin/items-per-page" method="post">
-        <span class="text-md text-gray-600">Items per page:</span>
-        <select name="itemsPerPage" class="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-green-500">
-          <option value="5">5</option>
-          <option value="10">10</option>
-          <option value="25">25</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-        </select>
-        <button type="submit" class="tick-primary font-medium text-gray-700   rounded-md transition duration-300 ">
-          <div class="flex justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" id="tick">
-              <polyline fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" points="2.75 8.75 6.25 12.25 13.25 4.75" />
-            </svg>
+<%- include("../partials/admin-side/admin-universal-header.ejs",{title : "Admin - Product Management" }) %>
+  <!-- Navbar -->
+  <%- include("../partials/admin-side/navbar.ejs") %>
+    <!-- Sidebar -->
+    <%- include("../partials/admin-side/sidebar.ejs",{dashboardBtn : "" ,customerBtn : "" ,categoriesBtn : "" ,brandsBtn
+      : "" ,productsBtn : "active disabled" ,ordersBtn : "" ,offersBtn : "" ,couponsBtn : "" ,reportsBtn : "" }) %>
+      <!-- Main Content -->
+      <div class="main-content">
+        <div class="flex justify-between items-center mb-6">
+          <h1 class="text-2xl font-bold text-gray-800">Products</h1>
+          <div class="relative">
+            <form autocomplete="off" action="/admin/products" method="get">
+              <input type="search" placeholder="Which product are you looking for ?" name="search" value="<%= search || '' %>"
+                class="productSearchBar border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                data-search>
+              <div id="productSearchResultBox" data-product-container>
+              </div>
+              <i id="search-icon" class="fas fa-search absolute right-3 top-3 text-gray-500"></i>
+            </form>
           </div>
-        </button>
-       </form>
-      </div>
-    </div>
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-green-50">
-          <tr>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">No</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">Product</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Category</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Brand</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Price</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Stock Qty</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Status</th>
-            <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <% if (products.length === 0) { %>
-            <tr>
-              <td colspan="8" class="px-6 py-4 whitespace-nowrap text-sm text-center italic text-gray-500">
-                No products added yet !
-              </td>
-            </tr>
-          <% } %>
-            <% for(let i = 0; i < products.length; i++ ) { %>
-              
-              <% for(let j = 0; j < products[i].variants.length; j++ ) { %>
-                <tr>
-                  <% if (products[i].variants.length > 1) { %>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
-                      <%= i + 1 %>.<%= j + 1 %>
-                    </td>
-                  <% }else{ %>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
-                    <%= i + 1 %>
-                  </td>
-                  <% } %>
-                  <!-- Product info (image + name) only for first variant -->
-                  <td class="px-6 py-4 whitespace-wrap text-center">
-                    <div class="flex items-center justify-center">
-                      <div class="flex-shrink-0 h-14 w-14">
-                        <img class="h-14 w-14 border-2 border-green-700 rounded-full" src="<%= products[i].variants[j].productImages[0] %>" alt="">
-                      </div>
-                      <div class="ml-4 ">
-                        
-                        <% if (products[i].productName.length > 25) { %>
-                          <% let productName = products[i].productName.slice(0,19) %>
-                          <div class="text-sm font-medium uppercase text-gray-900">
-                         <%=  productName %><span class="text-lg font-semibold"> . . .</span>
-                          </div>
-                        <% } else { %>
-                          <div class="text-sm font-medium uppercase text-gray-900">
-                         <%= products[i].productName %>
-                          </div>
-                          <% } %>
+          <template data-product-template>
+            <div id="product-list-item">
+              <span class="ml-2 " data-header></span>
+            </div>
+          </template>
 
-                        
-                      </div>
-                    </div>
-                  </td>
-                  
-          
-                
-                  <td class="px-6 py-4 whitespace-nowrap  text-sm text-center text-gray-500">
-                    <%= products[i].categoryId.categoryName %>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap  text-sm text-center text-gray-500">
-                    <%= products[i].brandId.brandName %>
-                  </td>
-          
-                  <!-- Variant-specific details -->
-                  <td class="px-6 py-2 whitespace-nowrap text-sm text-center font-large text-gray-500">
-                    <%= products[i].variants[j].price %> $
-                  </td>
-                  <td class="px-6 py-2 text-center whitespace-nowrap text-sm font-large text-gray-500">
-                    <%= products[i].variants[j].stockQuantity %>
-                  </td>
-          
-                  <!-- Status (only once for product) -->
-                  <td class="px-6 py-2 whitespace-nowrap text-center text-sm font-large text-gray-500">
-                    
-                      <% if (!products[i].variants[j].isBlocked) { %>
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
-                      <% } else { %>
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactive</span> 
-                      <% } %>
-                  
-                  </td>
-          
-                  <!-- Actions only once -->
-                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                      <a href="/admin/edit-product?id=<%= products[i]._id %>">
-                        <button title="Edit" class="text-cyan-500 hover:text-cyan-700 mr-3 unblock-user-btn" >
-                          <i class="fas fa-edit"></i>
-                        </button>
-                      </a>
-                      <button title="Restore" onclick="restoreProduct('<%= products[i]._id %>','<%= j %>')" 
-                          class="text-green-600 hover:text-green-900 mr-3 unblock-user-btn" >
-                        <i class="fas fa-check-circle"></i>
-                      </button>
-                      <button title="Block" onclick="areYouSure('<%= products[i]._id %>','<%= j %>')" 
-                          class="text-red-600 hover:text-red-900 delete-user-btn">
-                          <i class="fas fa-ban"></i>
-                      </button>
+
+          <a href="/admin/add-product">
+            <button class="addBtn-primary  font-medium text-gray-700 py-2 px-3  rounded-md transition duration-300 ">
+              <i class="fa fa-plus text-gray-700"></i>
+              Add Product
+            </button>
+          </a>
+        </div>
+
+
+        <div class="flex justify-end mb-4">
+
+          <div class="flex items-center gap-2 mr-4">
+            <button onclick="toggleFilters()" class="addBtn-primary z-0 px-4 py-1 bg-green-600 text-black  rounded-md ">
+              Filters
+            </button>
+            <% if(category || brand || minPrice || maxPrice || search){ %>
+              <a href="/admin/products" class="btn-primary flex py-1 px-2 rounded-md">
+                <i data-feather="x" ></i>
+                Clear
+              </a>
+            <% } %>
+          </div>
+          <div class="flex justify-end mr-2">
+           
+            <form action="/admin/products?<%= (category) ? 'category='+category : '' %>" method="get">
+              <% if (category) { %>
+                <input name="category" type="hidden" value="<%= category %>">
+              <% } %>
+              <% if (brand) { %>
+                <input name="brand" type="hidden" value="<%= brand %>">
+              <% } %>
+              <% if (minPrice) { %>
+                <input name="minPrice" type="hidden" value="<%= minPrice %>">
+              <% } %>
+              <% if (maxPrice) { %>
+                <input name="maxPrice" type="hidden" value="<%= maxPrice %>">
+              <% } %>
+              <% if (search) { %>
+                <input name="search" type="hidden" value="<%= search %>">
+              <% } %>
+             
+              <select name="sortBy"
+                class="border border-gray-300 rounded-md px-3 py-1 w-[15rem] focus:outline-none focus:ring-2 focus:ring-green-500">
+                <option value="">Sort By</option>
+                <option value="recently-created" <%=(sortBy ==="recently-created" ) ? "selected" : "" %>>Product Recently
+                  Created</option>
+                <option value="created-long-ago" <%=(sortBy ==="created-long-ago" ) ? "selected" : "" %>>Product Created
+                  Long ago</option>
+                <option value="name-a-z" <%=(sortBy==="name-a-z" ) ? "selected" : "" %>>Product Name A-Z</option>
+                <option value="name-z-a" <%=(sortBy==="name-z-a" ) ? "selected" : "" %>>Product Name Z-A</option>
+                 <option value="price-high-low" <%=(sortBy==="price-high-low" ) ? "selected" : "" %>>Price High-Low</option>
+                <option value="price-low-high" <%=(sortBy==="price-low-high" ) ? "selected" : "" %>>Price Low-High</option>
+                <option value="stock-high-low" <%=(sortBy==="stock-high-low" ) ? "selected" : "" %>>Stock High-Low</option>
+                <option value="stock-low-high" <%=(sortBy==="stock-low-high" ) ? "selected" : "" %>>Stock Low-High</option>
+              </select>
+              <button type="submit"
+                class="btn-primary font-bold text-black px-2 py-1 rounded-md transition duration-300 ">
+                <div class="flex justify-center">
+                  Apply
+                </div>
+              </button>
+            </form>
+          </div>
+          <div class="flex items-center gap-2">
+            <form autocomplete="off" action="/admin/items-per-page" method="get">
+              <span class="text-md text-gray-600">Items per page:</span>
+              <select name="itemsPerPage"
+                class="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-green-500">
+                <option value="5" <%=(perPage===5) ? "selected" : "" %>>5</option>
+                <option value="10" <%=(perPage===10) ? "selected" : "" %>>10</option>
+                <option value="25" <%=(perPage===25) ? "selected" : "" %>>25</option>
+                <option value="50" <%=(perPage===50) ? "selected" : "" %>>50</option>
+                <option value="100" <%=(perPage===100) ? "selected" : "" %>>100</option>
+              </select>
+              <button type="submit"
+                class="tick-primary font-medium text-gray-700   rounded-md transition duration-300 ">
+                <div class="flex justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" id="tick">
+                    <polyline fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2.5" points="2.75 8.75 6.25 12.25 13.25 4.75" />
+                  </svg>
+                </div>
+              </button>
+            </form>
+          </div>
+        </div>
+        <div id="filterPanel" class="<%= (category || brand || minPrice || maxPrice) ? '' : 'hidden' %> bg-white border rounded-lg p-4 mb-6 shadow-sm">
+          <form action="/admin/products" method="get">
+
+            <% if (search) { %>
+              <input name="search" type="hidden" value="<%= search %>">
+            <% } %>
+
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+
+              <!-- Category -->
+              <div>
+                <label class="text-sm text-gray-600">Category</label>
+                <select name="category"
+                  class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500">
+                  <option value="">All Categories</option>
+                  <% for(let i=0;i<categories.length;i++){ %>
+                    <option value="<%= categories[i]._id %>"  <%= (String(categories[i]._id) === String(category)) ? "selected" : '' %>>
+                      <%= categories[i].categoryName %>
+                    </option>
+                    <% } %>
+                </select>
+              </div>
+
+              <!-- Brand -->
+              <div>
+                <label class="text-sm text-gray-600">Brand</label>
+                <select name="brand"
+                  class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500">
+                  <option value="">All Brands</option>
+                  <% for(let j=0;j<brands.length;j++){ %>
+                    <option value="<%= brands[j]._id %>" <%= (String(brands[j]._id) === String(brand)) ? "selected" : '' %>>
+                      <%= brands[j].brandName %>
+                    </option>
+                    <% } %>
+                </select>
+              </div>
+
+              <!-- Min Price -->
+              <div>
+                <label class="text-sm text-gray-600">Min Price</label>
+                <input type="number" name="minPrice" min="0" value="<%= minPrice || '' %>"
+                  class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500"
+                  placeholder="0">
+              </div>
+
+              <!-- Max Price -->
+              <div>
+                <label class="text-sm text-gray-600">Max Price</label>
+                <input type="number" name="maxPrice" min="0" value="<%= maxPrice || '' %>"
+                  class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500"
+                  placeholder="5000">
+              </div>
+
+              <div class="flex justify-end gap-3 mt-4">
+                <button type="submit" class="px-4 py-2 w-full text-black font-bold rounded-md btn-primary">
+                  Apply Filters
+                </button>
+              </div>
+
+            </div>
+
+           
+
+          </form>
+
+        </div>
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-green-50">
+              <tr>
+                <th scope="col"
+                  class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">No</th>
+                <th scope="col"
+                  class="px-6 py-3 text-center text-xs font-semibold  text-green-800 uppercase tracking-wider">Product
+                </th>
+                <th scope="col"
+                  class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Category
+                </th>
+                <th scope="col"
+                  class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Brand</th>
+                <th scope="col"
+                  class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Price</th>
+                <th scope="col"
+                  class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Stock Qty
+                </th>
+                <th scope="col"
+                  class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Status
+                </th>
+                <th scope="col"
+                  class="px-6 py-3 text-center text-xs font-semibold text-green-800 uppercase tracking-wider">Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <% if (products.length===0) { %>
+                <tr>
+                  <td colspan="8" class="px-6 py-4 whitespace-nowrap text-sm text-center italic text-gray-500">
+                    No products found !
                   </td>
                 </tr>
-              <% } %>
-            <% } %>
-          </tbody>
-      </table>
-    </div>
+                <% } %>
+                  <% for(let i=0; i < products.length; i++ ) { %>
+                    <tr>
+                      <td class="px-2 py-4 whitespace-nowrap text-sm text-center text-gray-500">
+                        <%= i + 1 %>
+                      </td>
 
-     
+                      <!-- Product info (image + name) only for first variant -->
+                      <td class="px-6 py-4 whitespace-wrap text-center">
+                        <div class="flex items-center justify-center">
+                          <div class="flex-shrink-0 h-14 w-14">
+                            <img class="h-14 w-14 border-2 border-green-700 rounded-full"
+                              src="<%= products[i].variants.productImages[0] %>" alt="">
+                          </div>
+                          <div class="ml-4 ">
 
-    <!-- Pagination -->
-    <div class="flex items-center justify-between mt-4">
-      <div class="text-sm text-gray-500">
-        Showing <span class="font-medium"><%= (products.length > 0) ? 1 : 0 %></span> to <span class="font-medium"><%= products.length %></span> of <span class="font-medium"><%= count %></span> results
+                            <% if (products[i].productName.length> 25) { %>
+                              <% let productName=products[i].productName.slice(0,19) %>
+                                <div class="text-sm font-medium uppercase text-gray-900">
+                                  <%= productName %><span class="text-lg font-semibold"> . . .</span>
+                                </div>
+                                <% } else { %>
+                                  <div class="text-sm font-medium uppercase text-gray-900">
+                                    <%= products[i].productName %>
+                                  </div>
+                                  <% } %>
+
+
+                          </div>
+                        </div>
+                      </td>
+
+
+
+                      <td class="px-6 py-4 whitespace-nowrap  text-sm text-center text-gray-500">
+                        <%= products[i].categoryId.categoryName %>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap  text-sm text-center text-gray-500">
+                        <%= products[i].brandId.brandName %>
+                      </td>
+
+                      <!-- Variant-specific details -->
+                      <td class="px-6 py-2 whitespace-nowrap text-sm text-center font-large text-gray-500">
+                        <%= products[i].variants.price %> $
+                      </td>
+                      <td class="px-6 py-2 text-center whitespace-nowrap text-sm font-large text-gray-500">
+                        <%= products[i].variants.stockQuantity %>
+                      </td>
+
+                      <td class="px-6 py-2 whitespace-nowrap text-center text-sm font-large text-gray-500">
+
+                        <% if (!products[i].variants.isBlocked) { %>
+                          <span
+                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
+                          <% } else { %>
+                            <span
+                              class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactive</span>
+                            <% } %>
+
+                      </td>
+
+                      <!-- Actions only once -->
+                      <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                        <a href="/admin/edit-product?id=<%= products[i]._id %>">
+                          <button title="Edit" class="text-cyan-500 hover:text-cyan-700 mr-3 unblock-user-btn">
+                            <i class="fas fa-edit"></i>
+                          </button>
+                        </a>
+
+                        <button title="Restore"
+                          onclick="restoreProduct('<%= products[i]._id %>','<%= products[i].variant %>')"
+                          class="text-green-600 hover:text-green-900 mr-3 unblock-user-btn">
+                          <i class="fas fa-check-circle"></i>
+                        </button>
+                        <button title="Block"
+                          onclick="areYouSure('<%= products[i]._id %>','<%= products[i].variant %>')"
+                          class="text-red-600 hover:text-red-900 delete-user-btn">
+                          <i class="fas fa-ban"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <% } %>
+            </tbody>
+          </table>
+        </div>
+
+
+
+        <!-- Pagination -->
+        <div class="flex items-center justify-between mt-4">
+          <div class="text-sm text-gray-500">
+            Showing <span class="font-medium">
+              <%= (products.length> 0) ? 1 : 0 %>
+            </span> to <span class="font-medium">
+              <%= products.length %>
+            </span> of <span class="font-medium">
+              <%= count %>
+            </span> results
+          </div>
+          <div class="flex space-x-2">
+
+            <a href="/admin/products?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %><%= (category) ? "&category="+category : ""%><%= (brand) ? "&brand="+brand : ""%><%= (minPrice) ? "&minPrice="+minPrice : ""%><%= (maxPrice) ? "&maxPrice="+maxPrice : ""%><%= (sortBy) ? "&sortBy="+sortBy : ""%><%= (search) ? "&search="+search : ""%>">
+              <% if (Number(page)===1) { %>
+                <button
+                  class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  disabled>
+                  Previous
+                </button>
+                <% } else {%>
+                  <button
+                    class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    Previous
+                  </button>
+                  <% } %>
+
+            </a>
+            <% let lowerBound=(Math.floor(page / 10) * 10) + 1 %>
+              <% let upperBound=lowerBound + 9 %>
+                <% lowerBound=(lowerBound> pages && pages > 0) ? pages - 9 : lowerBound %>
+                  <% let displayedPages=(upperBound> pages) ? pages : upperBound %>
+                    <% for(let i=lowerBound ; i <=displayedPages; i++ ) { %>
+                      <a href="/admin/products?page=<%= i %><%= (category) ? "&category="+category : ""%><%= (brand) ? "&brand="+brand : ""%><%= (minPrice) ? "&minPrice="+minPrice : ""%><%= (maxPrice) ? "&maxPrice="+maxPrice : ""%><%= (sortBy) ? "&sortBy="+sortBy : ""%><%= (search) ? "&search="+search : ""%>">
+                        <button
+                          class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+                          <%= i %>
+                        </button>
+                      </a>
+                      <% } %>
+                        <a href="/admin/products?page=<%= Number(page) < pages ? Number(page) + 1 : pages %><%= (category) ? "&category="+category : "" %><%= (brand) ? "&brand="+brand : ""%><%= (minPrice) ? "&minPrice="+minPrice : "" %><%= (maxPrice) ? "&maxPrice="+maxPrice : ""%><%= (sortBy) ? "&sortBy="+sortBy : ""%><%= (search) ? "&search="+search : ""%>">
+                          <% if (Number(page)===pages) { %>
+                            <button
+                              class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                              disabled>
+                              Next
+                            </button>
+                            <% } else {%>
+                              <button
+                                class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                Next
+                              </button>
+                              <% } %>
+
+                        </a>
+          </div>
+        </div>
       </div>
-      <div class="flex space-x-2">
-        
-        <a href="/admin/products?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %>">
-          <% if (Number(page) === 1) { %>
-            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
-              Previous
-            </button>
-          <% } else {%>
-            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" >
-              Previous
-            </button>
-            <% } %>
-        
-       </a>
-       <% let lowerBound = (Math.floor(page / 10) * 10) + 1 %>
-       <% let upperBound = lowerBound + 9 %>
-       <% lowerBound = (lowerBound > pages && pages > 0) ? pages - 9 : lowerBound %>
-       <% let displayedPages = (upperBound > pages) ? pages : upperBound %>
-       <% for(let i = lowerBound ; i <= displayedPages; i++ ) { %>
-        <a href="/admin/products?page=<%= i %>">
-          <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
-            <%= i %>
-          </button>
-        </a>
-        <% } %>
-        <a href="/admin/products?page=<%= Number(page) < pages ? Number(page) + 1 : pages %>">
-          <% if (Number(page) === pages) { %>
-            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
-              Next
-            </button>
-          <% } else {%>
-            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" >
-              Next
-            </button>
-            <% } %>
-        
-       </a>
-      </div>
-    </div>
-  </div>
 
- 
-  <!-- Script.js -->
-<%- include("../../public/javascript/admin-javascript/productsPageScript.ejs")%>
+   
+
+      <!-- Script.js -->
+      <%- include("../../public/javascript/admin-javascript/productsPageScript.ejs")%>

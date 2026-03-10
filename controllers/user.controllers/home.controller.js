@@ -4,8 +4,9 @@ const Wishlist = require("../../models/wishlist.model.js");
 const mongoose = require("mongoose");
 require("dotenv").config();
 const homeService = require("../../services/user-services/homeService.js");
+const HTTP_STATUS = require("../../constants/httpStatus.js");
 
-const getHomepage = async (req, res) => {
+const getHomepage = async (req, res, next) => {
   try {
     const user = req.session.user || req.user;
     let message = req.session.message || null;
@@ -20,7 +21,7 @@ const getHomepage = async (req, res) => {
       wishlistItemsCount,
       cartItemsCount,
     } = await homeService.getUserShopContext(user);
-    res.render("user-view/user.homepage.ejs", {
+    res.status(HTTP_STATUS.OK).render("user-view/user.homepage.ejs", {
       message,
       categories,
       products,
@@ -33,11 +34,11 @@ const getHomepage = async (req, res) => {
       search,
     });
   } catch (error) {
-    console.log(error);
+    next(error)
   }
 };
 
-const getProductDetail = async (req, res) => {
+const getProductDetail = async (req, res, next) => {
   try {
     const { id, variant } = req.query;
 
@@ -68,7 +69,7 @@ const getProductDetail = async (req, res) => {
       userId: user?._id,
     }).countDocuments();
     const search = req.query.search || null;
-    res.render("user-view/user.product-detail-page.ejs", {
+    res.status(HTTP_STATUS.OK).render("user-view/user.product-detail-page.ejs", {
       product,
       relatedProduct,
       productsFullList,
@@ -81,11 +82,11 @@ const getProductDetail = async (req, res) => {
       search,
     });
   } catch (error) {
-    console.log(error.message);
+   next(error)
   }
 };
 
-const getShop = async (req, res) => {
+const getShop = async (req, res, next) => {
   try {
     let message = req.session.message || null;
     delete req.session.message;
@@ -156,7 +157,7 @@ const getShop = async (req, res) => {
       wishlistItemsCount,
       cartItemsCount,
     } = await homeService.getUserShopContext(user);
-    res.render("user-view/user.shop.ejs", {
+    res.status(HTTP_STATUS.OK).render("user-view/user.shop.ejs", {
       categories,
       products,
       brands,
@@ -177,7 +178,7 @@ const getShop = async (req, res) => {
       maxPrice,
     });
   } catch (error) {
-    console.log(error);
+    next(error)
   }
 };
 

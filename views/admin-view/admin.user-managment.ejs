@@ -9,8 +9,8 @@
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold text-gray-800">Customers</h1>
       <div class="relative">
-        <form autocomplete="off" action="/admin/users" method="post">
-            <input type="search" placeholder="Whom are you looking for ?" name="search" 
+        <form autocomplete="off" action="/admin/users" method="get">
+            <input type="search" placeholder="Whom are you looking for ?" name="search" value="<%= search || '' %>"
                class="search-bar border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" data-search>
              <div id="searchResult-box" data-user-card-container>  
              </div>
@@ -28,19 +28,67 @@
        <span class="ml-2" data-body ></span>
       </div>
     </template>  
+    
 
 
     <div class="flex justify-end mb-4">
+      <div class="flex items-center gap-2 mr-4">
+        <button onclick="toggleFilters()" class="addBtn-primary z-0 px-4 py-1 bg-green-600 text-black  rounded-md ">
+          Filters
+        </button>
+        <% if(minOrders || maxOrders || minSpent || maxSpent || search){ %>
+          <a href="/admin/users" class="btn-primary flex py-1 px-2 rounded-md">
+            <i data-feather="x" ></i>
+            Clear
+          </a>
+        <% } %>
+      </div>
+      <div class="flex items-center gap-2 mr-4">
+        <form autocomplete="off" action="/admin/users" method="get">
+          <% if (minOrders) { %>
+            <input name="minOrders" type="hidden" value="<%= minOrders %>">
+          <% } %>
+          <% if (maxOrders) { %>
+            <input name="maxOrders" type="hidden" value="<%= maxOrders %>">
+          <% } %>
+          <% if (minSpent) { %>
+            <input name="minSpent" type="hidden" value="<%= minSpent %>">
+          <% } %>
+          <% if (maxSpent) { %>
+            <input name="maxSpent" type="hidden" value="<%= maxSpent %>">
+          <% } %>
+          <% if (search) { %>
+            <input name="search" type="hidden" value="<%= search %>">
+          <% } %>
+        <select name="sortBy" class="border border-gray-300 rounded-md px-3 py-1 w-[18rem] focus:outline-none focus:ring-2 focus:ring-green-500">
+          <option value="">Sort By</option>
+          <option value="recently-joined" <%= (sortBy === "recently-joined") ? "selected" : "" %>>Customers Recently Joined</option>
+          <option value="joined-long-ago" <%= (sortBy === "joined-long-ago") ? "selected" : "" %>>Customers Joined Long ago</option>
+          <option value="name-a-z" <%= (sortBy === "name-a-z") ? "selected" : "" %>>Customer Name A-Z</option>
+          <option value="name-z-a" <%= (sortBy === "name-z-a") ? "selected" : "" %>>Customer Name Z-A</option>
+          <option value="orders-high-low" <%= (sortBy === "orders-high-low") ? "selected" : "" %>>Orders High-Low</option>
+          <option value="orders-low-high" <%= (sortBy === "orders-low-high") ? "selected" : "" %>>Orders Low-High</option>
+          <option value="total-spent-high-low" <%= (sortBy === "total-spent-high-low") ? "selected" : "" %>>Total Spent High-Low</option>
+          <option value="total-spent-low-high" <%= (sortBy === "total-spent-low-high") ? "selected" : "" %>>Total Spent Low-High</option>
+        </select>
+        <button type="submit" class="btn-primary font-medium text-gray-700   rounded-md transition duration-300 ">
+          <div class="flex justify-center">
+           <h1 class="font-bold p-2">Apply</h1>
+          </div>
+        </button>
+       </form>
+      </div>
+
       <div class="flex items-center gap-2">
-        <form autocomplete="off" action="/admin/items-per-page" method="post">
+        <form autocomplete="off" action="/admin/items-per-page" method="get">
         <span class="text-md text-gray-600">Items per page:</span>
         <input type="" onsubmit="setRefer(this)" id="referrer" name="referrer" hidden>
         <select name="itemsPerPage" class="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-green-500">
-          <option value="5">5</option>
-          <option value="10">10</option>
-          <option value="25">25</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
+          <option value="5" <%= (perPage === 5) ? "selected" : "" %>>5</option>
+          <option value="10" <%= (perPage === 10) ? "selected" : "" %>>10</option>
+          <option value="25" <%= (perPage === 25) ? "selected" : "" %>>25</option>
+          <option value="50" <%= (perPage === 50) ? "selected" : "" %>>50</option>
+          <option value="100" <%= (perPage === 100) ? "selected" : "" %>>100</option>
         </select>
         <button type="submit" class="tick-primary font-medium text-gray-700   rounded-md transition duration-300 ">
           <div class="flex justify-center">
@@ -51,6 +99,60 @@
         </button>
        </form>
       </div>
+    </div>
+    <div id="filterPanel" class="<%= (minOrders || maxOrders || minSpent || maxSpent) ? '' : 'hidden' %> bg-white border rounded-lg p-4 mb-6 shadow-sm">
+      <form action="/admin/users" method="get">
+
+        <% if (search) { %>
+          <input name="search" type="hidden" value="<%= search %>">
+        <% } %>
+
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+
+          <!-- Category -->
+          <div>
+            <label class="text-sm text-gray-600">Min Orders</label>
+            <input type="number" name="minOrders" min="0" value="<%= minOrders || '' %>"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500"
+              placeholder="0">
+          </div>
+
+          <!-- Brand -->
+          <div>
+            <label class="text-sm text-gray-600">Max Orders</label>
+              <input type="number" name="maxOrders" min="0" value="<%= maxOrders || '' %>"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500"
+              placeholder="5000">
+          </div>
+
+          <!-- Min Price -->
+          <div>
+            <label class="text-sm text-gray-600">Min Spent</label>
+            <input type="number" name="minSpent" min="0" value="<%= minSpent || '' %>"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500"
+              placeholder="0">
+          </div>
+
+          <!-- Max Price -->
+          <div>
+            <label class="text-sm text-gray-600">Max Spent</label>
+            <input type="number" name="maxSpent" min="0" value="<%= maxSpent || '' %>"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500"
+              placeholder="5000">
+          </div>
+
+          <div class="flex justify-end gap-3 mt-4">
+            <button type="submit" class="px-4 py-2 w-full text-black font-bold rounded-md btn-primary">
+              Apply Filters
+            </button>
+          </div>
+
+        </div>
+
+       
+
+      </form>
+
     </div>
     
     <div class="bg-white rounded-lg shadow overflow-hidden">
@@ -70,7 +172,7 @@
           <% if (users.length === 0) { %>
             <tr>
               <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-center italic text-gray-500">
-                No users registered yet !
+                No users found !
               </td>
             </tr>
           <% } %>
@@ -99,8 +201,8 @@
               <%= users[i].phone %>
                 <% } %>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">NA</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">NA</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500"><%= users[i].totalOrders %></td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500"><%= users[i].totalAmountSpent.toFixed(2) %></td>
             <td class="px-6 py-2 whitespace-nowrap text-sm font-large text-gray-500">
                 <% if (!users[i].isBlocked) { %>
                   <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
@@ -134,7 +236,7 @@
       </div>
       <div class="flex space-x-2">
         
-        <a href="/admin/users?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %>">
+        <a href="/admin/users?page=<%= Number(page) > 1 ? Number(page) - 1 : 1 %><%= (minOrders) ? "&minOrders="+minOrders : ""%><%= (maxOrders) ? "&maxOrders="+maxOrders : ""%><%= (minSpent) ? "&minSpent="+minSpent : ""%><%= (maxSpent) ? "&maxSpent="+maxSpent : ""%><%= (sortBy) ? "&sortBy="+sortBy : ""%><%= (search) ? "&search="+search : ""%>">
           <% if (Number(page) === 1) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Previous
@@ -151,13 +253,13 @@
        <% lowerBound = (lowerBound > pages && pages > 0) ? pages - 9 : lowerBound %>
        <% let displayedPages = (upperBound > pages) ? pages : upperBound %>
        <% for(let i = lowerBound ; i <= displayedPages; i++ ) { %>
-        <a href="/admin/users?page=<%= i %>">
+        <a href="/admin/users?page=<%= i %><%= (minOrders) ? "&minOrders="+minOrders : ""%><%= (maxOrders) ? "&maxOrders="+maxOrders : ""%><%= (minSpent) ? "&minSpent="+minSpent : ""%><%= (maxSpent) ? "&maxSpent="+maxSpent : ""%><%= (sortBy) ? "&sortBy="+sortBy : ""%><%= (search) ? "&search="+search : ""%>">
           <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700">
             <%= i %>
           </button>
         </a>
         <% } %>
-        <a href="/admin/users?page=<%= Number(page) < pages ? Number(page) + 1 : pages %>">
+        <a href="/admin/users?page=<%= Number(page) < pages ? Number(page) + 1 : pages %><%= (minOrders) ? "&minOrders="+minOrders : ""%><%= (maxOrders) ? "&maxOrders="+maxOrders : ""%><%= (minSpent) ? "&minSpent="+minSpent : ""%><%= (maxSpent) ? "&maxSpent="+maxSpent : ""%><%= (sortBy) ? "&sortBy="+sortBy : ""%><%= (search) ? "&search="+search : ""%>">
           <% if (Number(page) === pages) { %>
             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" disabled>
               Next

@@ -3,8 +3,10 @@ const { extractPublicId } = require("cloudinary-build-url");
 const User = require("../../models/user.model");
 require("dotenv").config();
 const profileService = require("../../services/user-services/profileService.js");
+const HTTP_STATUS = require("../../constants/httpStatus.js");
 
-const getProfile = async (req, res) => {
+
+const getProfile = async (req, res, next) => {
   const theUser = req.session.user || req.user;
   const {
     productsFullList,
@@ -19,7 +21,7 @@ const getProfile = async (req, res) => {
   const search = req.query?.search || null;
   let message = req.session.message || null;
   delete req.session.message;
-  res.render("user-view/user.profile-page.ejs", {
+  res.status(HTTP_STATUS.OK).render("user-view/user.profile-page.ejs", {
     message,
     productsFullList,
     user,
@@ -33,7 +35,7 @@ const getProfile = async (req, res) => {
   });
 };
 
-const getEditProfile = async (req, res) => {
+const getEditProfile = async (req, res, next) => {
   let profileUser = req.session.user || req.user;
   const {
     productsFullList,
@@ -45,7 +47,7 @@ const getEditProfile = async (req, res) => {
   let message = req.session.message || null;
   delete req.session.message;
   const search = req.query?.search || null;
-  res.render("user-view/user.edit-profile.ejs", {
+  res.status(HTTP_STATUS.OK).render("user-view/user.edit-profile.ejs", {
     user,
     productsFullList,
     message,
@@ -55,7 +57,7 @@ const getEditProfile = async (req, res) => {
     search,
   });
 };
-const editProfile = async (req, res) => {
+const editProfile = async (req, res, next) => {
   try {
     const { firstName, lastName, phone } = req.body;
     let user = req.session.user || req.user;
@@ -101,15 +103,13 @@ const editProfile = async (req, res) => {
     }
 
     req.session.message = "Profile Updated Successfully";
-    res.redirect("/profile");
+    return res.redirect("/profile");
   } catch (error) {
-    console.log(error);
-    req.session.message = "Oops! Something went wrong";
-    res.redirect("/edit-profile");
+   next(error)
   }
 };
 
-const getAddress = async (req, res) => {
+const getAddress = async (req, res, next) => {
   const theUser = req.session.user || req.user;
   const page = req.query.page || 1
   const perPage = 1
@@ -128,7 +128,7 @@ const getAddress = async (req, res) => {
   const message = req.session.message || null;
   delete req.session.message;
   const search = req.query?.search || null;
-  res.render("user-view/user.address-management.ejs", {
+  res.status(HTTP_STATUS.OK).render("user-view/user.address-management.ejs", {
     productsFullList,
     user,
     addressList: address,
@@ -144,7 +144,7 @@ const getAddress = async (req, res) => {
   });
 };
 
-const addAddress = async (req, res) => {
+const addAddress = async (req, res, next) => {
   try {
     const {
       firstName,
@@ -172,20 +172,18 @@ const addAddress = async (req, res) => {
         isDefault
       );
 
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
       message: "Address added successfully",
       address: newAddress,
       oldDefaultAddress,
     });
   } catch (error) {
-    console.log(error);
-    req.session.message = "Oops! some error has occured";
-    res.redirect("/address");
+    next(error)
   }
 };
 
-const editAddress = async (req, res) => {
+const editAddress = async (req, res, next) => {
   try {
     const id = req.query.id;
     const {
@@ -220,19 +218,17 @@ const editAddress = async (req, res) => {
       }
     );
 
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
       message: "Address updated Successfully",
       address: updatedAddress,
     });
   } catch (error) {
-    console.log(error);
-    req.session.message = "Oops! some error has occured";
-    res.redirect("/address");
+   next(error)
   }
 };
 
-const deleteAddress = async (req, res) => {
+const deleteAddress = async (req, res, next) => {
   const id = req.query.id;
   const idOfUser = req.query.userId;
 
@@ -250,7 +246,7 @@ const deleteAddress = async (req, res) => {
   res.redirect("/address");
 };
 
-const resetDefaultAddress = async (req, res) => {
+const resetDefaultAddress = async (req, res, next) => {
   const id = req.query.id;
 
   const idOfUser = req.session.user?._id || req.user?._id;
@@ -270,7 +266,7 @@ const resetDefaultAddress = async (req, res) => {
     return res.redirect("/checkout");
   }
 
-  return res.status(200).json({
+  return res.status(HTTP_STATUS.OK).json({
     message: "Your Default address has been Updated",
     address: newAddress,
     oldDefaultAddress,

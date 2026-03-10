@@ -2,6 +2,7 @@ const User = require("../../models/user.model.js");
 const Otp = require("../../models/user-otp.model.js");
 const mailer = require("../../config/nodemailer.js");
 const { otpGenerator } = require("../../utils/otpGenerator.js");
+const HTTP_STATUS = require("../../constants/httpStatus.js");
 require("dotenv").config();
 
 const getUserRegister = async (req, res) => {
@@ -10,7 +11,7 @@ const getUserRegister = async (req, res) => {
       if(req.query.ref){
         req.session.referral = req.query.ref
       }
-  res.render("user-view/user.register.ejs", {
+  res.status(HTTP_STATUS.OK).render("user-view/user.register.ejs", {
     message
   });
 };

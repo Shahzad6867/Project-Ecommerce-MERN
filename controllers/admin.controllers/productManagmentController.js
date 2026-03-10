@@ -1,33 +1,74 @@
 const Product = require("../../models/product.model.js");
+const Category = require("../../models/category.model.js");
+const Brand = require("../../models/brand.model.js");
 const { extractPublicId } = require("cloudinary-build-url");
 const productService = require("../../services/admin-services/productService.js");
-const ERROR_MESSAGES = require("../../constants/errorMessages.js");
 const HTTP_STATUS = require("../../constants/httpStatus.js");
+const mongoose = require("mongoose")
 
-const getProducts = async (req, res) => {
-  const perPage = req.session.itemsPerPage || 5;
+const getProducts = async (req, res, next) => {
+  const perPage =  Number(req.session.itemsPerPage) || 5;
   const page = req.query.page || 1;
   const productsFullList = await productService.getProductsForSearch();
-  const products = await productService.getProducts(perPage, page);
-  const count = await productService.getProductsCount();
+  const sortBy = req.query.sortBy|| null
+  const category = req.query?.category || null;
+  const brand = req.query?.brand || null;
+  const minPrice =
+    req.query?.minPrice !== "" ? Number(req.query?.minPrice) : null;
+  const maxPrice =
+    req.query?.maxPrice !== "" ? Number(req.query?.maxPrice) : null;
+    const query = {};
+    if (category) {
+      query.categoryId = new mongoose.Types.ObjectId(category);
+    };
+    if (brand) {
+      query.brandId = new mongoose.Types.ObjectId(brand);
+    }
+    let priceQuery = null;
+    if (minPrice || maxPrice) {
+      let priceMatch = {};
+      if (minPrice !== null) priceMatch.$gte = parseFloat(minPrice);
+      if (maxPrice !== null) priceMatch.$lte = parseFloat(maxPrice);
+
+      priceQuery = {
+        $match: {
+          "variants.price": priceMatch,
+        },
+      };
+    }
+    const search = req.query.search || null
+  const products = await productService.getProducts(perPage, page, query,priceQuery,sortBy,search);
+  const categories = await Category.find()
+  const brands = await Brand.find()
+  const count = await productService.getProductsCount(query,priceQuery,search);
   const pages = Math.ceil(count / perPage);
   const message = req.session.message || null;
   delete req.session.message;
-  res.render("admin-view/admin.products.ejs", {
+  res.status(HTTP_STATUS.OK).render("admin-view/admin.products.ejs", {
     message,
     products,
     page,
     pages,
+    perPage,
     count,
+    categories,
+    brands,
+    category,
+    brand,
+    minPrice,
+    maxPrice,
+    sortBy,
+    search,
+    filter : req.query.filter || "",
     productsFullList,
   });
 };
 
-const getAddProduct = async (req, res) => {
+const getAddProduct = async (req, res, next) => {
   const { categories, brands, products } = await productService.getAddProduct();
   const message = req.session.message || null;
   delete req.session.message;
-  res.render("admin-view/admin.add-product.ejs", {
+  res.status(HTTP_STATUS.OK).render("admin-view/admin.add-product.ejs", {
     message,
     categories,
     brands,
@@ -35,7 +76,7 @@ const getAddProduct = async (req, res) => {
   });
 };
 
-const addProduct = async (req, res) => {
+const addProduct = async (req, res, next) => {
   try {
     const { productName, description, brandId, categoryId, isFeatured } =
       req.body;
@@ -67,17 +108,15 @@ const addProduct = async (req, res) => {
     req.session.message = "Product Created Successfully";
     return res.redirect("/admin/products");
   } catch (error) {
-    console.error(error);
-    req.session.message = ERROR_MESSAGES.SERVER_ERROR;
-    return res.redirect("/admin/products");
+    next(error)
   }
 };
-const getEditProduct = async (req, res) => {
+const getEditProduct = async (req, res, next) => {
   const product = await productService.getProduct(req.query.id);
   const { categories, brands, products } = await productService.getAddProduct();
   const message = req.session.message || null;
   delete req.session.message;
-  res.render("admin-view/admin.edit-product.ejs", {
+  res.status(HTTP_STATUS.OK).render("admin-view/admin.edit-product.ejs", {
     message,
     product,
     categories,
@@ -86,7 +125,7 @@ const getEditProduct = async (req, res) => {
   });
 };
 
-const editProduct = async (req, res) => {
+const editProduct = async (req, res, next) => {
   try {
     const {
       productName,
@@ -258,13 +297,11 @@ const editProduct = async (req, res) => {
     req.session.message = "Product Updated Successfully";
     return res.redirect("/admin/products");
   } catch (error) {
-    console.error(error);
-    req.session.message = ERROR_MESSAGES.SERVER_ERROR;
-    return res.redirect("/admin/products");
+    next(error)
   }
 };
 
-const restoreProduct = async (req, res) => {
+const restoreProduct = async (req, res, next) => {
   try {
     await productService.restoreProduct(req.query.id, req.query.variant);
     req.session.message = "Product Restored Successfully";
@@ -272,15 +309,10 @@ const restoreProduct = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.log(error);
-    req.session.message = ERROR_MESSAGES.SERVER_ERROR;
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: ERROR_MESSAGES.SERVER_ERROR,
-    });
+   next(error)
   }
 };
-const blockProduct = async (req, res) => {
+const blockProduct = async (req, res, next) => {
   try {
     await productService.deleteProduct(req.query.id, req.query.variant);
     req.session.message = "Product has been succesfully Blocked";
@@ -288,12 +320,7 @@ const blockProduct = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    console.log(error);
-    req.session.message = ERROR_MESSAGES.SERVER_ERROR;
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: ERROR_MESSAGES.SERVER_ERROR,
-    });
+   next(error)
   }
 };
 

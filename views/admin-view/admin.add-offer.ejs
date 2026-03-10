@@ -13,9 +13,9 @@
             </div>
         </div>
         <% if (offer !== null) { %>
-            <form autocomplete="off" id="offerForm" action="/admin/offers/edit-offer?id=<%= offer._id %>" method="post" enctype="multipart/form-data" class="bg-white rounded-lg shadow p-6" novalidate>
+            <form autocomplete="off" id="offerForm" action="/admin/offers/edit-offer?id=<%= offer._id %>" class="bg-white rounded-lg shadow p-6" novalidate>
         <% } else {%>
-        <form autocomplete="off" id="offerForm" action="/admin/offers/add-offer" method="post" enctype="multipart/form-data" class="bg-white rounded-lg shadow p-6" novalidate>
+        <form autocomplete="off" id="offerForm" action="/admin/offers/add-offer" method="post" enctype="multipart/form-data" class="bg-white rounded-lg shadow p-6" onsubmit="return validateOfferForm()" novalidate>
         <% } %>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -120,7 +120,7 @@
 
             <div class="mt-8 flex justify-end space-x-3">
                
-                <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <button type="<%= (offer !== null) ? "button" : "submit" %>" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" <%= (offer !== null) ? "onclick=updateOffer()" : '' %>>
                     Save Offer
                 </button>
             </div>

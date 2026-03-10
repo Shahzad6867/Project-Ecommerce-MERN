@@ -4,21 +4,22 @@ const Product = require("../../models/product.model");
 const Wallet = require("../../models/wallet.model");
 const Cart = require("../../models/cart.model");
 const mongoose = require("mongoose");
+const HTTP_STATUS = require("../../constants/httpStatus.js");
 require("dotenv").config();
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const endPointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-const webhookHandler = async (req, res) => {
+const webhookHandler = async (req, res, next) => {
   let event;
 
   try {
     let sig = req.headers["stripe-signature"];
     event = stripe.webhooks.constructEvent(req.body, sig, endPointSecret);
-    res.status(200).json({ received: true });
+    res.status(HTTP_STATUS.OK).json({ received: true });
   } catch (error) {
     console.log("Webhook signature verification failed", error.message);
-    return res.status(400).send(`Webhook Error: ${error.message}`);
+    return res.status(HTTP_STATUS.BAD_REQUEST).send(`Webhook Error: ${error.message}`);
   }
 
   try {
@@ -124,7 +125,7 @@ const webhookHandler = async (req, res) => {
     }
   } catch (error) {
     console.log(error.message);
-    return res.status(400).send(`Webhook Error: ${error.message}`);
+    return res.status(HTTP_STATUS.BAD_REQUEST).send(`Webhook Error: ${error.message}`);
   }
 };
 

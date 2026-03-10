@@ -2,37 +2,45 @@ const fs = require("fs");
 const path = require("path");
 const { extractPublicId } = require("cloudinary-build-url");
 const couponService = require("../../services/admin-services/couponService.js");
-const ERROR_MESSAGES = require("../../constants/errorMessages.js");
 const HTTP_STATUS = require("../../constants/httpStatus.js");
 
-const getCoupons = async (req, res) => {
-  const perPage = req.session.itemsPerPage || 5;
+const getCoupons = async (req, res, next) => {
+  const perPage =  Number(req.session.itemsPerPage) || 5;
   const page = req.query.page || 1;
-  const coupons = await couponService.getCoupons(perPage, page);
-  const count = await couponService.countCoupons();
+  const sortBy = req.query.sortBy || null 
+  const discountType = req.query.discountType || null
+  const discountValue = req.query.discountValue || null
+  const expiryDate = req.query.expiryDate || null
+  const coupons = await couponService.getCoupons(perPage, page,sortBy,discountType,discountValue,expiryDate);
+  const count = await couponService.countCoupons(discountType,discountValue,expiryDate);
   const pages = Math.ceil(count / perPage);
   const message = req.session.message || null;
   delete req.session.message;
   const timezone = req.cookies.tz;
-  res.render("admin-view/admin.coupons.ejs", {
+  res.status(HTTP_STATUS.OK).render("admin-view/admin.coupons.ejs", {
     message,
     coupons,
     count,
     page,
     pages,
+    perPage,
+    sortBy,
+    discountType,
+    discountValue,
+    expiryDate,
     timezone,
   });
 };
-const getAddCoupon = async (req, res) => {
-  res.render("admin-view/admin.add-coupon.ejs", { coupon: null });
+const getAddCoupon = async (req, res, next) => {
+  res.status(HTTP_STATUS.OK).render("admin-view/admin.add-coupon.ejs", { coupon: null });
 };
-const getEditCoupon = async (req, res) => {
+const getEditCoupon = async (req, res, next) => {
   const couponId = req.query.id;
   const coupon = await couponService.getCoupon(couponId);
   const timezone = req.cookies.tz;
-  res.render("admin-view/admin.add-coupon.ejs", { coupon, timezone });
+  res.status(HTTP_STATUS.OK).render("admin-view/admin.add-coupon.ejs", { coupon, timezone });
 };
-const addCoupon = async (req, res) => {
+const addCoupon = async (req, res, next) => {
   try {
     const {
       couponName,
@@ -61,13 +69,11 @@ const addCoupon = async (req, res) => {
     req.session.message = "Coupon has been created Successfully";
     return res.redirect("/admin/coupons");
   } catch (error) {
-    console.log(error);
-    req.session.message = ERROR_MESSAGES.SERVER_ERROR;
-    return res.redirect("/admin/coupons");
+    next(error)
   }
 };
 
-const editCoupon = async (req, res) => {
+const editCoupon = async (req, res, next) => {
   try {
     const {
       couponName,
@@ -107,13 +113,11 @@ const editCoupon = async (req, res) => {
     req.session.message = "Coupon Updated Successfully";
     return res.redirect("/admin/coupons");
   } catch (error) {
-    console.log(error);
-    req.session.message = ERROR_MESSAGES.SERVER_ERROR;
-    return res.redirect("/admin/coupons");
+    next(error)
   }
 };
 
-const deleteCoupon = async (req, res) => {
+const deleteCoupon = async (req, res, next) => {
   await couponService.deleteCoupon(req.query.id);
   req.session.message = "Coupon has been deleted Successfully";
   return res.status(HTTP_STATUS.OK).json({

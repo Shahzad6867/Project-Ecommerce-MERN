@@ -158,6 +158,15 @@
  }
 }
 
+function updateCategory(index,categoryId,initialCategoryName,initialCategoryDescription){
+  if(validateEditForm(index,initialCategoryName,initialCategoryDescription)){
+    fetch(`/admin/edit-category?id=${categoryId}`, {
+      method : "PUT",
+      body : new FormData(document.getElementById(`editCategoryForm${index}`))
+    })
+    .then(res => window.location.href = "/admin/categories" )
+  }
+}
 
 
  let serverMessage = '<%- message %>'

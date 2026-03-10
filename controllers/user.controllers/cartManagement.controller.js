@@ -2,9 +2,10 @@ const Cart = require("../../models/cart.model");
 const Coupon = require("../../models/coupon.model");
 const usedCoupon = require("../../models/usedCoupon.model");
 const cartService = require("../../services/user-services/cartService.js");
+const HTTP_STATUS = require("../../constants/httpStatus.js");
 const mongoose = require("mongoose");
 
-const getCart = async (req, res) => {
+const getCart = async (req, res, next) => {
   let user = req.session.user || req.user;
   let message = req.session.message || null;
   delete req.session.message;
@@ -28,7 +29,7 @@ const getCart = async (req, res) => {
       ? await Coupon.find({ _id: { $nin: usedCoupons[0].coupons},userId : null, endDate : {$gt : new Date()}  })
       : await Coupon.find({ userId: null , endDate : {$gt : new Date()}});
   const userCoupons = await Coupon.find({ userId: user._id, endDate : {$gt : new Date()}});
-  res.render("user-view/user.cart-management.ejs", {
+  res.status(HTTP_STATUS.OK).render("user-view/user.cart-management.ejs", {
     message,
     user,
     productsFullList,
@@ -41,7 +42,7 @@ const getCart = async (req, res) => {
   });
 };
 
-const addToCart = async (req, res) => {
+const addToCart = async (req, res, next) => {
   try {
     const { productId, variant, quantity } = req.query;
     let cartUser = req.session.user || req.user;
@@ -52,33 +53,29 @@ const addToCart = async (req, res) => {
       quantity
     );
     if (result.message === "Out of Stock") {
-      return res.status(409).json({
+      return res.status(HTTP_STATUS.CONFLICT).json({
         success: false,
         message: "Out of Stock",
         specMessage: `${result.product.productName} is Out of Stock`,
       });
     } else if (result.message === "Product Unavailable") {
-      return res.status(410).json({
+      return res.status(HTTP_STATUS.UNAVAILABLE).json({
         success: false,
         message: "Product Unavailable",
       });
     }
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
       message: "Product has been added to Cart",
       product: result.product,
       cart: result.cartItem,
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      success: false,
-      message: "Oops! something went wrong from our side",
-    });
+    next(error)
   }
 };
 
-const buyNow = async (req, res) => {
+const buyNow = async (req, res, next) => {
   const { productId, variant } = req.query;
 
   let cartUser = req.session.user || req.user;
@@ -89,7 +86,7 @@ const buyNow = async (req, res) => {
   );
   let quantity = cartItem?.quantity || 1;
   if (cartItem) {
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
       message: "Done",
     });
@@ -101,26 +98,26 @@ const buyNow = async (req, res) => {
       quantity
     );
     if (result.message === "Out of Stock") {
-      return res.status(409).json({
+      return res.status(HTTP_STATUS.CONFLICT).json({
         success: false,
         message: "Out of Stock",
         specMessage: `${result.product.productName} is Out of Stock`,
       });
     } else if (result.message === "Product Unavailable") {
-      return res.status(410).json({
+      return res.status(HTTP_STATUS.UNAVAILABLE).json({
         success: false,
         message: "Product Unavailable",
       });
     }
 
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
       message: "Done",
     });
   }
 };
 
-const updateCartItem = async (req, res) => {
+const updateCartItem = async (req, res, next) => {
   try {
     const { productId, variant, quantity } = req.query;
     let cartUser = req.session.user || req.user;
@@ -136,7 +133,7 @@ const updateCartItem = async (req, res) => {
         availableStock === 0 ||
         product.variants[variant].stockStatus === "Out of Stock"
       ) {
-        return res.status(409).json({
+        return res.status(HTTP_STATUS.CONFLICT).json({
           success: false,
           message: "Out of Stock",
           specMessage: `${product.productName} has become Out of Stock`,
@@ -148,7 +145,7 @@ const updateCartItem = async (req, res) => {
             cartItem.quantity = quantity;
             await cartItem.save();
           }
-        return res.status(409).json({
+        return res.status(HTTP_STATUS.CONFLICT).json({
           success: false,
           message : "Limited Stock",
           specMessage: `${product.productName} has only Limited Stock, The maximum quantity you can order is ${availableStock}`,
@@ -157,7 +154,7 @@ const updateCartItem = async (req, res) => {
         });
       }
     } else {
-      return res.status(410).json({
+      return res.status(HTTP_STATUS.UNAVAILABLE).json({
         success: false,
         message: "Product Unavailable",
         product,
@@ -166,21 +163,17 @@ const updateCartItem = async (req, res) => {
     }
     cartItem.quantity = quantity;
     await cartItem.save();
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
       message: "Quantity has been updated in Cart",
       product,
       cart: cartItem,
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      success: false,
-      message: "Oops! something went wrong from our side",
-    });
+    next(error)
   }
 };
-const deleteCartItem = async (req, res) => {
+const deleteCartItem = async (req, res, next) => {
   try {
     const user = req.session.user || req.user;
     const { cartItemId, productId } = req.query;
@@ -188,7 +181,7 @@ const deleteCartItem = async (req, res) => {
     await Cart.findByIdAndDelete({ _id: cartItemId });
     let product = await cartService.getProduct(productId);
     let cartItems = await cartService.getCartItems(user._id);
-    return res.status(200).json({
+    return res.status(HTTP_STATUS.OK).json({
       success: true,
       message: "Item have been removed from your Cart",
       product,
@@ -202,43 +195,28 @@ const deleteCartItem = async (req, res) => {
           : null,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(200).json({
-      success: false,
-      message: error.message,
-    });
+   next(error)
   }
 };
-const deleteCartItemFromHome = async (req, res) => {
-  try {
-    const { cartItemId } = req.query;
-    await Cart.findByIdAndDelete({ _id: cartItemId });
-    req.session.message = "Product has been removed from your Cart";
-    return res.redirect("/");
-  } catch (error) {
-    console.log(error);
-    req.session.message = "Oops! Something went wrong";
-    res.redirect("/");
-  }
-};
-const applyCoupon = async (req, res) => {
+
+const applyCoupon = async (req, res, next) => {
   let { id } = req.params;
   let user = req.session.user || req.user;
   const olderCoupon = await Cart.findOne({ userId: user._id });
   await Cart.updateMany({ userId: user._id }, { couponApplied: id });
   const coupon = await Coupon.findById(id);
-  return res.json({
+  return res.status(HTTP_STATUS.OK).json({
     success: true,
     message: "Done",
     coupon,
     olderCoupon: olderCoupon.couponApplied,
   });
 };
-const removeCoupon = async (req, res) => {
+const removeCoupon = async (req, res, next) => {
   let user = req.session.user || req.user;
   const coupon = await Cart.findOne({ userId: user._id });
   await Cart.updateMany({ userId: user._id }, { couponApplied: null });
-  return res.json({
+  return res.status(HTTP_STATUS.OK).json({
     success: true,
     message: "Done",
     coupon,
@@ -248,7 +226,6 @@ module.exports = {
   getCart,
   addToCart,
   updateCartItem,
-  deleteCartItemFromHome,
   deleteCartItem,
   applyCoupon,
   removeCoupon,

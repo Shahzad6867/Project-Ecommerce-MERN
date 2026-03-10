@@ -1,14 +1,15 @@
 const User = require("../../models/user.model.js");
 const bcryptjs = require("bcryptjs");
+const HTTP_STATUS = require("../../constants/httpStatus.js");
 require("dotenv").config();
 
-const getUserLogin = async (req, res) => {
+const getUserLogin = async (req, res, next) => {
   let message = req.session.message || null;
   delete req.session.message;
-  res.render("user-view/user.login.ejs", { message: message });
+  res.status(HTTP_STATUS.OK).render("user-view/user.login.ejs", { message: message });
 };
 
-const userLogin = async (req, res) => {
+const userLogin = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const userExist = await User.findOne({ email });
@@ -32,10 +33,10 @@ const userLogin = async (req, res) => {
     req.session.message = `👋 Hi, ${userExist.firstName} ${userExist.lastName}`;
     res.redirect("/");
   } catch (error) {
-    console.log(error);
+   next(error)
   }
 };
-const logoutUser = async (req, res) => {
+const logoutUser = async (req, res, next) => {
   try {
     if (req.user) {
       req.logout((err, next) => {
@@ -49,9 +50,7 @@ const logoutUser = async (req, res) => {
       return res.redirect("/login");
     }
   } catch (error) {
-    console.error(error);
-    req.session.message = "Something Went Wrong";
-    res.redirect("/admin/dashboard");
+    next(error)
   }
 };
 module.exports = {

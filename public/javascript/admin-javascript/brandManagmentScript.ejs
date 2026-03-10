@@ -161,6 +161,17 @@
 }
 
 
+function updateBrand(index,brandId,initialBrandName,initialBrandDescription){
+  if(validateEditForm(index,initialBrandName,initialBrandDescription)){
+    fetch(`/admin/edit-brand?id=${brandId}`,{
+      method : "PUT",
+      body : new FormData(document.getElementById(`editBrandForm${index}`))
+    })
+    .then(res => window.location.href = "/admin/brands")
+  }
+}
+
+
  let serverMessage = '<%- message %>'
  if(serverMessage){
    if(serverMessage === "Brand Created Successfully"){
